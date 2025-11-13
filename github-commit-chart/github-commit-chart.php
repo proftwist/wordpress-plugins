@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Commit Chart
  * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Владимир Бычко
  * Text Domain: github-commit-chart
  */
@@ -83,7 +83,7 @@ class GitHubCommitChart {
         wp_enqueue_script(
             'github-commit-chart-block',
             GCC_PLUGIN_URL . 'build/index.js',
-            array('wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n'),
+            array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components'),
             file_exists($index_js) ? filemtime($index_js) : time(),
             true
         );
