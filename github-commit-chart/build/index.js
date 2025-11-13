@@ -4,6 +4,7 @@
     var InspectorControls = wp.blockEditor.InspectorControls;
     var PanelBody = wp.components.PanelBody;
     var TextControl = wp.components.TextControl;
+    var SelectControl = wp.components.SelectControl;
 
     registerBlockType('github-commit-chart/git-diagram', {
         title: 'Git-диаграмма',
@@ -13,14 +14,19 @@
             githubProfile: {
                 type: 'string',
                 default: ''
+            },
+            headingTag: {
+                type: 'string',
+                default: 'h3'
             }
         },
         edit: function (props) {
             var attributes = props.attributes;
             var setAttributes = props.setAttributes;
 
-            // Получаем значение из атрибутов блока
+            // Получаем значения из атрибутов блока
             var githubProfile = attributes.githubProfile || '';
+            var headingTag = attributes.headingTag || 'h3';
 
             return el(
                 'div',
@@ -45,6 +51,19 @@
                                 setAttributes({ githubProfile: value });
                             },
                             placeholder: 'например: username'
+                        }),
+                        el(SelectControl, {
+                            label: 'Тег заголовка',
+                            value: headingTag,
+                            options: [
+                                { label: 'H2', value: 'h2' },
+                                { label: 'H3', value: 'h3' },
+                                { label: 'H4', value: 'h4' },
+                                { label: 'Обычный текст', value: 'div' }
+                            ],
+                            onChange: function (value) {
+                                setAttributes({ headingTag: value });
+                            }
                         })
                     )
                 )

@@ -21,6 +21,10 @@ function github_commit_chart_register_block() {
             'githubProfile' => array(
                 'type' => 'string',    // Тип данных атрибута
                 'default' => ''        // Значение по умолчанию (пустая строка)
+            ),
+            'headingTag' => array(
+                'type' => 'string',    // Тип данных атрибута
+                'default' => 'h3'      // Значение по умолчанию (h3)
             )
         )
     ));
@@ -50,9 +54,12 @@ function github_commit_chart_render_block($attributes, $content) {
     // Генерируем уникальный ID для контейнера (чтобы избежать конфликтов на странице)
     $unique_id = uniqid('gcc-');
 
+    // Получаем тег заголовка из атрибутов блока или используем значение по умолчанию
+    $heading_tag = !empty($attributes['headingTag']) ? $attributes['headingTag'] : 'h3';
+
     // Формируем data-атрибуты для передачи данных в JavaScript
     // Безопасно экранируем значения функцией esc_attr
-    $data_attributes = 'data-github-profile="' . esc_attr($github_profile) . '" data-container-id="' . esc_attr($unique_id) . '"';
+    $data_attributes = 'data-github-profile="' . esc_attr($github_profile) . '" data-container-id="' . esc_attr($unique_id) . '" data-heading-tag="' . esc_attr($heading_tag) . '"';
 
     // Возвращаем HTML контейнер для диаграммы
     return '<div class="github-commit-chart-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '>

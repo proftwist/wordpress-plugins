@@ -41,7 +41,10 @@
 }
 
 /* Заголовок диаграммы */
-.github-commit-chart h3 {
+.github-commit-chart h2,
+.github-commit-chart h3,
+.github-commit-chart h4,
+.github-commit-chart .github-commit-chart-text {
     margin-top: 0;
     color: #333;
     text-align: center;

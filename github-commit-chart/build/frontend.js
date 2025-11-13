@@ -76,9 +76,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция для отображения диаграммы коммитов
     function renderCommitChart(container, githubProfile, commitData) {
+        // Получаем тег заголовка из data-атрибута или используем значение по умолчанию
+        var headingTag = container.getAttribute('data-heading-tag') || 'h3';
+        
         // Создаем элементы диаграммы
         var chartHTML = '<div class="github-commit-chart">';
-        chartHTML += '<h3>Диаграмма коммитов для ' + githubProfile + '</h3>';
+        
+        // Если выбран обычный текст (div), отображаем центрированный текст без тега заголовка
+        if (headingTag === 'div') {
+            chartHTML += '<div class="github-commit-chart-text">Диаграмма коммитов для ' + githubProfile + '</div>';
+        } else {
+            // Иначе используем выбранный тег заголовка
+            chartHTML += '<' + headingTag + '>Диаграмма коммитов для ' + githubProfile + '</' + headingTag + '>';
+        }
+        
         chartHTML += '<div class="chart-container">';
         chartHTML += '</div>';
 
