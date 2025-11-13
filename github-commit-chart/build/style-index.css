@@ -1,0 +1,158 @@
+/* Основной контейнер диаграммы коммитов */
+.github-commit-chart-container {
+    width: 100%;
+    margin: 20px 0;
+}
+
+/* Стили для плейсхолдера блока в редакторе */
+.github-commit-chart-placeholder {
+    padding: 20px;
+    text-align: center;
+    background: #f0f0f0;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    color: #666;
+}
+
+/* Стили для индикатора загрузки */
+.github-commit-chart-loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* Стили для сообщений об ошибках */
+.github-commit-chart-error {
+    text-align: center;
+    padding: 20px;
+    color: #d63638;
+    background: #ffeaea;
+    border: 1px solid #d63638;
+    border-radius: 4px;
+}
+
+/* Основной контейнер диаграммы */
+.github-commit-chart {
+    width: 100%;
+    padding: 20px;
+    background: #fff;
+    border: none; /* Убираем рамку */
+    border-radius: 4px;
+}
+
+/* Заголовок диаграммы */
+.github-commit-chart h3 {
+    margin-top: 0;
+    color: #333;
+    text-align: center;
+}
+
+/* Контейнер для самой диаграммы с прокруткой */
+.chart-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Тепловая карта диаграммы */
+.commit-heatmap {
+    min-width: 550px; /* Минимальная ширина для корректного отображения */
+    padding: 20px 0;
+    font-family: 'Courier New', Courier, monospace; /* Моноширинный шрифт для ровного отображения */
+}
+
+/* Сетка диаграммы */
+.commit-heatmap-grid {
+    display: inline-block;
+}
+
+/* Строка в диаграмме */
+.heatmap-row {
+    display: flex;
+    margin-bottom: 2px;
+}
+
+/* Метки (дни недели и месяцы) */
+.heatmap-label {
+    width: 12px; /* Ширина ячейки */
+    font-size: 10px;
+    text-align: center;
+    padding: 0 1px;
+    line-height: 12px;
+    color: #666;
+    font-family: 'Courier New', Courier, monospace; /* Моноширинный шрифт */
+}
+
+/* Метки дней недели */
+.heatmap-day-label {
+    width: 12px; /* Ширина ячейки */
+    height: 12px;
+    font-size: 10px;
+    text-align: center;
+    padding: 0 1px;
+    line-height: 12px;
+    color: #666;
+    font-family: 'Courier New', Courier, monospace; /* Моноширинный шрифт */
+}
+
+/* Ячейки диаграммы */
+.heatmap-cell {
+    width: 10px; /* Ширина ячейки */
+    height: 10px; /* Высота ячейки */
+    border: 1px solid #fff;
+    border-radius: 2px;
+    margin: 0 1px;
+}
+
+/* Цвета ячеек в зависимости от интенсивности */
+.heatmap-cell.intensity-0 {
+    background-color: #ebedf0; /* Нет коммитов */
+}
+
+.heatmap-cell.intensity-1 {
+    background-color: #c6e48b; /* Низкая активность */
+}
+
+.heatmap-cell.intensity-2 {
+    background-color: #7bc96f; /* Средняя активность */
+}
+
+.heatmap-cell.intensity-3 {
+    background-color: #239a3b; /* Высокая активность */
+}
+
+.heatmap-cell.intensity-4 {
+    background-color: #196127; /* Очень высокая активность */
+}
+
+/* Горизонтальная ориентация диаграммы */
+.horizontal-heatmap .commit-heatmap-grid {
+    display: flex;
+    flex-direction: column;
+}
+
+.horizontal-heatmap .heatmap-row {
+    display: flex;
+    margin-bottom: 2px;
+    flex-direction: row;
+}
+
+.horizontal-heatmap .heatmap-day-label {
+    padding-top: 0;
+    text-align: center;
+    width: 12px; /* Ширина ячейки */
+    height: 12px;
+    line-height: 12px;
+}
+
+.horizontal-heatmap .heatmap-label {
+    width: 12px; /* Ширина ячейки */
+    text-align: center;
+    padding: 0 1px;
+    line-height: 12px;
+}
+
+/* Стили для названий месяцев */
+.horizontal-heatmap .month-labels .heatmap-label.month-name {
+    font-weight: bold;
+    text-align: center;
+}

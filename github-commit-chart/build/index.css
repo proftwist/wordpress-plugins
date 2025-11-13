@@ -1,0 +1,8 @@
+.github-commit-chart-placeholder {
+    padding: 20px;
+    text-align: center;
+    background: #f0f0f0;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    color: #666;
+}
