@@ -28,8 +28,8 @@ function github_commit_chart_settings_init() {
 
     // Добавление поля для ввода профиля GitHub
     add_settings_field(
-        'github_commit_chart_github_profile',                // ID поля
-        'Путь к профилю Github',                           // Метка поля
+        'github_commit_chart_github_profile',               // ID поля
+        'Юзернейм Github',                                  // Метка поля
         'github_commit_chart_github_profile_render',        // Функция отрисовки поля
         'github_commit_chart_settings',                     // ID страницы настроек
         'github_commit_chart_settings_section'              // ID секции
