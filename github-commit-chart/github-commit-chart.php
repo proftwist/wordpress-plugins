@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Commit Chart
  * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Владимир Бычко
  * Text Domain: github-commit-chart
  */

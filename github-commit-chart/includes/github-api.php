@@ -216,12 +216,47 @@ class GitHubCommitChart_API {
     }
 
     /**
+     * Проверка существования пользователя на GitHub
+     */
+    public static function check_user_exists($username) {
+        $cache_key = self::$cache_key_prefix . 'user_exists_' . $username;
+        $cached_data = get_transient($cache_key);
+
+        if ($cached_data !== false) {
+            return $cached_data;
+        }
+
+        $url = self::$api_url . '/users/' . $username;
+        $response = wp_remote_get($url, array(
+            'headers' => array(
+                'User-Agent' => 'GitHub-Commit-Chart-WordPress-Plugin',
+                'Accept' => 'application/vnd.github.v3+json'
+            ),
+            'timeout' => 30
+        ));
+
+        if (is_wp_error($response)) {
+            return false;
+        }
+
+        $status_code = wp_remote_retrieve_response_code($response);
+
+        $exists = ($status_code === 200);
+
+        // Кэшируем результат на короткое время (5 минут)
+        set_transient($cache_key, $exists, 300);
+
+        return $exists;
+    }
+
+    /**
      * Очистка кэша для пользователя
      */
     public static function clear_cache($username) {
         delete_transient(self::$cache_key_prefix . 'commits_' . $username);
         delete_transient(self::$cache_key_prefix . 'repos_' . $username);
         delete_transient(self::$cache_key_prefix . 'stats_' . $username);
+        delete_transient(self::$cache_key_prefix . 'user_exists_' . $username);
 
         // Очищаем кэш для всех репозиториев пользователя
         $repos = self::get_user_repos($username);

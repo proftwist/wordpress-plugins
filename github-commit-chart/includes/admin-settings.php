@@ -57,7 +57,44 @@ function github_commit_chart_github_profile_render() {
     $github_profile = get_option('github_commit_chart_github_profile');
     ?>
     <!-- Поле ввода с экранированным значением для безопасности -->
-    <input type='text' name='github_commit_chart_github_profile' value='<?php echo esc_attr($github_profile); ?>' placeholder='например: username'>
+    <input type='text' id='github_commit_chart_github_profile' name='github_commit_chart_github_profile' value='<?php echo esc_attr($github_profile); ?>' placeholder='например: username'>
+    <button type="button" id="check_username_btn" class="button">Проверить юзернейм</button>
+    <span id="username_check_result"></span>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        $('#check_username_btn').on('click', function() {
+            var username = $('#github_commit_chart_github_profile').val().trim();
+            var resultSpan = $('#username_check_result');
+
+            if (username === '') {
+                resultSpan.html('<span style="color: red;">Введите юзернейм</span>');
+                return;
+            }
+
+            resultSpan.html('<span style="color: blue;">Проверяем...</span>');
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'github_commit_chart_check_username',
+                    nonce: '<?php echo wp_create_nonce("github_commit_chart_check_username"); ?>',
+                    username: username
+                },
+                success: function(response) {
+                    if (response.success) {
+                        resultSpan.html('<span style="color: green;">' + response.data + '</span>');
+                    } else {
+                        resultSpan.html('<span style="color: red;">' + response.data + '</span>');
+                    }
+                },
+                error: function() {
+                    resultSpan.html('<span style="color: red;">Ошибка при проверке</span>');
+                }
+            });
+        });
+    });
+    </script>
     <?php
 }
 
@@ -80,6 +117,32 @@ function github_commit_chart_sanitize_github_profile($input) {
 
     return $input;
 }
+
+// AJAX обработчик для проверки юзернейма GitHub
+function github_commit_chart_check_username() {
+    // Проверяем nonce для безопасности
+    if (!wp_verify_nonce($_POST['nonce'], 'github_commit_chart_check_username')) {
+        wp_die('Недействительный запрос');
+    }
+
+    // Получаем юзернейм из POST данных
+    $username = sanitize_text_field($_POST['username']);
+
+    // Проверяем, что юзернейм не пустой
+    if (empty($username)) {
+        wp_send_json_error('Юзернейм не может быть пустым');
+    }
+
+    // Проверяем существование пользователя
+    if (GitHubCommitChart_API::check_user_exists($username)) {
+        wp_send_json_success('Профиль найден');
+    } else {
+        wp_send_json_error('Профиль не найден');
+    }
+}
+
+// Регистрируем AJAX обработчик
+add_action('wp_ajax_github_commit_chart_check_username', 'github_commit_chart_check_username');
 
 // Регистрируем хук для инициализации настроек при загрузке админ-панели
 add_action('admin_init', 'github_commit_chart_settings_init');
