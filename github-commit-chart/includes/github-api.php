@@ -15,6 +15,14 @@ class GitHubCommitChart_API {
     /**
      * Получение данных о коммитах пользователя
      */
+    /**
+     * Обработка ошибок API GitHub
+     */
+    private static function handle_api_error($data) {
+        $error_message = isset($data['message']) ? $data['message'] : 'Неизвестная ошибка';
+        return new WP_Error('github_api_error', 'Ошибка GitHub API: ' . $error_message);
+    }
+    
     public static function get_user_commits($username) {
         // Проверяем кэш
         $cache_key = self::$cache_key_prefix . 'commits_' . $username;
@@ -81,13 +89,7 @@ class GitHubCommitChart_API {
         $data = json_decode($body, true);
         
         if (wp_remote_retrieve_response_code($response) !== 200) {
-            // Проверяем существование WP_Error
-            if (class_exists('WP_Error')) {
-                return new WP_Error('github_api_error', 'Ошибка GitHub API: ' . (isset($data['message']) ? $data['message'] : 'Неизвестная ошибка'));
-            } else {
-                // Если WP_Error не существует, возвращаем массив с ошибкой
-                return array('error' => 'Ошибка GitHub API: ' . (isset($data['message']) ? $data['message'] : 'Неизвестная ошибка'));
-            }
+            return self::handle_api_error($data);
         }
         
         $repos = array();
@@ -133,13 +135,7 @@ class GitHubCommitChart_API {
         $data = json_decode($body, true);
         
         if (wp_remote_retrieve_response_code($response) !== 200) {
-            // Проверяем существование WP_Error
-            if (class_exists('WP_Error')) {
-                return new WP_Error('github_api_error', 'Ошибка GitHub API: ' . (isset($data['message']) ? $data['message'] : 'Неизвестная ошибка'));
-            } else {
-                // Если WP_Error не существует, возвращаем массив с ошибкой
-                return array('error' => 'Ошибка GitHub API: ' . (isset($data['message']) ? $data['message'] : 'Неизвестная ошибка'));
-            }
+            return self::handle_api_error($data);
         }
         
         $commits = array();
@@ -179,13 +175,7 @@ class GitHubCommitChart_API {
         
         // Проверяем, является ли результат массивом с ошибкой
         if (is_array($commits) && isset($commits['error'])) {
-            // Если WP_Error существует, возвращаем его
-            if (class_exists('WP_Error')) {
-                return new WP_Error('github_api_error', $commits['error']);
-            } else {
-                // Иначе возвращаем массив с ошибкой
-                return $commits;
-            }
+            return self::handle_api_error($commits);
         }
         
         // Создаем массив для статистики по дням

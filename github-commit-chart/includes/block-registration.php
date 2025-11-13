@@ -5,42 +5,9 @@ if (!defined('ABSPATH')) {
 }
 
 function github_commit_chart_register_block() {
-    // Проверяем существование необходимых функций
-    if (!function_exists('wp_register_script') || !function_exists('wp_register_style') || !function_exists('register_block_type')) {
-        return;
-    }
-    
-    $plugin_dir_path = plugin_dir_path(dirname(__FILE__));
-    $plugin_url = plugin_dir_url(dirname(__FILE__));
-    
-    $index_js = $plugin_dir_path . 'build/index.js';
-    $index_css = $plugin_dir_path . 'build/index.css';
-    $style_css = $plugin_dir_path . 'build/style-index.css';
-    
-    wp_register_script(
-        'github-commit-chart-block-editor',
-        $plugin_url . 'build/index.js',
-        array('wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n'),
-        file_exists($index_js) ? filemtime($index_js) : time(),
-        true
-    );
-    
-    wp_register_style(
-        'github-commit-chart-block-editor',
-        $plugin_url . 'build/index.css',
-        array('wp-edit-blocks'),
-        file_exists($index_css) ? filemtime($index_css) : time()
-    );
-    
-    wp_register_style(
-        'github-commit-chart-frontend',
-        $plugin_url . 'build/style-index.css',
-        array(),
-        file_exists($style_css) ? filemtime($style_css) : time()
-    );
-    
+    // Регистрируем блок
     register_block_type('github-commit-chart/git-diagram', array(
-        'editor_script' => 'github-commit-chart-block-editor',
+        'editor_script' => 'github-commit-chart-block',
         'editor_style' => 'github-commit-chart-block-editor',
         'style' => 'github-commit-chart-frontend',
         'render_callback' => 'github_commit_chart_render_block',
@@ -56,12 +23,6 @@ function github_commit_chart_register_block() {
 function github_commit_chart_render_block($attributes, $content) {
     // Получаем имя пользователя из атрибутов блока или из глобальных настроек
     $github_profile = !empty($attributes['githubProfile']) ? $attributes['githubProfile'] : get_option('github_commit_chart_github_profile', '');
-    
-    // Отладочный вывод
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('GitHub Commit Chart: github_profile = ' . $github_profile);
-        error_log('GitHub Commit Chart: attributes = ' . print_r($attributes, true));
-    }
     
     if (empty($github_profile)) {
         return '<p>Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в атрибутах блока.</p>';

@@ -10,7 +10,11 @@ if (!defined('ABSPATH')) {
  * Регистрирует настройки, секции и поля для страницы настроек плагина.
  */
 function github_commit_chart_settings_init() {
-    register_setting('github_commit_chart_settings', 'github_commit_chart_github_profile');
+    register_setting('github_commit_chart_settings', 'github_commit_chart_github_profile', array(
+        'type' => 'string',
+        'sanitize_callback' => 'github_commit_chart_sanitize_github_profile',
+        'default' => ''
+    ));
 
     add_settings_section(
         'github_commit_chart_settings_section',
@@ -47,6 +51,22 @@ function github_commit_chart_github_profile_render() {
     ?>
     <input type='text' name='github_commit_chart_github_profile' value='<?php echo esc_attr($github_profile); ?>' placeholder='например: username'>
     <?php
+}
+
+/**
+ * Валидация значения профиля GitHub
+ *
+ * @param string $input Входное значение
+ * @return string Очищенное значение
+ */
+function github_commit_chart_sanitize_github_profile($input) {
+    // Удаляем пробелы в начале и конце
+    $input = trim($input);
+    
+    // Удаляем любые символы, кроме букв, цифр, дефисов и подчеркиваний
+    $input = preg_replace('/[^a-zA-Z0-9\-_]/', '', $input);
+    
+    return $input;
 }
 
 // Добавляем хук для инициализации настроек

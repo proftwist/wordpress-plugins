@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Commit Chart
  * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Владимир Бычко
  * Text Domain: github-commit-chart
  */
@@ -42,7 +42,7 @@ if (file_exists($github_api_file)) {
  * для получения данных о коммитах GitHub.
  */
 class GitHubCommitChart {
-    
+
     /**
      * Конструктор класса GitHubCommitChart
      *
@@ -56,7 +56,7 @@ class GitHubCommitChart {
         add_action('wp_ajax_gcc_get_commit_data', array($this, 'ajax_get_commit_data'));
         add_action('wp_ajax_nopriv_gcc_get_commit_data', array($this, 'ajax_get_commit_data'));
     }
-    
+
     /**
      * Инициализация плагина
      *
@@ -68,8 +68,8 @@ class GitHubCommitChart {
         add_action('enqueue_block_editor_assets', array($this, 'enqueue_block_editor_assets'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
     }
-    
-    
+
+
     /**
      * Подключение ресурсов для редактора блоков Gutenberg
      *
@@ -79,7 +79,7 @@ class GitHubCommitChart {
     public function enqueue_block_editor_assets() {
         $index_js = GCC_PLUGIN_PATH . 'build/index.js';
         $index_css = GCC_PLUGIN_PATH . 'build/index.css';
-        
+
         wp_enqueue_script(
             'github-commit-chart-block',
             GCC_PLUGIN_URL . 'build/index.js',
@@ -87,7 +87,7 @@ class GitHubCommitChart {
             file_exists($index_js) ? filemtime($index_js) : time(),
             true
         );
-        
+
         wp_enqueue_style(
             'github-commit-chart-block-editor',
             GCC_PLUGIN_URL . 'build/index.css',
@@ -95,7 +95,7 @@ class GitHubCommitChart {
             file_exists($index_css) ? filemtime($index_css) : time()
         );
     }
-    
+
     /**
      * Подключение ресурсов для фронтенда
      *
@@ -105,7 +105,7 @@ class GitHubCommitChart {
     public function enqueue_frontend_assets() {
         $frontend_js = GCC_PLUGIN_PATH . 'build/frontend.js';
         $style_css = GCC_PLUGIN_PATH . 'build/style-index.css';
-        
+
         wp_enqueue_script(
             'github-commit-chart-frontend',
             GCC_PLUGIN_URL . 'build/frontend.js',
@@ -113,14 +113,14 @@ class GitHubCommitChart {
             file_exists($frontend_js) ? filemtime($frontend_js) : time(),
             true
         );
-        
+
         // Передаем данные в скрипт
         wp_localize_script('github-commit-chart-frontend', 'githubCommitChartSettings', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'githubProfile' => get_option('github_commit_chart_github_profile', ''),
             'nonce' => wp_create_nonce('gcc_get_commit_data')
         ));
-        
+
         wp_enqueue_style(
             'github-commit-chart-frontend',
             GCC_PLUGIN_URL . 'build/style-index.css',
@@ -128,7 +128,7 @@ class GitHubCommitChart {
             file_exists($style_css) ? filemtime($style_css) : time()
         );
     }
-    
+
     /**
      * Добавление пункта меню в админке
      *
@@ -145,7 +145,7 @@ class GitHubCommitChart {
             array($this, 'options_page')
         );
     }
-    
+
     /**
      * Отображение страницы настроек плагина
      *
@@ -169,65 +169,68 @@ class GitHubCommitChart {
     /**
      * AJAX обработчик для получения данных о коммитах
      */
+    /**
+     * Логгирование отладочной информации
+     *
+     * @param string $message Сообщение для логгирования
+     * @param mixed $data Дополнительные данные (опционально)
+     */
+    private function log_debug($message, $data = null) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $log_message = 'GitHub Commit Chart: ' . $message;
+            if ($data !== null) {
+                $log_message .= ' = ' . print_r($data, true);
+            }
+            error_log($log_message);
+        }
+    }
+
+    /**
+     * AJAX обработчик для получения данных о коммитах
+     */
     public function ajax_get_commit_data() {
         // Отладочный вывод
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('GitHub Commit Chart: AJAX request received');
-            error_log('GitHub Commit Chart: POST data = ' . print_r($_POST, true));
-        }
-        
+        $this->log_debug('AJAX request received', $_POST);
+
         // Проверка nonce
         if (!wp_verify_nonce($_POST['nonce'], 'gcc_get_commit_data')) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('GitHub Commit Chart: Security check failed');
-            }
+            $this->log_debug('Security check failed');
             wp_die('Security check failed');
         }
-        
+
         $github_profile = sanitize_text_field($_POST['github_profile']);
-        
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('GitHub Commit Chart: github_profile = ' . $github_profile);
-        }
-        
+        $this->log_debug('github_profile', $github_profile);
+
         if (empty($github_profile)) {
             wp_send_json_error('GitHub profile is required');
             return;
         }
-        
+
         // Проверяем существование класса API
         if (!class_exists('GitHubCommitChart_API')) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('GitHub Commit Chart: API class not found');
-            }
+            $this->log_debug('API class not found');
             wp_send_json_error('API class not found');
             return;
         }
-        
+
         // Получаем статистику коммитов
         $stats = GitHubCommitChart_API::get_commit_stats($github_profile);
-        
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('GitHub Commit Chart: stats = ' . print_r($stats, true));
-        }
-        
+        $this->log_debug('stats', $stats);
+
+        // Проверяем ошибки
         if (is_wp_error($stats)) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('GitHub Commit Chart: WP_Error = ' . $stats->get_error_message());
-            }
+            $this->log_debug('WP_Error', $stats->get_error_message());
             wp_send_json_error($stats->get_error_message());
             return;
         }
-        
+
         // Проверяем, является ли результат массивом с ошибкой
         if (is_array($stats) && isset($stats['error'])) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('GitHub Commit Chart: Error array = ' . $stats['error']);
-            }
+            $this->log_debug('Error array', $stats['error']);
             wp_send_json_error($stats['error']);
             return;
         }
-        
+
         wp_send_json_success($stats);
     }
 }
