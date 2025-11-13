@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: GitHub Commit Chart
- * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока
- * Version: 1.3.0
+ * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока или шорткода
+ * Version: 1.4.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: github-commit-chart
@@ -63,6 +63,9 @@ class GitHubCommitChart {
         add_action('wp_ajax_gcc_get_commit_data', array($this, 'ajax_get_commit_data'));
         // Регистрируем для неавторизованных пользователей (для фронтенда)
         add_action('wp_ajax_nopriv_gcc_get_commit_data', array($this, 'ajax_get_commit_data'));
+
+        // Регистрация шорткода
+        add_shortcode('github-c', array($this, 'shortcode_handler'));
     }
 
     /**
@@ -260,6 +263,41 @@ class GitHubCommitChart {
 
         // Возвращаем успешный результат
         wp_send_json_success($stats);
+    }
+
+    /**
+     * Обработчик шорткода [github-c]
+     *
+     * @param array $atts Атрибуты шорткода
+     * @return string HTML-разметка диаграммы
+     */
+    public function shortcode_handler($atts) {
+        // Объединяем атрибуты шорткода с значениями по умолчанию
+        $atts = shortcode_atts(array(
+            'github_profile' => '',
+        ), $atts, 'github-c');
+
+        // Получаем профиль GitHub из атрибутов или из глобальных настроек плагина
+        $github_profile = !empty($atts['github_profile']) ?
+                         $atts['github_profile'] :
+                         get_option('github_commit_chart_github_profile', '');
+
+        // Проверяем, указан ли профиль GitHub
+        if (empty($github_profile)) {
+            return '<p>Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в атрибутах шорткода.</p>';
+        }
+
+        // Генерируем уникальный ID для контейнера (чтобы избежать конфликтов на странице)
+        $unique_id = uniqid('gcc-');
+
+        // Формируем data-атрибуты для передачи данных в JavaScript
+        // Безопасно экранируем значения функцией esc_attr
+        $data_attributes = 'data-github-profile="' . esc_attr($github_profile) . '" data-container-id="' . esc_attr($unique_id) . '"';
+
+        // Возвращаем HTML контейнер для диаграммы
+        return '<div class="github-commit-chart-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '>
+                    <div class="github-commit-chart-loading">Загрузка диаграммы коммитов...</div>
+                </div>';
     }
 }
 

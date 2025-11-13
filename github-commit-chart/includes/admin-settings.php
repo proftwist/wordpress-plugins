@@ -43,7 +43,9 @@ function github_commit_chart_settings_init() {
  * Поясняет пользователю, что нужно ввести в поле.
  */
 function github_commit_chart_settings_section_callback() {
-    echo 'Введите ваш никнейм на GitHub для отображения статистики коммитов';
+    echo 'Введите ваш никнейм на GitHub для отображения статистики коммитов.<br>';
+    echo 'Вы можете использовать шорткод <code>[github-c github_profile="username"]</code> для отображения диаграммы в записях и страницах.<br>';
+    echo 'Если не указан параметр github_profile, будет использоваться значение из глобальных настроек.';
 }
 
 /**
