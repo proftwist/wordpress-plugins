@@ -119,6 +119,9 @@ function github_commit_chart_sanitize_github_profile($input) {
 }
 
 // AJAX обработчик для проверки юзернейма GitHub
+/**
+ * Function github_commit_chart_check_username.
+ */
 function github_commit_chart_check_username() {
     // Проверяем nonce для безопасности
     if (!wp_verify_nonce($_POST['nonce'], 'github_commit_chart_check_username')) {

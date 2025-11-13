@@ -4,6 +4,7 @@
  * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока
  * Version: 1.3.0
  * Author: Владимир Бычко
+ * Author URL: https://bychko.ru
  * Text Domain: github-commit-chart
  */
 
