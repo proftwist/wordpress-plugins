@@ -7,20 +7,21 @@
  * Text Domain: github-commit-chart
  */
 
-// Защита от прямого доступа
+// Защита от прямого доступа - предотвращает выполнение файла вне WordPress
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Определение констант
-define('GCC_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('GCC_PLUGIN_URL', plugin_dir_url(__FILE__));
+// Определение констант для удобства работы с путями
+define('GCC_PLUGIN_PATH', plugin_dir_path(__FILE__)); // Абсолютный путь к папке плагина
+define('GCC_PLUGIN_URL', plugin_dir_url(__FILE__));   // URL к папке плагина
 
-// Подключение файлов с проверкой существования
-$admin_settings_file = GCC_PLUGIN_PATH . 'includes/admin-settings.php';
-$block_registration_file = GCC_PLUGIN_PATH . 'includes/block-registration.php';
-$github_api_file = GCC_PLUGIN_PATH . 'includes/github-api.php';
+// Подключение вспомогательных файлов с проверкой существования
+$admin_settings_file = GCC_PLUGIN_PATH . 'includes/admin-settings.php';       // Файл настроек администратора
+$block_registration_file = GCC_PLUGIN_PATH . 'includes/block-registration.php'; // Регистрация Gutenberg-блока
+$github_api_file = GCC_PLUGIN_PATH . 'includes/github-api.php';                // Работа с GitHub API
 
+// Безопасное подключение файлов только если они существуют
 if (file_exists($admin_settings_file)) {
     require_once $admin_settings_file;
 }
@@ -46,86 +47,104 @@ class GitHubCommitChart {
     /**
      * Конструктор класса GitHubCommitChart
      *
-     * Регистрирует основные хуки WordPress при инициализации плагина.
-     * Подключает обработчики AJAX для получения данных о коммитах.
+     * Регистрирует основные хуки WordPress при инициализации плагина:
+     * - init: основная инициализация плагина
+     * - admin_menu: добавление пункта меню в админку
+     * - wp_ajax_*: обработчики AJAX для получения данных о коммитах (для авторизованных и неавторизованных пользователей)
      */
     public function __construct() {
-        add_action('init', array($this, 'init'));
-        add_action('admin_menu', array($this, 'add_admin_menu'));
-        // Регистрируем AJAX обработчики всегда, а не только в админке
+        // Регистрация основных хуков WordPress
+        add_action('init', array($this, 'init'));  // Инициализация плагина
+        add_action('admin_menu', array($this, 'add_admin_menu')); // Меню в админке
+
+        // AJAX обработчики для получения данных о коммитах GitHub
+        // Регистрируем для авторизованных пользователей
         add_action('wp_ajax_gcc_get_commit_data', array($this, 'ajax_get_commit_data'));
+        // Регистрируем для неавторизованных пользователей (для фронтенда)
         add_action('wp_ajax_nopriv_gcc_get_commit_data', array($this, 'ajax_get_commit_data'));
     }
 
     /**
      * Инициализация плагина
      *
-     * Регистрирует хуки для подключения ресурсов в редакторе блоков
-     * и на фронтенде сайта.
+     * Регистрирует хуки для подключения ресурсов:
+     * - enqueue_block_editor_assets: загрузка скриптов и стилей для редактора блоков
+     * - wp_enqueue_scripts: загрузка скриптов и стилей для фронтенда сайта
      */
     public function init() {
-        // Регистрация блока
-        add_action('enqueue_block_editor_assets', array($this, 'enqueue_block_editor_assets'));
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
+        // Регистрация блока и подключение ресурсов
+        add_action('enqueue_block_editor_assets', array($this, 'enqueue_block_editor_assets')); // Ресурсы для редактора
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));             // Ресурсы для сайта
     }
 
 
     /**
      * Подключение ресурсов для редактора блоков Gutenberg
      *
-     * Загружает JavaScript и CSS файлы, необходимые для работы
-     * блока диаграммы коммитов в редакторе блоков.
+     * Загружает JavaScript и CSS файлы, необходимые для работы блока в редакторе:
+     * - JavaScript: логика блока с зависимостями wp-blocks, wp-element, wp-block-editor, wp-components
+     * - CSS: стили для блока в редакторе с зависимостью wp-edit-blocks
+     * Использует filemtime для версионирования файлов (кеширование).
      */
     public function enqueue_block_editor_assets() {
-        $index_js = GCC_PLUGIN_PATH . 'build/index.js';
-        $index_css = GCC_PLUGIN_PATH . 'build/index.css';
+        // Пути к файлам сборки
+        $index_js = GCC_PLUGIN_PATH . 'build/index.js';   // JavaScript для блока
+        $index_css = GCC_PLUGIN_PATH . 'build/index.css'; // CSS для блока
 
+        // Подключение JavaScript для блока
         wp_enqueue_script(
-            'github-commit-chart-block',
-            GCC_PLUGIN_URL . 'build/index.js',
-            array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components'),
-            file_exists($index_js) ? filemtime($index_js) : time(),
-            true
+            'github-commit-chart-block',        // Уникальный идентификатор скрипта
+            GCC_PLUGIN_URL . 'build/index.js',  // URL к файлу
+            array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components'), // Зависимости WordPress
+            file_exists($index_js) ? filemtime($index_js) : time(), // Версия на основе времени изменения файла
+            true // Загружать в футере
         );
 
+        // Подключение CSS для блока в редакторе
         wp_enqueue_style(
-            'github-commit-chart-block-editor',
-            GCC_PLUGIN_URL . 'build/index.css',
-            array('wp-edit-blocks'),
-            file_exists($index_css) ? filemtime($index_css) : time()
+            'github-commit-chart-block-editor', // Уникальный идентификатор стилей
+            GCC_PLUGIN_URL . 'build/index.css', // URL к файлу
+            array('wp-edit-blocks'),             // Зависимости стилей
+            file_exists($index_css) ? filemtime($index_css) : time() // Версия на основе времени изменения файла
         );
     }
 
     /**
-     * Подключение ресурсов для фронтенда
+     * Подключение ресурсов для фронтенда сайта
      *
-     * Загружает JavaScript и CSS файлы, необходимые для отображения
-     * диаграммы коммитов на сайте. Передает настройки в JavaScript.
+     * Загружает JavaScript и CSS файлы для отображения диаграммы на сайте:
+     * - JavaScript: интерактивная диаграмма с зависимостью wp-element (React)
+     * - CSS: стили для диаграммы на сайте
+     * Передает настройки плагина в JavaScript через wp_localize_script.
      */
     public function enqueue_frontend_assets() {
-        $frontend_js = GCC_PLUGIN_PATH . 'build/frontend.js';
-        $style_css = GCC_PLUGIN_PATH . 'build/style-index.css';
+        // Пути к файлам сборки для фронтенда
+        $frontend_js = GCC_PLUGIN_PATH . 'build/frontend.js';     // JavaScript для интерактивной диаграммы
+        $style_css = GCC_PLUGIN_PATH . 'build/style-index.css';   // CSS стили для диаграммы
 
+        // Подключение JavaScript для фронтенда
         wp_enqueue_script(
-            'github-commit-chart-frontend',
-            GCC_PLUGIN_URL . 'build/frontend.js',
-            array('wp-element'),
-            file_exists($frontend_js) ? filemtime($frontend_js) : time(),
-            true
+            'github-commit-chart-frontend',     // Уникальный идентификатор скрипта
+            GCC_PLUGIN_URL . 'build/frontend.js', // URL к файлу
+            array('wp-element'),                 // Зависимость React для работы с компонентами
+            file_exists($frontend_js) ? filemtime($frontend_js) : time(), // Версия файла
+            true                                 // Загружать в футере
         );
 
-        // Передаем данные в скрипт
+        // Передача настроек плагина в JavaScript
+        // Создает глобальный объект githubCommitChartSettings доступный в JS
         wp_localize_script('github-commit-chart-frontend', 'githubCommitChartSettings', array(
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'githubProfile' => get_option('github_commit_chart_github_profile', ''),
-            'nonce' => wp_create_nonce('gcc_get_commit_data')
+            'ajaxUrl' => admin_url('admin-ajax.php'),    // URL для AJAX запросов
+            'githubProfile' => get_option('github_commit_chart_github_profile', ''), // Профиль GitHub из настроек
+            'nonce' => wp_create_nonce('gcc_get_commit_data') // Токен безопасности для AJAX
         ));
 
+        // Подключение CSS стилей для фронтенда
         wp_enqueue_style(
-            'github-commit-chart-frontend',
-            GCC_PLUGIN_URL . 'build/style-index.css',
-            array(),
-            file_exists($style_css) ? filemtime($style_css) : time()
+            'github-commit-chart-frontend',     // Уникальный идентификатор стилей
+            GCC_PLUGIN_URL . 'build/style-index.css', // URL к файлу стилей
+            array(),                             // Без зависимостей
+            file_exists($style_css) ? filemtime($style_css) : time() // Версия файла
         );
     }
 
@@ -167,15 +186,16 @@ class GitHubCommitChart {
         <?php
     }
     /**
-     * AJAX обработчик для получения данных о коммитах
-     */
-    /**
-     * Логгирование отладочной информации
+     * Приватный метод для логгирования отладочной информации
+     *
+     * Выводит сообщения в лог только если включен WP_DEBUG.
+     * Используется для отладки AJAX запросов и API вызовов.
      *
      * @param string $message Сообщение для логгирования
      * @param mixed $data Дополнительные данные (опционально)
      */
     private function log_debug($message, $data = null) {
+        // Логгируем только в режиме отладки
         if (defined('WP_DEBUG') && WP_DEBUG) {
             $log_message = 'GitHub Commit Chart: ' . $message;
             if ($data !== null) {
@@ -186,51 +206,58 @@ class GitHubCommitChart {
     }
 
     /**
-     * AJAX обработчик для получения данных о коммитах
+     * AJAX обработчик для получения данных о коммитах GitHub
+     *
+     * Обрабатывает AJAX запросы от фронтенда, получает статистику коммитов
+     * через GitHub API и возвращает данные в формате JSON.
+     * Включает проверки безопасности и валидацию данных.
      */
     public function ajax_get_commit_data() {
-        // Отладочный вывод
+        // Логгируем начало обработки запроса
         $this->log_debug('AJAX request received', $_POST);
 
-        // Проверка nonce
+        // Проверяем токен безопасности (nonce) для защиты от CSRF атак
         if (!wp_verify_nonce($_POST['nonce'], 'gcc_get_commit_data')) {
             $this->log_debug('Security check failed');
             wp_die('Security check failed');
         }
 
+        // Получаем и очищаем имя пользователя GitHub
         $github_profile = sanitize_text_field($_POST['github_profile']);
         $this->log_debug('github_profile', $github_profile);
 
+        // Проверяем обязательность поля профиля GitHub
         if (empty($github_profile)) {
             wp_send_json_error('GitHub profile is required');
             return;
         }
 
-        // Проверяем существование класса API
+        // Проверяем доступность класса GitHub API
         if (!class_exists('GitHubCommitChart_API')) {
             $this->log_debug('API class not found');
             wp_send_json_error('API class not found');
             return;
         }
 
-        // Получаем статистику коммитов
+        // Получаем статистику коммитов через API
         $stats = GitHubCommitChart_API::get_commit_stats($github_profile);
         $this->log_debug('stats', $stats);
 
-        // Проверяем ошибки
+        // Обрабатываем ошибки API
         if (is_wp_error($stats)) {
             $this->log_debug('WP_Error', $stats->get_error_message());
             wp_send_json_error($stats->get_error_message());
             return;
         }
 
-        // Проверяем, является ли результат массивом с ошибкой
+        // Проверяем на ошибки в массиве данных
         if (is_array($stats) && isset($stats['error'])) {
             $this->log_debug('Error array', $stats['error']);
             wp_send_json_error($stats['error']);
             return;
         }
 
+        // Возвращаем успешный результат
         wp_send_json_success($stats);
     }
 }
