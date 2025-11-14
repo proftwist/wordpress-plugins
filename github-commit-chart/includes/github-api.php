@@ -10,7 +10,7 @@ class GitHubCommitChart_API {
 
     private static $api_url = 'https://api.github.com';
     private static $cache_key_prefix = 'gcc_github_data_';
-    private static $cache_expiration = 900; // 15 минут
+    private static $cache_expiration = 3600; // 1 час
 
     /**
      * Получение данных о коммитах пользователя
