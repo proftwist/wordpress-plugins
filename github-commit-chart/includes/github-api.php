@@ -123,7 +123,7 @@ class GitHubCommitChart_API {
             return $cached_data;
         }
 
-        $url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100';
+        $url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&sort=author-date&order=desc';
         $response = wp_remote_get($url, array(
             'headers' => array(
                 'User-Agent' => 'GitHub-Commit-Chart-WordPress-Plugin',
