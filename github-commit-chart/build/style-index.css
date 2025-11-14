@@ -60,7 +60,7 @@
 .commit-heatmap {
     min-width: 550px; /* Минимальная ширина для корректного отображения */
     padding: 20px 0;
-    font-family: 'Courier New', Courier, monospace; /* Моноширинный шрифт для ровного отображения */
+    font-family: 'PT Mono', 'Courier New', Courier, monospace; /* Моноширинный шрифт для ровного отображения */
 }
 
 /* Сетка диаграммы */
