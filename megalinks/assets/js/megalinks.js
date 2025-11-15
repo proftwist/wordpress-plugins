@@ -83,10 +83,10 @@
                 return;
             }
 
-            // Задержка перед показом (200ms)
+            // Задержка перед показом (50ms)
             this.showTimer = setTimeout(function() {
                 self.showTooltip(link, e);
-            }, 200);
+            }, 50);
         },
 
         /**
@@ -96,10 +96,10 @@
             var self = this;
             clearTimeout(this.showTimer);
 
-            // Задержка перед скрытием (300ms) для плавного перехода
+            // Задержка перед скрытием (200ms) для плавного перехода
             this.hideTimer = setTimeout(function() {
                 self.hideTooltip();
-            }, 300);
+            }, 200);
         },
 
         /**
