@@ -114,6 +114,37 @@
                 return false;
             }
 
+            // Пропускаем ссылки в навигационных меню
+            if ($link.closest('.wp-block-navigation').length > 0 ||
+                $link.closest('.wp-block-navigation__submenu-container').length > 0 ||
+                $link.hasClass('wp-block-navigation-item__content')) {
+                return false;
+            }
+
+            // Пропускаем ссылки внутри заголовков H1-H6
+            if ($link.closest('h1, h2, h3, h4, h5, h6').length > 0) {
+                return false;
+            }
+
+            // Пропускаем ссылки в блоках даты поста
+            if ($link.closest('.wp-block-post-date').length > 0 || $link.hasClass('wp-block-post-date')) {
+                return false;
+            }
+
+            // Пропускаем ссылки в блоках пагинации
+            if ($link.closest('.wp-block-query-pagination-next').length > 0 ||
+                $link.closest('.wp-block-query-pagination-previous').length > 0 ||
+                $link.hasClass('wp-block-query-pagination-next') ||
+                $link.hasClass('wp-block-query-pagination-previous') ||
+                $link.hasClass('cresta-nav-previous')) {
+                return false;
+            }
+
+            // Пропускаем ссылки внутри контейнера crestaPostsBoxContent
+            if ($link.closest('.crestaPostsBoxContent').length > 0) {
+                return false;
+            }
+
             // Проверяем, является ли ссылка внутренней
             if (!this.isInternalLink(href)) {
                 return false;
