@@ -45,7 +45,7 @@
     object-fit: cover;
     object-position: center;
     border-radius: 3px;
-    border: 1px solid #666;
+    border: 1px solid #333; /* Чёрная окантовка для изображений */
     display: block;
 }
 
@@ -53,9 +53,9 @@
 .image-placeholder {
     width: 60px;
     height: 60px;
-    background: #e0e0e0;
+    background: #333; /* Чёрный цвет вместо серого */
     border-radius: 3px;
-    border: 1px solid #ccc;
+    border: 1px solid #555;
 }
 
 /* Контейнер с текстом цитаты */
