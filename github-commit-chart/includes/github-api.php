@@ -175,10 +175,15 @@ class GitHubCommitChart_API {
     }
 
     /**
-     * Получение статистики коммитов по дням за последние 365 дней
+     * Получение статистики коммитов по дням за указанный год или последние 365 дней
      */
-    public static function get_commit_stats($username) {
-        $cache_key = self::$cache_key_prefix . 'stats_' . $username;
+    public static function get_commit_stats($username, $year = null) {
+        // Если год не указан, используем текущий год
+        if ($year === null) {
+            $year = date('Y');
+        }
+
+        $cache_key = self::$cache_key_prefix . 'stats_' . $username . '_' . $year;
         $cached_data = get_transient($cache_key);
 
         if ($cached_data !== false) {
@@ -199,13 +204,17 @@ class GitHubCommitChart_API {
 
         // Создаем массив для статистики по дням
         $stats = array();
-        $today = new DateTime();
-        $year_ago = clone $today;
-        $year_ago->modify('-365 days');
+        $year_start = new DateTime($year . '-01-01');
+        $year_end = new DateTime($year . '-12-31');
 
-        // Инициализируем все дни последнего года
-        $current_date = clone $year_ago;
-        while ($current_date <= $today) {
+        // Для текущего года ограничиваем до сегодняшнего дня
+        if ($year == date('Y')) {
+            $year_end = new DateTime();
+        }
+
+        // Инициализируем все дни года
+        $current_date = clone $year_start;
+        while ($current_date <= $year_end) {
             $stats[$current_date->format('Y-m-d')] = 0;
             $current_date->modify('+1 day');
         }
@@ -215,8 +224,8 @@ class GitHubCommitChart_API {
             $commit_date = new DateTime($commit['date']);
             $commit_date_str = $commit_date->format('Y-m-d');
 
-            // Проверяем, что дата в диапазоне последнего года
-            if ($commit_date >= $year_ago && $commit_date <= $today) {
+            // Проверяем, что дата в диапазоне выбранного года
+            if ($commit_date >= $year_start && $commit_date <= $year_end) {
                 if (isset($stats[$commit_date_str])) {
                     $stats[$commit_date_str]++;
                 }
@@ -261,22 +270,28 @@ class GitHubCommitChart_API {
     }
 
     /**
-     * Очистка кэша для пользователя
-     */
-    public static function clear_cache($username) {
-        delete_transient(self::$cache_key_prefix . 'commits_' . $username);
-        delete_transient(self::$cache_key_prefix . 'repos_' . $username);
-        delete_transient(self::$cache_key_prefix . 'stats_' . $username);
-        delete_transient(self::$cache_key_prefix . 'user_exists_' . $username);
+      * Очистка кэша для пользователя
+      */
+     public static function clear_cache($username) {
+         delete_transient(self::$cache_key_prefix . 'commits_' . $username);
+         delete_transient(self::$cache_key_prefix . 'repos_' . $username);
 
-        // Очищаем кэш для всех репозиториев пользователя
-        $repos = self::get_user_repos($username);
-        if (!is_wp_error($repos) && !(is_array($repos) && isset($repos['error']))) {
-            foreach ($repos as $repo) {
-                delete_transient(self::$cache_key_prefix . 'commits_' . $username . '_' . $repo['name']);
-            }
-        }
-    }
+         // Очищаем кэш статистики за все года
+         $current_year = date('Y');
+         for ($year = $current_year - 6; $year <= $current_year; $year++) {
+             delete_transient(self::$cache_key_prefix . 'stats_' . $username . '_' . $year);
+         }
+
+         delete_transient(self::$cache_key_prefix . 'user_exists_' . $username);
+
+         // Очищаем кэш для всех репозиториев пользователя
+         $repos = self::get_user_repos($username);
+         if (!is_wp_error($repos) && !(is_array($repos) && isset($repos['error']))) {
+             foreach ($repos as $repo) {
+                 delete_transient(self::$cache_key_prefix . 'commits_' . $username . '_' . $repo['name']);
+             }
+         }
+     }
 }
 
 } // class_exists check

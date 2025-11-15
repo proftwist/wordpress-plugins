@@ -18,22 +18,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Функция для создания диаграммы коммитов
-    function createCommitChart(container, githubProfile) {
+    function createCommitChart(container, githubProfile, selectedYear = null) {
         // Проверяем, что указан профиль GitHub
         if (!githubProfile) {
             container.innerHTML = '<div class="github-commit-chart-error">Ошибка: Не указан профиль GitHub</div>';
             return;
         }
 
+        // Если год не указан, используем текущий год
+        if (selectedYear === null) {
+            selectedYear = new Date().getFullYear();
+        }
+
         // Отладочный вывод (убрать в production)
-        // console.log('GitHub Commit Chart: Creating chart for', githubProfile);
+        // console.log('GitHub Commit Chart: Creating chart for', githubProfile, 'year:', selectedYear);
 
         // Показываем индикатор загрузки
         container.innerHTML = '<div class="github-commit-chart-loading">Загрузка диаграммы коммитов...</div>';
 
         // Отправляем AJAX запрос для получения данных о коммитах
         var xhr = new XMLHttpRequest();
-        var params = 'action=gcc_get_commit_data&github_profile=' + encodeURIComponent(githubProfile) + '&nonce=' + encodeURIComponent(githubCommitChartSettings.nonce);
+        var params = 'action=gcc_get_commit_data&github_profile=' + encodeURIComponent(githubProfile) + '&year=' + encodeURIComponent(selectedYear) + '&nonce=' + encodeURIComponent(githubCommitChartSettings.nonce);
 
 
         // Настраиваем и отправляем AJAX запрос
@@ -50,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     if (response.success) {
                         // Отображаем диаграмму с полученными данными
-                        renderCommitChart(container, githubProfile, response.data);
+                        renderCommitChart(container, githubProfile, response.data, selectedYear);
                     } else {
                         // Отображаем ошибку, если запрос не удался
                         container.innerHTML = '<div class="github-commit-chart-error">Ошибка: ' + (response.data || 'Неизвестная ошибка') + '</div>';
@@ -75,7 +80,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Функция для отображения диаграммы коммитов
-    function renderCommitChart(container, githubProfile, commitData) {
+    function renderCommitChart(container, githubProfile, commitData, selectedYear) {
+        // Получаем текущий год
+        var currentYear = new Date().getFullYear();
+
+        // Если год не указан, используем текущий
+        if (!selectedYear) {
+            selectedYear = currentYear;
+        }
+
         // Получаем тег заголовка из data-атрибута или используем значение по умолчанию
         var headingTag = container.getAttribute('data-heading-tag') || 'h3';
 
@@ -94,17 +107,56 @@ document.addEventListener('DOMContentLoaded', function() {
             chartHTML += '<' + headingTag + '>Диаграмма коммитов для ' + profileLink + '</' + headingTag + '>';
         }
 
+        // Добавляем селектор года
+        chartHTML += '<div class="year-selector">';
+        for (var i = 5; i >= 0; i--) {
+            var year = currentYear - i;
+            var isActive = (year === selectedYear) ? ' active' : '';
+            chartHTML += '<button class="year-button' + isActive + '" data-year="' + year + '">' + year + '</button>';
+        }
+        chartHTML += '</div>';
+
         chartHTML += '<div class="chart-container">';
+        chartHTML += '</div>';
+
         chartHTML += '</div>';
 
         container.innerHTML = chartHTML;
 
+        // Добавляем обработчики событий для кнопок года
+        setTimeout(function() {
+            var yearButtons = container.querySelectorAll('.year-button');
+            yearButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var year = parseInt(this.getAttribute('data-year'));
+
+                    // Показываем плейсхолдер только для контейнера диаграммы
+                    var chartContainer = container.querySelector('.chart-container');
+                    if (chartContainer) {
+                        // Сохраняем текущую высоту для плавного перехода
+                        var currentHeight = chartContainer.offsetHeight;
+                        chartContainer.style.minHeight = currentHeight + 'px';
+
+                        // Показываем плейсхолдер
+                        chartContainer.innerHTML = '<div class="chart-loading-placeholder"><div class="loading-spinner"></div><p>Идёт загрузка коммитов</p></div>';
+                    }
+
+                    // Загружаем данные за выбранный год
+                    createCommitChart(container, githubProfile, year);
+                });
+            });
+        }, 100);
+
         // Создаем визуализацию данных в виде тепловой карты
-        renderCommitChartHeatmap(container, commitData);
+        renderCommitChartHeatmap(container, commitData, selectedYear);
     }
 
     // Функция для отображения диаграммы в виде тепловой карты
-    function renderCommitChartHeatmap(container, commitData) {
+    function renderCommitChartHeatmap(container, commitData, selectedYear) {
+        // Если год не указан, используем логику по умолчанию (последние 365 дней)
+        if (!selectedYear) {
+            selectedYear = new Date().getFullYear();
+        }
         // Получаем контейнер для диаграммы
         var chartContainer = container.querySelector('.chart-container');
         if (!chartContainer) {
@@ -135,20 +187,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Создаем массив месяцев для отображения
         var months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
 
-        // Определяем начальную и конечную даты
-        var endDate = new Date(); // Сегодня
-        var startDate = new Date();
-        startDate.setDate(endDate.getDate() - 364); // 365 дней назад (включая сегодняшний день)
+        // Определяем начальную и конечную даты на основе выбранного года
+        var endDate, startDate;
+        if (selectedYear === new Date().getFullYear()) {
+            // Для текущего года - последние 365 дней
+            endDate = new Date();
+            startDate = new Date();
+            startDate.setDate(endDate.getDate() - 364);
+        } else {
+            // Для предыдущих лет - весь год с 1 января по 31 декабря
+            endDate = new Date(selectedYear, 11, 31); // 31 декабря выбранного года
+            startDate = new Date(selectedYear, 0, 1); // 1 января выбранного года
+        }
 
-        // Находим понедельник ближайшей недели назад
-        var dayOfWeek = startDate.getDay();
+        // Всегда начинаем с понедельника первой недели года, чтобы заполнить всю сетку
+        var jan1 = new Date(selectedYear, 0, 1);
+        var dayOfWeek = jan1.getDay();
         if (dayOfWeek === 0) dayOfWeek = 7; // Воскресенье = 7
-        startDate.setDate(startDate.getDate() - (dayOfWeek - 1)); // Устанавливаем на понедельник
+        var yearStartMonday = new Date(jan1);
+        yearStartMonday.setDate(jan1.getDate() - (dayOfWeek - 1)); // Устанавливаем на понедельник
 
-        // Рассчитываем количество дней и недель
-        var timeDiff = endDate.getTime() - startDate.getTime();
-        var daysTotal = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1; // +1 для включения сегодняшнего дня
-        var weeksCount = Math.ceil(daysTotal / 7);
+        // Используем yearStartMonday как базовую начальную дату для консистентности
+        startDate = yearStartMonday;
+
+        // Рассчитываем количество дней и недель - всегда используем полный год (53 недели максимум)
+        var yearEnd = new Date(selectedYear, 11, 31);
+        var yearStart = new Date(selectedYear, 0, 1);
+        var timeDiff = yearEnd.getTime() - yearStartMonday.getTime();
+        var daysTotal = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1;
+        var weeksCount = Math.min(Math.ceil(daysTotal / 7), 53); // Ограничиваем 53 неделями для полного года
 
         // Создаем заголовки месяцев
         html += '<div class="heatmap-row month-labels">';
@@ -159,7 +226,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var monthStarts = []; // Храним позиции начала месяцев
 
         // Определяем позиции начала месяцев
-        for (var week = 0; week < weeksCount; week++) {
+        var maxWeeksForMonths = selectedYear === new Date().getFullYear() ? weeksCount : Math.min(weeksCount, 53);
+        for (var week = 0; week < maxWeeksForMonths; week++) {
             var monday = new Date(currentDate);
             var dayOfWeek = monday.getDay();
             if (dayOfWeek === 0) dayOfWeek = 7; // Воскресенье = 7
@@ -182,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Создаем ячейки для месяцев
         var lastPosition = 0;
+
         for (var m = 0; m < monthStarts.length; m++) {
             var monthInfo = monthStarts[m];
             var position = monthInfo.week;
@@ -197,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
             lastPosition = position + 1;
         }
 
-        // Заполняем оставшиеся ячейки
+        // Заполняем оставшиеся ячейки до конца года (53 недели)
         for (var i = lastPosition; i < weeksCount; i++) {
             html += '<div class="heatmap-label"></div>';
         }
@@ -222,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dayOfWeek === 0) dayOfWeek = 7; // Воскресенье = 7
             currentWeek.setDate(currentWeek.getDate() - (dayOfWeek - 1) + dayIndex);
 
-            // Отображаем недели от startDate до endDate
+            // Отображаем недели от startDate до endDate (всегда полный год)
             for (var week = 0; week < weeksCount; week++) {
                 var dateStr = currentWeek.toISOString().split('T')[0];
                 var commits = commitData[dateStr] || 0;
@@ -235,23 +304,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (intensity < 1) intensity = 1;
                 }
 
-                // Проверяем, что дата не превышает endDate
+                // Проверяем, что дата находится в выбранном году
                 var cellDate = new Date(dateStr);
-                if (cellDate > endDate) {
-                    // Добавляем пустую ячейку, если дата превышает endDate
-                    html += '<div class="heatmap-cell"></div>';
-                } else {
-                    // Добавляем ячейку с подсказкой, показывающей дату и количество коммитов
+                var cellYear = cellDate.getFullYear();
+
+                if (cellYear === selectedYear && cellDate <= endDate) {
+                    // Дата в выбранном году и не превышает endDate - показываем коммиты
                     html += '<div class="heatmap-cell intensity-' + intensity + '" title="' + dateStr + ': ' + commits + ' коммитов"></div>';
+                } else {
+                    // Дата вне диапазона - пустая ячейка
+                    html += '<div class="heatmap-cell"></div>';
                 }
 
                 // Переходим к следующей неделе
                 currentWeek.setDate(currentWeek.getDate() + 7);
-
-                // Прерываем цикл, если дата превышает endDate более чем на неделю
-                if (cellDate > endDate) {
-                    break;
-                }
             }
 
             html += '</div>';

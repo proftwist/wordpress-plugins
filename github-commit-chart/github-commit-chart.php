@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Commit Chart
  * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока или шорткода
- * Version: 1.7.0
+ * Version: 1.8.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: github-commit-chart
@@ -231,6 +231,10 @@ class GitHubCommitChart {
         $github_profile = sanitize_text_field($_POST['github_profile']);
         $this->log_debug('github_profile', $github_profile);
 
+        // Получаем год (опционально, по умолчанию текущий год)
+        $year = isset($_POST['year']) ? intval($_POST['year']) : null;
+        $this->log_debug('year', $year);
+
         // Проверяем обязательность поля профиля GitHub
         if (empty($github_profile)) {
             wp_send_json_error('GitHub profile is required');
@@ -245,7 +249,7 @@ class GitHubCommitChart {
         }
 
         // Получаем статистику коммитов через API
-        $stats = GitHubCommitChart_API::get_commit_stats($github_profile);
+        $stats = GitHubCommitChart_API::get_commit_stats($github_profile, $year);
         $this->log_debug('stats', $stats);
 
         // Обрабатываем ошибки API

@@ -159,3 +159,74 @@
     font-weight: bold;
     text-align: center;
 }
+
+/* Селектор года */
+.year-selector {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin: 15px 0;
+    padding: 10px 0;
+}
+
+.year-button {
+    padding: 8px 12px;
+    border: 2px solid #d1d5db;
+    background-color: #f9fafb;
+    color: #374151;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.year-button:hover {
+    border-color: #9ca3af;
+    background-color: #f3f4f6;
+}
+
+.year-button.active {
+    border-color: #3b82f6;
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+.year-button.active:hover {
+    border-color: #2563eb;
+    background-color: #2563eb;
+}
+
+/* Плейсхолдер загрузки диаграммы */
+.chart-loading-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.chart-loading-placeholder p {
+    margin: 16px 0 0 0;
+    color: #6c757d;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e9ecef;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
