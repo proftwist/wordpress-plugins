@@ -2,10 +2,12 @@
 /**
  * Plugin Name: GitHub Commit Chart
  * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока или шорткода
- * Version: 1.8.2
+ * Version: 1.8.3
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: github-commit-chart
+ * 
+ * @package GitHubCommitChart
  */
 
 // Защита от прямого доступа - предотвращает выполнение файла вне WordPress
@@ -16,34 +18,45 @@ if (!defined('ABSPATH')) {
 // Определение констант для удобства работы с путями
 define('GCC_PLUGIN_PATH', plugin_dir_path(__FILE__)); // Абсолютный путь к папке плагина
 define('GCC_PLUGIN_URL', plugin_dir_url(__FILE__));   // URL к папке плагина
+define('GCC_PLUGIN_VERSION', '1.8.3');                // Версия плагина
 
-// Подключение вспомогательных файлов с проверкой существования
-$admin_settings_file = GCC_PLUGIN_PATH . 'includes/admin-settings.php';       // Файл настроек администратора
-$block_registration_file = GCC_PLUGIN_PATH . 'includes/block-registration.php'; // Регистрация Gutenberg-блока
-$github_api_file = GCC_PLUGIN_PATH . 'includes/github-api.php';                // Работа с GitHub API
+// Подключение вспомогательных файлов
+require_once GCC_PLUGIN_PATH . 'includes/admin-settings.php';       // Файл настроек администратора
+require_once GCC_PLUGIN_PATH . 'includes/block-registration.php'; // Регистрация Gutenberg-блока
+require_once GCC_PLUGIN_PATH . 'includes/github-api.php';          // Работа с GitHub API
 
-// Безопасное подключение файлов только если они существуют
-if (file_exists($admin_settings_file)) {
-    require_once $admin_settings_file;
-}
-
-if (file_exists($block_registration_file)) {
-    require_once $block_registration_file;
-}
-
-if (file_exists($github_api_file)) {
-    require_once $github_api_file;
-}
-
-// Инициализация плагина
 /**
  * Основной класс плагина GitHub Commit Chart
  *
  * Отвечает за инициализацию плагина, регистрацию Gutenberg-блока,
  * подключение стилей и скриптов, а также обработку AJAX-запросов
  * для получения данных о коммитах GitHub.
+ * 
+ * @package GitHubCommitChart
+ * @since 1.0.0
  */
 class GitHubCommitChart {
+
+    /**
+     * Экземпляр класса GitHubCommitChart
+     *
+     * @var GitHubCommitChart
+     * @since 1.0.0
+     */
+    private static $instance = null;
+
+    /**
+     * Получение экземпляра класса GitHubCommitChart
+     *
+     * @return GitHubCommitChart
+     * @since 1.0.0
+     */
+    public static function get_instance() {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
     /**
      * Конструктор класса GitHubCommitChart
@@ -52,8 +65,10 @@ class GitHubCommitChart {
      * - init: основная инициализация плагина
      * - admin_menu: добавление пункта меню в админку
      * - wp_ajax_*: обработчики AJAX для получения данных о коммитах (для авторизованных и неавторизованных пользователей)
+     * 
+     * @since 1.0.0
      */
-    public function __construct() {
+    private function __construct() {
         // Регистрация основных хуков WordPress
         add_action('init', array($this, 'init'));  // Инициализация плагина
         add_action('admin_menu', array($this, 'add_admin_menu')); // Меню в админке
@@ -74,13 +89,14 @@ class GitHubCommitChart {
      * Регистрирует хуки для подключения ресурсов:
      * - enqueue_block_editor_assets: загрузка скриптов и стилей для редактора блоков
      * - wp_enqueue_scripts: загрузка скриптов и стилей для фронтенда сайта
+     * 
+     * @since 1.0.0
      */
     public function init() {
         // Регистрация блока и подключение ресурсов
         add_action('enqueue_block_editor_assets', array($this, 'enqueue_block_editor_assets')); // Ресурсы для редактора
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));             // Ресурсы для сайта
     }
-
 
     /**
      * Подключение ресурсов для редактора блоков Gutenberg
@@ -89,6 +105,8 @@ class GitHubCommitChart {
      * - JavaScript: логика блока с зависимостями wp-blocks, wp-element, wp-block-editor, wp-components
      * - CSS: стили для блока в редакторе с зависимостью wp-edit-blocks
      * Использует filemtime для версионирования файлов (кеширование).
+     * 
+     * @since 1.0.0
      */
     public function enqueue_block_editor_assets() {
         // Пути к файлам сборки
@@ -120,6 +138,8 @@ class GitHubCommitChart {
      * - JavaScript: интерактивная диаграмма с зависимостью wp-element (React)
      * - CSS: стили для диаграммы на сайте
      * Передает настройки плагина в JavaScript через wp_localize_script.
+     * 
+     * @since 1.0.0
      */
     public function enqueue_frontend_assets() {
         // Пути к файлам сборки для фронтенда
@@ -157,6 +177,8 @@ class GitHubCommitChart {
      * Добавление пункта меню в админке
      *
      * Создает подменю в разделе "Настройки" для управления настройками плагина.
+     * 
+     * @since 1.0.0
      */
     public function add_admin_menu() {
         // Добавляем подменю в раздел "Настройки"
@@ -175,6 +197,8 @@ class GitHubCommitChart {
      *
      * Выводит HTML-разметку страницы настроек в админке WordPress,
      * включая форму с настройками плагина.
+     * 
+     * @since 1.0.0
      */
     public function options_page() {
         ?>
@@ -190,6 +214,7 @@ class GitHubCommitChart {
         </div>
         <?php
     }
+
     /**
      * Приватный метод для логгирования отладочной информации
      *
@@ -198,6 +223,7 @@ class GitHubCommitChart {
      *
      * @param string $message Сообщение для логгирования
      * @param mixed $data Дополнительные данные (опционально)
+     * @since 1.0.0
      */
     private function log_debug($message, $data = null) {
         // Логгируем только в режиме отладки
@@ -216,6 +242,8 @@ class GitHubCommitChart {
      * Обрабатывает AJAX запросы от фронтенда, получает статистику коммитов
      * через GitHub API и возвращает данные в формате JSON.
      * Включает проверки безопасности и валидацию данных.
+     * 
+     * @since 1.0.0
      */
     public function ajax_get_commit_data() {
         // Логгируем начало обработки запроса
@@ -224,7 +252,8 @@ class GitHubCommitChart {
         // Проверяем токен безопасности (nonce) для защиты от CSRF атак
         if (!wp_verify_nonce($_POST['nonce'], 'gcc_get_commit_data')) {
             $this->log_debug('Security check failed');
-            wp_die('Security check failed');
+            wp_send_json_error('Security check failed');
+            return;
         }
 
         // Получаем и очищаем имя пользователя GitHub
@@ -275,6 +304,7 @@ class GitHubCommitChart {
      *
      * @param array $atts Атрибуты шорткода
      * @return string HTML-разметка диаграммы
+     * @since 1.4.0
      */
     public function shortcode_handler($atts) {
         // Объединяем атрибуты шорткода с значениями по умолчанию
@@ -307,4 +337,4 @@ class GitHubCommitChart {
 }
 
 // Инициализация плагина
-new GitHubCommitChart();
+GitHubCommitChart::get_instance();

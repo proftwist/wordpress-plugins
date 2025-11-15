@@ -1,3 +1,12 @@
+/**
+ * GitHub Commit Chart Gutenberg Block
+ * 
+ * Registers the GitHub Commit Chart block for the Gutenberg editor
+ * 
+ * @package GitHubCommitChart
+ * @since 1.0.0
+ */
+
 (function (wp) {
     var el = wp.element.createElement;
     var registerBlockType = wp.blocks.registerBlockType;
@@ -6,6 +15,9 @@
     var TextControl = wp.components.TextControl;
     var SelectControl = wp.components.SelectControl;
 
+    /**
+     * Регистрация Gutenberg-блока GitHub Commit Chart
+     */
     registerBlockType('github-commit-chart/git-diagram', {
         title: 'Git-диаграмма',
         icon: 'chart-bar',
@@ -20,6 +32,12 @@
                 default: 'h3'
             }
         },
+        
+        /**
+         * Функция редактирования блока
+         * 
+         * @param {Object} props - Свойства блока
+         */
         edit: function (props) {
             var attributes = props.attributes;
             var setAttributes = props.setAttributes;
@@ -69,6 +87,10 @@
                 )
             );
         },
+        
+        /**
+         * Функция сохранения блока
+         */
         save: function () {
             // Рендеринг происходит на стороне сервера
             return null;

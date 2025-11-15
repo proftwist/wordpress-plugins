@@ -1,3 +1,12 @@
+/**
+ * GitHub Commit Chart Frontend JavaScript
+ * 
+ * Handles the frontend functionality for displaying GitHub commit charts
+ * 
+ * @package GitHubCommitChart
+ * @since 1.0.0
+ */
+
 // Инициализация диаграммы после загрузки DOM
 document.addEventListener('DOMContentLoaded', function() {
     // Проверяем, что объект настроек существует
@@ -17,7 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Функция для создания диаграммы коммитов
+    /**
+     * Функция для создания диаграммы коммитов
+     * 
+     * @param {HTMLElement} container - Контейнер для диаграммы
+     * @param {string} githubProfile - Имя пользователя GitHub
+     * @param {number|null} selectedYear - Выбранный год (по умолчанию null)
+     */
     function createCommitChart(container, githubProfile, selectedYear = null) {
         // Проверяем, что указан профиль GitHub
         if (!githubProfile) {
@@ -29,9 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedYear === null) {
             selectedYear = new Date().getFullYear();
         }
-
-        // Отладочный вывод (убрать в production)
-        // console.log('GitHub Commit Chart: Creating chart for', githubProfile, 'year:', selectedYear);
 
         // Проверяем, существует ли уже статическая часть диаграммы
         var chartElement = container.querySelector('.github-commit-chart');
@@ -65,14 +77,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var xhr = new XMLHttpRequest();
         var params = 'action=gcc_get_commit_data&github_profile=' + encodeURIComponent(githubProfile) + '&year=' + encodeURIComponent(selectedYear) + '&nonce=' + encodeURIComponent(githubCommitChartSettings.nonce);
 
-
         // Настраиваем и отправляем AJAX запрос
         xhr.open('POST', githubCommitChartSettings.ajaxUrl, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         // Обработчик ответа на запрос
         xhr.onload = function() {
-
             if (xhr.status === 200) {
                 try {
                     // Парсим JSON ответ
@@ -104,7 +114,13 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.send(params);
     }
 
-    // Функция для отображения структуры диаграммы коммитов (заголовок и селекторы лет)
+    /**
+     * Функция для отображения структуры диаграммы коммитов (заголовок и селекторы лет)
+     * 
+     * @param {HTMLElement} container - Контейнер для диаграммы
+     * @param {string} githubProfile - Имя пользователя GitHub
+     * @param {number} selectedYear - Выбранный год
+     */
     function renderCommitChartStructure(container, githubProfile, selectedYear) {
         // Получаем текущий год
         var currentYear = new Date().getFullYear();
@@ -181,7 +197,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
-    // Функция для отображения диаграммы коммитов
+    /**
+     * Функция для отображения диаграммы коммитов
+     * 
+     * @param {HTMLElement} container - Контейнер для диаграммы
+     * @param {string} githubProfile - Имя пользователя GitHub
+     * @param {Object} commitData - Данные о коммитах
+     * @param {number} selectedYear - Выбранный год
+     */
     function renderCommitChart(container, githubProfile, commitData, selectedYear) {
         // Получаем текущий год
         var currentYear = new Date().getFullYear();
@@ -213,12 +236,19 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCommitChartHeatmap(container, commitData, selectedYear);
     }
 
-    // Функция для отображения диаграммы в виде тепловой карты
+    /**
+     * Функция для отображения диаграммы в виде тепловой карты
+     * 
+     * @param {HTMLElement} container - Контейнер для диаграммы
+     * @param {Object} commitData - Данные о коммитах
+     * @param {number} selectedYear - Выбранный год
+     */
     function renderCommitChartHeatmap(container, commitData, selectedYear) {
         // Если год не указан, используем логику по умолчанию (последние 365 дней)
         if (!selectedYear) {
             selectedYear = new Date().getFullYear();
         }
+        
         // Получаем контейнер для диаграммы
         var chartContainer = container.querySelector('.chart-container');
         if (!chartContainer) {
@@ -230,7 +260,6 @@ document.addEventListener('DOMContentLoaded', function() {
             chartContainer.innerHTML = '<div class="github-commit-chart-error">Нет данных для отображения</div>';
             return;
         }
-
 
         // Преобразуем данные в массив и сортируем по дате
         var dates = Object.keys(commitData).sort();

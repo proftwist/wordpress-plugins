@@ -34,7 +34,7 @@
 /* Основной контейнер диаграммы */
 .github-commit-chart {
     width: 100%;
-    padding: 20px;
+    padding: 0px; /* Чтобы диаграмма была ровненько по краю текста */
     background: #fff;
     border: none; /* Убираем рамку */
     border-radius: 4px;

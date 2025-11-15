@@ -1,7 +1,19 @@
 <?php
+/**
+ * Admin settings for GitHub Commit Chart plugin
+ *
+ * @package GitHubCommitChart
+ * @since 1.0.0
+ */
+
 // Защита от прямого доступа к файлу
 if (!defined('ABSPATH')) {
     exit;
+}
+
+// Проверяем, что мы в WordPress среде
+if (!function_exists('add_action')) {
+    return;
 }
 
 /**
@@ -9,8 +21,17 @@ if (!defined('ABSPATH')) {
  *
  * Регистрирует все необходимые настройки, секции и поля для страницы настроек в админке.
  * Вызывается через хук admin_init.
+ * 
+ * @since 1.0.0
  */
 function github_commit_chart_settings_init() {
+    // Проверяем наличие необходимых функций
+    if (!function_exists('register_setting') || 
+        !function_exists('add_settings_section') || 
+        !function_exists('add_settings_field')) {
+        return;
+    }
+    
     // Регистрация основной настройки - профиля GitHub
     register_setting('github_commit_chart_settings', 'github_commit_chart_github_profile', array(
         'type' => 'string',                                     // Тип данных - строка
@@ -73,6 +94,8 @@ function github_commit_chart_settings_init() {
  *
  * Вызывается WordPress для отображения описательного текста в секции настроек.
  * Поясняет пользователю, что нужно ввести в поле.
+ * 
+ * @since 1.0.0
  */
 function github_commit_chart_settings_section_callback() {
     echo 'Введите ваш никнейм на GitHub для отображения статистики коммитов.<br>';
@@ -87,8 +110,15 @@ function github_commit_chart_settings_section_callback() {
  *
  * Выводит HTML элемент input с текущим значением настройки из базы данных.
  * Использует esc_attr для безопасного экранирования значения.
+ * 
+ * @since 1.0.0
  */
 function github_commit_chart_github_profile_render() {
+    // Проверяем наличие необходимых функций
+    if (!function_exists('get_option') || !function_exists('esc_attr') || !function_exists('wp_create_nonce')) {
+        return;
+    }
+    
     // Получаем текущее значение настройки из базы данных WordPress
     $github_profile = get_option('github_commit_chart_github_profile');
     ?>
@@ -100,7 +130,7 @@ function github_commit_chart_github_profile_render() {
     jQuery(document).ready(function($) {
         $('#check_username_btn').on('click', function() {
             var username = $('#github_commit_chart_github_profile').val().trim();
-            var resultSpan = $('#username_check_result');
+            var resultSpan = $('#username_check_result';
 
             if (username === '') {
                 resultSpan.html('<span style="color: red;">Введите юзернейм</span>');
@@ -142,6 +172,7 @@ function github_commit_chart_github_profile_render() {
  *
  * @param string $input Входное значение от пользователя
  * @return string Очищенное значение, безопасное для сохранения
+ * @since 1.0.0
  */
 function github_commit_chart_sanitize_github_profile($input) {
     // Удаляем пробелы в начале и конце строки
@@ -159,6 +190,7 @@ function github_commit_chart_sanitize_github_profile($input) {
  *
  * @param mixed $input Входное значение от чекбокса
  * @return bool Булево значение
+ * @since 1.0.0
  */
 function github_commit_chart_sanitize_checkbox($input) {
     return (bool) $input;
@@ -169,6 +201,7 @@ function github_commit_chart_sanitize_checkbox($input) {
  *
  * @param string $input Входное значение токена
  * @return string Очищенное значение токена
+ * @since 1.0.0
  */
 function github_commit_chart_sanitize_github_token($input) {
     // Удаляем пробелы в начале и конце строки
@@ -187,8 +220,15 @@ function github_commit_chart_sanitize_github_token($input) {
  * Функция отрисовки чекбокса для прикрепления ссылок к именам пользователей
  *
  * Выводит HTML элемент checkbox с текущим значением настройки из базы данных.
+ * 
+ * @since 1.0.0
  */
 function github_commit_chart_link_usernames_render() {
+    // Проверяем наличие необходимых функций
+    if (!function_exists('get_option') || !function_exists('checked')) {
+        return;
+    }
+    
     // Получаем текущее значение настройки из базы данных WordPress
     $link_usernames = get_option('github_commit_chart_link_usernames', false);
     ?>
@@ -203,8 +243,15 @@ function github_commit_chart_link_usernames_render() {
  *
  * Выводит HTML элемент input с текущим значением настройки из базы данных.
  * Использует esc_attr для безопасного экранирования значения.
+ * 
+ * @since 1.0.0
  */
 function github_commit_chart_github_token_render() {
+    // Проверяем наличие необходимых функций
+    if (!function_exists('get_option') || !function_exists('esc_attr') || !function_exists('wp_create_nonce')) {
+        return;
+    }
+    
     // Получаем текущее значение настройки из базы данных WordPress
     $github_token = get_option('github_commit_chart_github_token');
     ?>
@@ -216,22 +263,22 @@ function github_commit_chart_github_token_render() {
     <script type="text/javascript">
     jQuery(document).ready(function($) {
         var tokenInput = $('#github_commit_chart_github_token');
-        var toggleBtn = $('#toggle_token_visibility');
+        var toggleBtn = $('#toggle_token_visibility';
 
         // Переключение видимости токена
         toggleBtn.on('click', function() {
             if (tokenInput.attr('type') === 'password') {
-                tokenInput.attr('type', 'text');
-                toggleBtn.text('Скрыть токен');
+                tokenInput.attr('type', 'text';
+                toggleBtn.text('Скрыть токен';
             } else {
-                tokenInput.attr('type', 'password');
-                toggleBtn.text('Показать токен');
+                tokenInput.attr('type', 'password';
+                toggleBtn.text('Показать токен';
             }
         });
 
         $('#check_token_btn').on('click', function() {
             var token = tokenInput.val().trim();
-            var resultSpan = $('#token_check_result');
+            var resultSpan = $('#token_check_result';
 
             if (token === '') {
                 resultSpan.html('<span style="color: red;">Введите токен</span>');
@@ -265,13 +312,31 @@ function github_commit_chart_github_token_render() {
     <?php
 }
 
-// AJAX обработчик для проверки юзернейма GitHub
 /**
- * Function github_commit_chart_check_username.
+ * AJAX обработчик для проверки юзернейма GitHub
+ *
+ * @since 1.0.0
  */
 function github_commit_chart_check_username() {
+    // Проверяем наличие необходимых функций
+    if (!function_exists('wp_verify_nonce') || 
+        !function_exists('sanitize_text_field') || 
+        !function_exists('wp_send_json_error') || 
+        !function_exists('wp_send_json_success') || 
+        !function_exists('wp_die')) {
+        return;
+    }
+    
+    // Логгируем начало обработки запроса
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('GitHub Commit Chart: Username check request received');
+    }
+
     // Проверяем nonce для безопасности
     if (!wp_verify_nonce($_POST['nonce'], 'github_commit_chart_check_username')) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('GitHub Commit Chart: Invalid nonce in username check');
+        }
         wp_die('Недействительный запрос');
     }
 
@@ -280,24 +345,62 @@ function github_commit_chart_check_username() {
 
     // Проверяем, что юзернейм не пустой
     if (empty($username)) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('GitHub Commit Chart: Empty username in check request');
+        }
         wp_send_json_error('Юзернейм не может быть пустым');
     }
 
     // Проверяем существование пользователя
-    if (GitHubCommitChart_API::check_user_exists($username)) {
-        wp_send_json_success('Профиль найден');
+    if (class_exists('GitHubCommitChart_API')) {
+        if (GitHubCommitChart_API::check_user_exists($username)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('GitHub Commit Chart: Username ' . $username . ' found');
+            }
+            wp_send_json_success('Профиль найден');
+        } else {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('GitHub Commit Chart: Username ' . $username . ' not found');
+            }
+            wp_send_json_error('Профиль не найден');
+        }
     } else {
-        wp_send_json_error('Профиль не найден');
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('GitHub Commit Chart: API class not found in username check');
+        }
+        wp_send_json_error('API class not found');
     }
 }
 
-// AJAX обработчик для проверки токена GitHub
 /**
- * Function github_commit_chart_check_token.
+ * AJAX обработчик для проверки токена GitHub
+ *
+ * @since 1.0.0
  */
 function github_commit_chart_check_token() {
+    // Проверяем наличие необходимых функций
+    if (!function_exists('wp_verify_nonce') || 
+        !function_exists('sanitize_text_field') || 
+        !function_exists('wp_remote_get') || 
+        !function_exists('is_wp_error') || 
+        !function_exists('wp_remote_retrieve_response_code') || 
+        !function_exists('wp_remote_retrieve_body') || 
+        !function_exists('wp_send_json_error') || 
+        !function_exists('wp_send_json_success') || 
+        !function_exists('wp_die')) {
+        return;
+    }
+    
+    // Логгируем начало обработки запроса
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('GitHub Commit Chart: Token check request received');
+    }
+
     // Проверяем nonce для безопасности
     if (!wp_verify_nonce($_POST['nonce'], 'github_commit_chart_check_token')) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('GitHub Commit Chart: Invalid nonce in token check');
+        }
         wp_die('Недействительный запрос');
     }
 
@@ -306,6 +409,9 @@ function github_commit_chart_check_token() {
 
     // Проверяем, что токен не пустой
     if (empty($token)) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('GitHub Commit Chart: Empty token in check request');
+        }
         wp_send_json_error('Токен не может быть пустым');
     }
 
@@ -319,17 +425,28 @@ function github_commit_chart_check_token() {
     ));
 
     if (is_wp_error($response)) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('GitHub Commit Chart: Network error in token check - ' . $response->get_error_message());
+        }
         wp_send_json_error('Ошибка сети: ' . $response->get_error_message());
     }
 
     $status_code = wp_remote_retrieve_response_code($response);
 
     if ($status_code === 200) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('GitHub Commit Chart: Token is valid');
+        }
         wp_send_json_success('Токен действителен');
     } else {
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
         $error_message = isset($data['message']) ? $data['message'] : 'Токен недействителен';
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('GitHub Commit Chart: Token is invalid - ' . $error_message);
+        }
+        
         wp_send_json_error('Ошибка: ' . $error_message);
     }
 }
