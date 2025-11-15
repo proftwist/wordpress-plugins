@@ -82,7 +82,7 @@
     padding: 0 1px;
     line-height: 12px;
     color: #666;
-    font-family: 'Courier New', Courier, monospace; /* Моноширинный шрифт */
+    font-family: 'PT Mono', 'Courier New', Courier, monospace; /* Моноширинный шрифт */
 }
 
 /* Метки дней недели */
