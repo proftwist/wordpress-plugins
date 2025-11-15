@@ -209,13 +209,28 @@ function github_commit_chart_github_token_render() {
     $github_token = get_option('github_commit_chart_github_token');
     ?>
     <!-- Поле ввода с экранированным значением для безопасности -->
-    <input type='text' id='github_commit_chart_github_token' name='github_commit_chart_github_token' value='<?php echo esc_attr($github_token); ?>' placeholder='ghp_xxxxxxxxxxxxxxxxxxxx'>
+    <input type='password' id='github_commit_chart_github_token' name='github_commit_chart_github_token' value='<?php echo esc_attr($github_token); ?>' placeholder='ghp_xxxxxxxxxxxxxxxxxxxx'>
+    <button type="button" id="toggle_token_visibility" class="button">Показать токен</button>
     <button type="button" id="check_token_btn" class="button">Проверить токен</button>
     <span id="token_check_result"></span>
     <script type="text/javascript">
     jQuery(document).ready(function($) {
+        var tokenInput = $('#github_commit_chart_github_token');
+        var toggleBtn = $('#toggle_token_visibility');
+
+        // Переключение видимости токена
+        toggleBtn.on('click', function() {
+            if (tokenInput.attr('type') === 'password') {
+                tokenInput.attr('type', 'text');
+                toggleBtn.text('Скрыть токен');
+            } else {
+                tokenInput.attr('type', 'password');
+                toggleBtn.text('Показать токен');
+            }
+        });
+
         $('#check_token_btn').on('click', function() {
-            var token = $('#github_commit_chart_github_token').val().trim();
+            var token = tokenInput.val().trim();
             var resultSpan = $('#token_check_result');
 
             if (token === '') {
