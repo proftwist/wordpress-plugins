@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Megalinks
  * Description: Добавляет всплывающие подсказки с цитатами для внутренних ссылок на посты и страницы
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: megalinks

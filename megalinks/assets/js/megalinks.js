@@ -244,11 +244,11 @@
 
             // Проверяем кеш цитат и миниатюр
             if (this.excerptCache[postId] && this.thumbnailCache[postId] !== undefined) {
-                this.displayTooltip(this.excerptCache[postId], e, postId);
+                this.displayTooltip(this.excerptCache[postId], e, postId, this.thumbnailCache[postId]);
                 return;
             }
 
-            // Делаем AJAX запрос
+            // Сначала получаем цитату
             $.ajax({
                 url: megalinksAjax.ajaxurl,
                 type: 'POST',
@@ -259,9 +259,29 @@
                 },
                 success: function(response) {
                     if (response.success && response.data.excerpt) {
-                        // Кешируем результат
+                        // Кешируем цитату
                         self.excerptCache[postId] = response.data.excerpt;
-                        self.displayTooltip(response.data.excerpt, e, postId);
+
+                        // Теперь проверяем миниатюру
+                        $.ajax({
+                            url: megalinksAjax.ajaxurl,
+                            type: 'POST',
+                            data: {
+                                action: 'megalinks_get_thumbnail',
+                                post_id: postId,
+                                nonce: megalinksAjax.nonce_thumbnail
+                            },
+                            success: function(thumbResponse) {
+                                var hasThumbnail = thumbResponse.success && thumbResponse.data && thumbResponse.data.thumbnail_url;
+                                self.thumbnailCache[postId] = hasThumbnail ? thumbResponse.data.thumbnail_url : false;
+                                self.displayTooltip(self.excerptCache[postId], e, postId, hasThumbnail);
+                            },
+                            error: function(xhr, status, error) {
+                                console.warn('Thumbnail AJAX error for post ID', postId, ':', status, error);
+                                self.thumbnailCache[postId] = false;
+                                self.displayTooltip(self.excerptCache[postId], e, postId, false);
+                            }
+                        });
                     } else {
                         console.warn('No excerpt available for post ID:', postId);
                     }
@@ -329,7 +349,7 @@
         /**
          * Отображение всплывающего слоя с цитатой
          */
-        displayTooltip: function(excerpt, e, postId) {
+        displayTooltip: function(excerpt, e, postId, hasThumbnail) {
             var $link = $(e.target).closest('a');
             var linkRect = $link.get(0).getBoundingClientRect();
             var windowWidth = $(window).width();
@@ -347,9 +367,14 @@
                 width: tooltipWidth + 'px' // Фиксируем ширину для точного расчета
             }).appendTo('body');
 
-            tempTooltip.html('<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>');
-            // Создаем финальный HTML с фиксированным контейнером для изображения
-            var finalHtml = '<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>';
+            // Создаем HTML в зависимости от наличия миниатюры
+            var finalHtml;
+            if (hasThumbnail) {
+                finalHtml = '<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>';
+            } else {
+                finalHtml = '<div class="megalinks-content">' + excerpt + '</div>';
+            }
+            tempTooltip.html(finalHtml);
 
             var tooltipHeight = tempTooltip.outerHeight();
             tempTooltip.remove();
@@ -394,8 +419,13 @@
                 left = windowWidth - tooltipWidth - 10;
             }
 
-            // Устанавливаем позицию и содержимое с фиксированным контейнером для изображения
-            var finalHtml = '<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>';
+            // Создаем HTML в зависимости от наличия миниатюры
+            var finalHtml;
+            if (hasThumbnail) {
+                finalHtml = '<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>';
+            } else {
+                finalHtml = '<div class="megalinks-content">' + excerpt + '</div>';
+            }
             this.tooltip
                 .html(finalHtml)
                 .css({
@@ -422,11 +452,9 @@
             if (this.thumbnailCache[postId] !== undefined) {
                 if (this.thumbnailCache[postId]) {
                     // Миниатюра есть - показываем
-                    $imageContainer.html('<img src="' + this.thumbnailCache[postId] + '" alt="Post thumbnail">');
-                } else {
-                    // Миниатюры нет - скрываем
-                    $imageContainer.hide();
+                    $imageContainer.html('<img src="' + this.thumbnailCache[postId] + '" alt="Post thumbnail" loading="lazy">');
                 }
+                // Если миниатюры нет - ничего не делаем, контейнер уже скрыт
                 return;
             }
 
@@ -447,16 +475,14 @@
                         self.thumbnailCache[postId] = response.data.thumbnail_url;
                         $imageContainer.html('<img src="' + response.data.thumbnail_url + '" alt="Post thumbnail" loading="lazy">');
                     } else {
-                        // Миниатюры нет - кешируем false и скрываем
+                        // Миниатюры нет - кешируем false, контейнер уже скрыт в displayTooltip
                         self.thumbnailCache[postId] = false;
-                        $imageContainer.hide();
                     }
                 },
                 error: function(xhr, status, error) {
-                    // Ошибка - кешируем false и скрываем
+                    // Ошибка - кешируем false, контейнер уже скрыт в displayTooltip
                     console.warn('Thumbnail AJAX error for post ID', postId, ':', status, error);
                     self.thumbnailCache[postId] = false;
-                    $imageContainer.hide();
                 }
             });
         },
