@@ -1,0 +1,432 @@
+/**
+ * Megalinks Plugin JavaScript
+ * Обрабатывает hover эффекты для внутренних ссылок на посты и страницы
+ */
+
+(function($) {
+    'use strict';
+
+    // Проверяем, что мы на десктопе
+    var isDesktop = window.innerWidth > 768;
+
+    if (!isDesktop) {
+        return; // Отключаем на мобильных устройствах
+    }
+
+    var Megalinks = {
+
+        // Кеш цитат для избежания повторных запросов
+        excerptCache: {},
+
+        // Кеш миниатюр
+        thumbnailCache: {},
+
+        // Элемент всплывающего слоя
+        tooltip: null,
+
+        // Таймер для задержки показа
+        showTimer: null,
+
+        // Таймер для задержки скрытия
+        hideTimer: null,
+
+        /**
+         * Инициализация плагина
+         */
+        init: function() {
+            this.createTooltip();
+            this.bindEvents();
+        },
+
+        /**
+         * Создание элемента всплывающего слоя
+         */
+        createTooltip: function() {
+            this.tooltip = $('<div class="megalinks-tooltip"></div>');
+            $('body').append(this.tooltip);
+        },
+
+        /**
+         * Привязка событий к ссылкам
+         */
+        bindEvents: function() {
+            var self = this;
+
+            // Используем делегирование событий для динамически загружаемого контента
+            $(document).on('mouseenter', 'a[href]', function(e) {
+                self.handleMouseEnter.call(self, e, this);
+            });
+
+            $(document).on('mouseleave', 'a[href]', function(e) {
+                self.handleMouseLeave.call(self, e, this);
+            });
+
+            // Скрываем при движении мыши над всплывающим слоем
+            $(document).on('mouseenter', '.megalinks-tooltip', function() {
+                clearTimeout(self.hideTimer);
+            });
+
+            $(document).on('mouseleave', '.megalinks-tooltip', function() {
+                self.hideTooltip();
+            });
+        },
+
+        /**
+         * Обработка наведения курсора на ссылку
+         */
+        handleMouseEnter: function(e, link) {
+            var self = this;
+            clearTimeout(this.hideTimer);
+
+            // Проверяем, является ли ссылка подходящей
+            if (!this.isValidLink(link)) {
+                return;
+            }
+
+            // Задержка перед показом (200ms)
+            this.showTimer = setTimeout(function() {
+                self.showTooltip(link, e);
+            }, 200);
+        },
+
+        /**
+         * Обработка ухода курсора с ссылки
+         */
+        handleMouseLeave: function(e, link) {
+            var self = this;
+            clearTimeout(this.showTimer);
+
+            // Задержка перед скрытием (300ms) для плавного перехода
+            this.hideTimer = setTimeout(function() {
+                self.hideTooltip();
+            }, 300);
+        },
+
+        /**
+         * Проверка, является ли ссылка подходящей для всплывающего слоя
+         */
+        isValidLink: function(link) {
+            var $link = $(link);
+            var href = $link.attr('href');
+
+            // Пропускаем ссылки внутри изображений
+            if ($link.find('img').length > 0 || $link.closest('img').length > 0) {
+                return false;
+            }
+
+            // Проверяем, является ли ссылка внутренней
+            if (!this.isInternalLink(href)) {
+                return false;
+            }
+
+            // Проверяем, ведет ли ссылка на пост или страницу (не на архивы)
+            if (!this.isPostOrPageLink(href)) {
+                return false;
+            }
+
+            // Убираем браузерный tooltip для подходящих ссылок
+            $link.attr('title', '');
+
+            return true;
+        },
+
+        /**
+         * Проверка, является ли ссылка внутренней
+         */
+        isInternalLink: function(href) {
+            if (!href) return false;
+
+            // Абсолютные URL - проверяем origin
+            if (href.indexOf('http') === 0) {
+                return href.indexOf(window.location.origin) === 0;
+            }
+
+            // Относительные URL считаем внутренними, кроме якорей на текущей странице
+            if (href.indexOf('#') === 0) {
+                return false; // Якоря не считаем внутренними ссылками
+            }
+
+            // Относительные пути считаем внутренними
+            return href.indexOf('/') === 0;
+        },
+
+        /**
+         * Проверка, ведет ли ссылка на пост или страницу
+         */
+        isPostOrPageLink: function(href) {
+            // Проверяем на наличие ID поста в URL (для стандартных permalink структур)
+            var postIdMatch = href.match(/\/(\d+)\//) || href.match(/p=(\d+)/);
+            if (postIdMatch) {
+                return true;
+            }
+
+            // Для произвольных permalink структур проверяем на отсутствие архивных паттернов
+            var archivePatterns = [
+                '/category/',
+                '/tag/',
+                '/author/',
+                '/date/',
+                '/page/',
+                '/feed/',
+                '/search/',
+                '/archives/',
+                '/wp-admin/',
+                '/wp-login.php',
+                '/wp-content/',
+                '/wp-includes/',
+                '.php',
+                '.jpg',
+                '.png',
+                '.gif',
+                '.css',
+                '.js'
+            ];
+
+            for (var i = 0; i < archivePatterns.length; i++) {
+                if (href.indexOf(archivePatterns[i]) !== -1) {
+                    return false;
+                }
+            }
+
+            // Исключаем внешние ссылки
+            if (href.indexOf('http') === 0 && href.indexOf(window.location.origin) !== 0) {
+                return false;
+            }
+
+            return true;
+        },
+
+        /**
+         * Показ всплывающего слоя
+         */
+        showTooltip: function(link, e) {
+            var self = this;
+            var $link = $(link);
+            var href = $link.attr('href');
+
+            // Извлекаем ID поста из URL
+            var postId = this.extractPostId(href);
+
+            if (!postId) {
+                return;
+            }
+
+            // Проверяем кеш цитат и миниатюр
+            if (this.excerptCache[postId] && this.thumbnailCache[postId] !== undefined) {
+                this.displayTooltip(this.excerptCache[postId], e, postId);
+                return;
+            }
+
+            // Делаем AJAX запрос
+            $.ajax({
+                url: megalinksAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'megalinks_get_excerpt',
+                    post_id: postId,
+                    nonce: megalinksAjax.nonce
+                },
+                success: function(response) {
+                    // console.log('Excerpt response for post ID', postId, ':', response);
+                    if (response.success && response.data.excerpt) {
+                        // Кешируем результат
+                        self.excerptCache[postId] = response.data.excerpt;
+                        self.displayTooltip(response.data.excerpt, e, postId);
+                    } else {
+                        console.log('No excerpt available for post ID:', postId);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('Excerpt AJAX error for post ID', postId, ':', status, error);
+                }
+            });
+        },
+
+        /**
+         * Извлечение ID поста из URL
+         */
+        extractPostId: function(href) {
+            // Сначала пробуем получить ID через AJAX, так как URL может быть в произвольной структуре
+            // Для этого нам нужно отправить URL на сервер и получить ID поста
+
+            // Для стандартных permalink структур типа /2023/01/01/post-name/
+            var postIdMatch = href.match(/\/(\d+)\//);
+            if (postIdMatch) {
+                return parseInt(postIdMatch[1]);
+            }
+
+            // Для URL с параметрами типа ?p=123
+            var paramMatch = href.match(/[?&]p=(\d+)/);
+            if (paramMatch) {
+                return parseInt(paramMatch[1]);
+            }
+
+            // Для произвольных структур - пробуем получить ID по URL через AJAX
+            // Это fallback для случаев, когда ID не удается извлечь из URL
+            return this.getPostIdByUrl(href);
+        },
+
+        /**
+         * Получение ID поста по URL через AJAX (для произвольных структур)
+         */
+        getPostIdByUrl: function(href) {
+            var postId = null;
+
+            // Синхронный AJAX запрос для получения ID (не рекомендуется, но необходимо для логики)
+            $.ajax({
+                url: megalinksAjax.ajaxurl,
+                type: 'POST',
+                async: false, // Синхронный запрос
+                data: {
+                    action: 'megalinks_get_post_id_by_url',
+                    url: href,
+                    nonce: megalinksAjax.nonce
+                },
+                success: function(response) {
+                    if (response.success && response.data.post_id) {
+                        postId = parseInt(response.data.post_id);
+                    }
+                }
+            });
+
+            return postId;
+        },
+
+        /**
+         * Отображение всплывающего слоя с цитатой
+         */
+        displayTooltip: function(excerpt, e, postId) {
+            var $link = $(e.target).closest('a');
+            var linkRect = $link.get(0).getBoundingClientRect();
+            var windowWidth = $(window).width();
+            var windowHeight = $(window).height();
+            var scrollTop = $(window).scrollTop();
+            var tooltipWidth = 400; // Максимальная ширина из CSS (увеличена для изображения)
+
+            // Создаем временный tooltip для точного измерения высоты
+            var tempTooltip = this.tooltip.clone().css({
+                visibility: 'hidden',
+                position: 'absolute',
+                top: '-9999px',
+                left: '-9999px'
+            }).appendTo('body');
+
+            tempTooltip.html('<div class="megalinks-content">' + excerpt + '</div><div class="megalinks-image"><img src="" alt=""></div>');
+
+            var tooltipHeight = tempTooltip.outerHeight();
+            tempTooltip.remove();
+
+            // Минимальная и максимальная высота
+            tooltipHeight = Math.max(80, Math.min(200, tooltipHeight));
+
+            // Центрируем по горизонтали относительно ссылки
+            var left = linkRect.left + (linkRect.width / 2) - (tooltipWidth / 2);
+            var top;
+
+            // Проверяем, достаточно ли места сверху для отображения
+            var spaceAbove = linkRect.top;
+            var spaceBelow = windowHeight - linkRect.bottom;
+
+            // Всегда показываем НАД ссылкой, кроме случаев когда ссылка у верхней кромки
+            if (spaceAbove >= tooltipHeight + 25) {
+                // Достаточно места сверху - tooltip вплотную над ссылкой
+                top = linkRect.top - tooltipHeight - 8 + scrollTop;
+                this.tooltip.removeClass('bottom-arrow').addClass('top-arrow');
+            } else {
+                // Недостаточно места сверху - показываем под ссылкой
+                top = linkRect.bottom + 15 + scrollTop;
+                this.tooltip.removeClass('top-arrow').addClass('bottom-arrow');
+            }
+
+            // Проверяем горизонтальные границы
+            if (left < 10) {
+                left = 10;
+            } else if (left + tooltipWidth > windowWidth - 10) {
+                left = windowWidth - tooltipWidth - 10;
+            }
+
+            // Устанавливаем позицию и содержимое с заглушкой для изображения
+            this.tooltip
+                .html('<div class="megalinks-content">' + excerpt + '</div><div class="megalinks-image"><div class="image-placeholder"></div></div>')
+                .css({
+                    left: left + 'px',
+                    top: top + 'px',
+                    position: 'absolute'
+                })
+                .addClass('visible');
+
+            // Загружаем миниатюру поста
+            // console.log('Loading thumbnail for post ID:', postId);
+            this.loadPostThumbnail(postId);
+        },
+
+        /**
+         * Загрузка миниатюры поста
+         */
+        loadPostThumbnail: function(postId) {
+            var self = this;
+            var $imageContainer = this.tooltip.find('.megalinks-image');
+
+            // Проверяем кеш миниатюр
+            if (this.thumbnailCache[postId] !== undefined) {
+                if (this.thumbnailCache[postId]) {
+                    // Миниатюра есть - показываем
+                    $imageContainer.html('<img src="' + this.thumbnailCache[postId] + '" alt="Post thumbnail">');
+                } else {
+                    // Миниатюры нет - скрываем
+                    $imageContainer.hide();
+                }
+                return;
+            }
+
+            // Очищаем предыдущее содержимое и показываем заглушку
+            $imageContainer.html('<div class="image-placeholder"></div>').show();
+
+            $.ajax({
+                url: megalinksAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'megalinks_get_thumbnail',
+                    post_id: postId,
+                    nonce: megalinksAjax.nonce
+                },
+                success: function(response) {
+                    // console.log('Thumbnail response:', response);
+                    if (response.success && response.data && response.data.thumbnail_url) {
+                        // Кешируем и показываем миниатюру
+                        self.thumbnailCache[postId] = response.data.thumbnail_url;
+                        $imageContainer.html('<img src="' + response.data.thumbnail_url + '" alt="Post thumbnail">');
+                    } else {
+                        // Миниатюры нет - кешируем false и скрываем
+                        self.thumbnailCache[postId] = false;
+                        $imageContainer.hide();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Ошибка - кешируем false и скрываем
+                    self.thumbnailCache[postId] = false;
+                    $imageContainer.hide();
+                }
+            });
+        },
+
+        /**
+         * Скрытие всплывающего слоя
+         */
+        hideTooltip: function() {
+            this.tooltip.removeClass('visible');
+            // Не очищаем содержимое, чтобы при повторном показе не было прыганий
+        }
+    };
+
+    // Инициализация при загрузке страницы
+    $(document).ready(function() {
+        Megalinks.init();
+    });
+
+    // Повторная инициализация при AJAX загрузке контента (для динамических ссылок)
+    $(document).on('ajaxComplete', function() {
+        // Не переинициализируем полностью, просто проверяем новые ссылки
+    });
+
+})(jQuery);
