@@ -76,10 +76,12 @@ class Megalinks {
             true
         );
 
-        // Передаем данные в JavaScript
+        // Передаем данные в JavaScript с отдельными nonce для каждого действия
         wp_localize_script('megalinks-script', 'megalinksAjax', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('megalinks_get_excerpt')
+            'nonce_excerpt' => wp_create_nonce('megalinks_get_excerpt'),
+            'nonce_post_id' => wp_create_nonce('megalinks_get_post_id_by_url'),
+            'nonce_thumbnail' => wp_create_nonce('megalinks_get_thumbnail')
         ));
     }
 
@@ -163,13 +165,13 @@ class Megalinks {
 
         // Получаем и валидируем ID поста
         $post_id = intval($_POST['post_id']);
-        if (!$post_id || !is_int($post_id)) {
+        if (!$post_id || !is_numeric($_POST['post_id'])) {
             wp_send_json_error('Invalid post ID');
         }
 
         // Получаем пост
         $post = get_post($post_id);
-        if (!$post || !in_array($post->post_type, array('post', 'page'))) {
+        if (!$post || !in_array($post->post_type, array('post', 'page'), true)) {
             wp_send_json_error('Post not found or invalid type');
         }
 
@@ -189,7 +191,7 @@ class Megalinks {
      */
     public function ajax_get_post_id_by_url() {
         // Проверяем nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'megalinks_get_excerpt')) {
+        if (!wp_verify_nonce($_POST['nonce'], 'megalinks_get_post_id_by_url')) {
             wp_die('Security check failed');
         }
 
@@ -226,11 +228,11 @@ class Megalinks {
 
         // Проверяем тип поста
         $post = get_post($post_id);
-        if (!$post || !in_array($post->post_type, array('post', 'page'))) {
+        if (!$post || !in_array($post->post_type, array('post', 'page'), true)) {
             wp_send_json_error('Invalid post type');
         }
 
-        wp_send_json_success(array('post_id' => $post_id));
+        wp_send_json_success(array('post_id' => (int) $post_id));
     }
 
     /**
@@ -238,56 +240,45 @@ class Megalinks {
      */
     public function ajax_get_thumbnail() {
         // Проверяем nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'megalinks_get_excerpt')) {
+        if (!wp_verify_nonce($_POST['nonce'], 'megalinks_get_thumbnail')) {
             wp_send_json_error('Security check failed');
         }
 
         // Получаем и валидируем ID поста
         $post_id = intval($_POST['post_id']);
-        if (!$post_id) {
+        if (!$post_id || !is_numeric($_POST['post_id'])) {
             wp_send_json_error('Invalid post ID: ' . $_POST['post_id']);
         }
 
         // Получаем пост
         $post = get_post($post_id);
-        if (!$post || !in_array($post->post_type, array('post', 'page'))) {
+        if (!$post || !in_array($post->post_type, array('post', 'page'), true)) {
             wp_send_json_error('Post not found or invalid type: ' . $post_id);
         }
 
-        error_log('Megalinks: Getting thumbnail for post ID: ' . $post_id . ' (post type: ' . $post->post_type . ')');
-
         // Получаем миниатюру поста
         $thumbnail_id = get_post_thumbnail_id($post_id);
-        error_log('Megalinks: Post ID ' . $post_id . ' has thumbnail ID: ' . $thumbnail_id);
 
         if (!$thumbnail_id) {
-            error_log('Megalinks: No thumbnail available for post: ' . $post_id);
             wp_send_json_error('No thumbnail available for post: ' . $post_id);
         }
 
         // Получаем URL миниатюры (medium_large размер для лучшего качества)
         $thumbnail_url = wp_get_attachment_image_url($thumbnail_id, 'medium_large');
-        error_log('Megalinks: Thumbnail URL for size "medium_large": ' . $thumbnail_url);
 
         if (!$thumbnail_url) {
             // Попробуем получить полный размер если thumbnail не существует
             $thumbnail_url = wp_get_attachment_image_url($thumbnail_id, 'full');
-            error_log('Megalinks: Full size URL fallback: ' . $thumbnail_url);
             if (!$thumbnail_url) {
-                error_log('Megalinks: No URL found for attachment: ' . $thumbnail_id);
-
                 // Попробуем получить attachment данные напрямую
                 $attachment = get_post($thumbnail_id);
                 if ($attachment && $attachment->guid) {
                     $thumbnail_url = $attachment->guid;
-                    error_log('Megalinks: Using attachment guid as fallback: ' . $thumbnail_url);
                 } else {
                     wp_send_json_error('Thumbnail URL not found for attachment: ' . $thumbnail_id);
                 }
             }
         }
-
-        error_log('Megalinks: Returning thumbnail URL: ' . $thumbnail_url);
         wp_send_json_success(array('thumbnail_url' => $thumbnail_url));
     }
 }

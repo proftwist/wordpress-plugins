@@ -255,20 +255,19 @@
                 data: {
                     action: 'megalinks_get_excerpt',
                     post_id: postId,
-                    nonce: megalinksAjax.nonce
+                    nonce: megalinksAjax.nonce_excerpt
                 },
                 success: function(response) {
-                    // console.log('Excerpt response for post ID', postId, ':', response);
                     if (response.success && response.data.excerpt) {
                         // Кешируем результат
                         self.excerptCache[postId] = response.data.excerpt;
                         self.displayTooltip(response.data.excerpt, e, postId);
                     } else {
-                        console.log('No excerpt available for post ID:', postId);
+                        console.warn('No excerpt available for post ID:', postId);
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('Excerpt AJAX error for post ID', postId, ':', status, error);
+                    console.error('Excerpt AJAX error for post ID', postId, ':', status, error);
                 }
             });
         },
@@ -303,7 +302,8 @@
         getPostIdByUrl: function(href) {
             var postId = null;
 
-            // Синхронный AJAX запрос для получения ID (не рекомендуется, но необходимо для логики)
+            // Важно: синхронный запрос нужен для последовательной обработки
+            // В будущем можно реорганизовать логику для полностью асинхронной работы
             $.ajax({
                 url: megalinksAjax.ajaxurl,
                 type: 'POST',
@@ -311,12 +311,15 @@
                 data: {
                     action: 'megalinks_get_post_id_by_url',
                     url: href,
-                    nonce: megalinksAjax.nonce
+                    nonce: megalinksAjax.nonce_post_id
                 },
                 success: function(response) {
                     if (response.success && response.data.post_id) {
-                        postId = parseInt(response.data.post_id);
+                        postId = parseInt(response.data.post_id, 10);
                     }
+                },
+                error: function(xhr, status, error) {
+                    console.warn('Failed to get post ID by URL:', status, error);
                 }
             });
 
@@ -387,7 +390,6 @@
                 .addClass('visible');
 
             // Загружаем миниатюру поста
-            // console.log('Loading thumbnail for post ID:', postId);
             this.loadPostThumbnail(postId);
         },
 
@@ -419,14 +421,13 @@
                 data: {
                     action: 'megalinks_get_thumbnail',
                     post_id: postId,
-                    nonce: megalinksAjax.nonce
+                    nonce: megalinksAjax.nonce_thumbnail
                 },
                 success: function(response) {
-                    // console.log('Thumbnail response:', response);
                     if (response.success && response.data && response.data.thumbnail_url) {
                         // Кешируем и показываем миниатюру
                         self.thumbnailCache[postId] = response.data.thumbnail_url;
-                        $imageContainer.html('<img src="' + response.data.thumbnail_url + '" alt="Post thumbnail">');
+                        $imageContainer.html('<img src="' + response.data.thumbnail_url + '" alt="Post thumbnail" loading="lazy">');
                     } else {
                         // Миниатюры нет - кешируем false и скрываем
                         self.thumbnailCache[postId] = false;
@@ -435,6 +436,7 @@
                 },
                 error: function(xhr, status, error) {
                     // Ошибка - кешируем false и скрываем
+                    console.warn('Thumbnail AJAX error for post ID', postId, ':', status, error);
                     self.thumbnailCache[postId] = false;
                     $imageContainer.hide();
                 }

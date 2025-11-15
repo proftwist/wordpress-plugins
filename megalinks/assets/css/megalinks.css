@@ -91,9 +91,30 @@
     border-bottom: none;
 }
 
-/* Скрываем на мобильных устройствах */
+/* Адаптивность для разных устройств */
 @media (max-width: 768px) {
     .megalinks-tooltip {
         display: none !important;
+    }
+}
+
+/* Поддержка темной темы */
+@media (prefers-color-scheme: dark) {
+    .megalinks-tooltip {
+        background: #2a2a2a;
+        border-color: #444;
+        color: #e0e0e0;
+    }
+
+    .megalinks-tooltip::after {
+        border-bottom-color: #2a2a2a;
+    }
+
+    .megalinks-tooltip.top-arrow::after {
+        border-bottom-color: #2a2a2a;
+    }
+
+    .megalinks-tooltip.bottom-arrow::after {
+        border-top-color: #2a2a2a;
     }
 }
