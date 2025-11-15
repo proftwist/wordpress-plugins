@@ -134,7 +134,7 @@ function github_commit_chart_github_profile_render() {
     jQuery(document).ready(function($) {
         $('#check_username_btn').on('click', function() {
             var username = $('#github_commit_chart_github_profile').val().trim();
-            var resultSpan = $('#username_check_result';
+            var resultSpan = $('#username_check_result');
 
             if (username === '') {
                 resultSpan.html('<span style="color: red;">Введите юзернейм</span>');
@@ -267,22 +267,22 @@ function github_commit_chart_github_token_render() {
     <script type="text/javascript">
     jQuery(document).ready(function($) {
         var tokenInput = $('#github_commit_chart_github_token');
-        var toggleBtn = $('#toggle_token_visibility';
+        var toggleBtn = $('#toggle_token_visibility');
 
         // Переключение видимости токена
         toggleBtn.on('click', function() {
             if (tokenInput.attr('type') === 'password') {
-                tokenInput.attr('type', 'text';
-                toggleBtn.text('Скрыть токен';
+                tokenInput.attr('type', 'text');
+                toggleBtn.text('Скрыть токен');
             } else {
-                tokenInput.attr('type', 'password';
-                toggleBtn.text('Показать токен';
+                tokenInput.attr('type', 'password');
+                toggleBtn.text('Показать токен');
             }
         });
 
         $('#check_token_btn').on('click', function() {
             var token = tokenInput.val().trim();
-            var resultSpan = $('#token_check_result';
+            var resultSpan = $('#token_check_result');
 
             if (token === '') {
                 resultSpan.html('<span style="color: red;">Введите токен</span>');
