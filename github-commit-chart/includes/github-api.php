@@ -13,6 +13,26 @@ class GitHubCommitChart_API {
     private static $cache_expiration = 3600; // 1 час
 
     /**
+     * Получить заголовки для API запросов
+     *
+     * @return array Массив заголовков
+     */
+    private static function get_api_headers() {
+        $headers = array(
+            'User-Agent' => 'GitHub-Commit-Chart-WordPress-Plugin',
+            'Accept' => 'application/vnd.github.v3+json'
+        );
+
+        // Добавляем токен авторизации, если он установлен
+        $token = get_option('github_commit_chart_github_token');
+        if (!empty($token)) {
+            $headers['Authorization'] = 'token ' . $token;
+        }
+
+        return $headers;
+    }
+
+    /**
      * Получение данных о коммитах пользователя
      */
     /**
@@ -79,10 +99,7 @@ class GitHubCommitChart_API {
 
         $url = self::$api_url . '/users/' . $username . '/repos?per_page=100';
         $response = wp_remote_get($url, array(
-            'headers' => array(
-                'User-Agent' => 'GitHub-Commit-Chart-WordPress-Plugin',
-                'Accept' => 'application/vnd.github.v3+json'
-            ),
+            'headers' => self::get_api_headers(),
             'timeout' => 30
         ));
 
@@ -125,10 +142,7 @@ class GitHubCommitChart_API {
 
         $url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&sort=author-date&order=desc&committer=' . $username;
         $response = wp_remote_get($url, array(
-            'headers' => array(
-                'User-Agent' => 'GitHub-Commit-Chart-WordPress-Plugin',
-                'Accept' => 'application/vnd.github.v3+json'
-            ),
+            'headers' => self::get_api_headers(),
             'timeout' => 30
         ));
 
@@ -228,10 +242,7 @@ class GitHubCommitChart_API {
 
         $url = self::$api_url . '/users/' . $username;
         $response = wp_remote_get($url, array(
-            'headers' => array(
-                'User-Agent' => 'GitHub-Commit-Chart-WordPress-Plugin',
-                'Accept' => 'application/vnd.github.v3+json'
-            ),
+            'headers' => self::get_api_headers(),
             'timeout' => 30
         ));
 
