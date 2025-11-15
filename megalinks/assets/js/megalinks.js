@@ -409,8 +409,8 @@
                 arrowClass = 'bottom-arrow';
             }
 
-            // Центрируем по горизонтали относительно ссылки
-            var left = linkRect.left + (linkRect.width / 2) - (tooltipWidth / 2) + scrollLeft;
+            // Центрируем по горизонтали относительно курсора
+            var left = e.clientX - (tooltipWidth / 2);
 
             // Проверяем горизонтальные границы
             if (left < 10) {
