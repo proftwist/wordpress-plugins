@@ -33,8 +33,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // Отладочный вывод (убрать в production)
         // console.log('GitHub Commit Chart: Creating chart for', githubProfile, 'year:', selectedYear);
 
-        // Показываем индикатор загрузки
-        container.innerHTML = '<div class="github-commit-chart-loading">Загрузка диаграммы коммитов...</div>';
+        // Проверяем, существует ли уже статическая часть диаграммы
+        var chartElement = container.querySelector('.github-commit-chart');
+        if (!chartElement) {
+            // Если нет, создаем базовую структуру
+            renderCommitChartStructure(container, githubProfile, selectedYear);
+        } else {
+            // Если да, показываем плейсхолдер только для области диаграммы
+            var chartContainer = container.querySelector('.chart-container');
+            if (chartContainer) {
+                // Сохраняем текущую высоту для плавного перехода
+                var currentHeight = chartContainer.offsetHeight;
+                chartContainer.style.minHeight = currentHeight + 'px';
+                
+                // Показываем плейсхолдер с небольшой задержкой для лучшего UX
+                setTimeout(function() {
+                    chartContainer.innerHTML = '<div class="chart-loading-placeholder"><div class="loading-spinner"></div><p>Идёт загрузка коммитов…</p></div>';
+                }, 100);
+            }
+        }
 
         // Отправляем AJAX запрос для получения данных о коммитах
         var xhr = new XMLHttpRequest();
@@ -79,8 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.send(params);
     }
 
-    // Функция для отображения диаграммы коммитов
-    function renderCommitChart(container, githubProfile, commitData, selectedYear) {
+    // Функция для отображения структуры диаграммы коммитов (заголовок и селекторы лет)
+    function renderCommitChartStructure(container, githubProfile, selectedYear) {
         // Получаем текущий год
         var currentYear = new Date().getFullYear();
 
@@ -129,6 +146,12 @@ document.addEventListener('DOMContentLoaded', function() {
             yearButtons.forEach(function(button) {
                 button.addEventListener('click', function() {
                     var year = parseInt(this.getAttribute('data-year'));
+                    // Убираем класс active у всех кнопок
+                    yearButtons.forEach(function(btn) {
+                        btn.classList.remove('active');
+                    });
+                    // Добавляем класс active к выбранной кнопке
+                    this.classList.add('active');
 
                     // Показываем плейсхолдер только для контейнера диаграммы
                     var chartContainer = container.querySelector('.chart-container');
@@ -136,9 +159,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Сохраняем текущую высоту для плавного перехода
                         var currentHeight = chartContainer.offsetHeight;
                         chartContainer.style.minHeight = currentHeight + 'px';
-
-                        // Показываем плейсхолдер
-                        chartContainer.innerHTML = '<div class="chart-loading-placeholder"><div class="loading-spinner"></div><p>Идёт загрузка коммитов</p></div>';
+                        
+                        // Показываем плейсхолдер с небольшой задержкой для лучшего UX
+                        setTimeout(function() {
+                            chartContainer.innerHTML = '<div class="chart-loading-placeholder"><div class="loading-spinner"></div><p>Идёт загрузка коммитов…</p></div>';
+                        }, 100);
                     }
 
                     // Загружаем данные за выбранный год
@@ -146,8 +171,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         }, 100);
+    }
 
-        // Создаем визуализацию данных в виде тепловой карты
+    // Функция для отображения диаграммы коммитов
+    function renderCommitChart(container, githubProfile, commitData, selectedYear) {
+        // Получаем текущий год
+        var currentYear = new Date().getFullYear();
+
+        // Если год не указан, используем текущий
+        if (!selectedYear) {
+            selectedYear = currentYear;
+        }
+
+        // Проверяем, существует ли уже статическая часть диаграммы
+        var chartElement = container.querySelector('.github-commit-chart');
+        if (!chartElement) {
+            // Если нет, создаем базовую структуру
+            renderCommitChartStructure(container, githubProfile, selectedYear);
+        } else {
+            // Если да, обновляем активную кнопку года
+            var yearButtons = container.querySelectorAll('.year-button');
+            yearButtons.forEach(function(button) {
+                var buttonYear = parseInt(button.getAttribute('data-year'));
+                if (buttonYear === selectedYear) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+
+        // Создаем визуализацию данных в виде тепловой карты только в области диаграммы
         renderCommitChartHeatmap(container, commitData, selectedYear);
     }
 
@@ -325,8 +379,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         html += '</div>';
 
-        // Вставляем сгенерированный HTML в контейнер
+        // Вставляем сгенерированный HTML в контейнер с плавным переходом
+        // Удаляем минимальную высоту после небольшой задержки для плавного перехода
         chartContainer.innerHTML = html;
+        setTimeout(function() {
+            chartContainer.style.minHeight = '';
+        }, 300);
     }
 
     // Находим все контейнеры диаграмм и создаем для них диаграммы
