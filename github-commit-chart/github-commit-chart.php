@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Commit Chart
  * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока или шорткода
- * Version: 1.5.2
+ * Version: 1.6.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: github-commit-chart
@@ -140,7 +140,8 @@ class GitHubCommitChart {
         wp_localize_script('github-commit-chart-frontend', 'githubCommitChartSettings', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),    // URL для AJAX запросов
             'githubProfile' => get_option('github_commit_chart_github_profile', ''), // Профиль GitHub из настроек
-            'nonce' => wp_create_nonce('gcc_get_commit_data') // Токен безопасности для AJAX
+            'nonce' => wp_create_nonce('gcc_get_commit_data'), // Токен безопасности для AJAX
+            'linkUsernames' => get_option('github_commit_chart_link_usernames', false) // Настройка для ссылок на профили
         ));
 
         // Подключение CSS стилей для фронтенда

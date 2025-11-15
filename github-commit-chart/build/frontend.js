@@ -79,15 +79,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Получаем тег заголовка из data-атрибута или используем значение по умолчанию
         var headingTag = container.getAttribute('data-heading-tag') || 'h3';
 
+        // Проверяем настройку для ссылок на профили GitHub
+        var linkUsernames = githubCommitChartSettings.linkUsernames || false;
+        var profileLink = linkUsernames ? '<a href="https://github.com/' + githubProfile + '" target="_blank" rel="noopener noreferrer">' + githubProfile + '</a>' : githubProfile;
+
         // Создаем элементы диаграммы
         var chartHTML = '<div class="github-commit-chart">';
 
         // Если выбран обычный текст (div), отображаем центрированный текст без тега заголовка
         if (headingTag === 'div') {
-            chartHTML += '<div class="github-commit-chart-text">Диаграмма коммитов для ' + githubProfile + '</div>';
+            chartHTML += '<div class="github-commit-chart-text">Диаграмма коммитов для ' + profileLink + '</div>';
         } else {
             // Иначе используем выбранный тег заголовка
-            chartHTML += '<' + headingTag + '>Диаграмма коммитов для ' + githubProfile + '</' + headingTag + '>';
+            chartHTML += '<' + headingTag + '>Диаграмма коммитов для ' + profileLink + '</' + headingTag + '>';
         }
 
         chartHTML += '<div class="chart-container">';

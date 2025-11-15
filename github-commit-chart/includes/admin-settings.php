@@ -18,6 +18,13 @@ function github_commit_chart_settings_init() {
         'default' => ''                                         // Значение по умолчанию
     ));
 
+    // Регистрация настройки для прикрепления ссылок к именам пользователей
+    register_setting('github_commit_chart_settings', 'github_commit_chart_link_usernames', array(
+        'type' => 'boolean',                                    // Тип данных - булево
+        'sanitize_callback' => 'github_commit_chart_sanitize_checkbox', // Функция очистки данных
+        'default' => false                                      // Значение по умолчанию
+    ));
+
     // Добавление секции настроек
     add_settings_section(
         'github_commit_chart_settings_section',           // ID секции
@@ -31,6 +38,15 @@ function github_commit_chart_settings_init() {
         'github_commit_chart_github_profile',               // ID поля
         'Юзернейм Github',                                  // Метка поля
         'github_commit_chart_github_profile_render',        // Функция отрисовки поля
+        'github_commit_chart_settings',                     // ID страницы настроек
+        'github_commit_chart_settings_section'              // ID секции
+    );
+
+    // Добавление поля для чекбокса прикрепления ссылок
+    add_settings_field(
+        'github_commit_chart_link_usernames',               // ID поля
+        'Прикрепить к имени пользователя ссылку на гитхаб-профиль', // Метка поля
+        'github_commit_chart_link_usernames_render',        // Функция отрисовки поля
         'github_commit_chart_settings',                     // ID страницы настроек
         'github_commit_chart_settings_section'              // ID секции
     );
@@ -118,6 +134,31 @@ function github_commit_chart_sanitize_github_profile($input) {
     $input = preg_replace('/[^a-zA-Z0-9\-_]/', '', $input);
 
     return $input;
+}
+
+/**
+ * Функция валидации чекбокса
+ *
+ * @param mixed $input Входное значение от чекбокса
+ * @return bool Булево значение
+ */
+function github_commit_chart_sanitize_checkbox($input) {
+    return (bool) $input;
+}
+
+/**
+ * Функция отрисовки чекбокса для прикрепления ссылок к именам пользователей
+ *
+ * Выводит HTML элемент checkbox с текущим значением настройки из базы данных.
+ */
+function github_commit_chart_link_usernames_render() {
+    // Получаем текущее значение настройки из базы данных WordPress
+    $link_usernames = get_option('github_commit_chart_link_usernames', false);
+    ?>
+    <!-- Чекбокс для прикрепления ссылок -->
+    <input type='checkbox' id='github_commit_chart_link_usernames' name='github_commit_chart_link_usernames' value='1' <?php checked($link_usernames, true); ?>>
+    <label for='github_commit_chart_link_usernames'>Включить ссылки на GitHub-профили в диаграммах</label>
+    <?php
 }
 
 // AJAX обработчик для проверки юзернейма GitHub
