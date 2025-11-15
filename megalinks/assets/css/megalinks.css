@@ -1,6 +1,6 @@
 /* Megalinks Plugin Styles */
 
-/* Всплывающий слой с цитатой */
+/* Улучшенные стили для позиционирования */
 .megalinks-tooltip {
     position: absolute;
     background: #333;
@@ -10,6 +10,7 @@
     font-size: 14px;
     line-height: 1.4;
     max-width: 400px;
+    width: 400px; /* Фиксированная ширина для стабильного позиционирования */
     word-wrap: break-word;
     z-index: 10000;
     pointer-events: none;
@@ -20,12 +21,13 @@
     transform: translateY(5px);
     display: flex;
     flex-direction: column;
+    box-sizing: border-box; /* Важно для правильного расчета размеров */
 }
 
 /* Контейнер с изображением сверху */
 .megalinks-image {
     width: 100%;
-    max-height: 150px;
+    height: 150px; /* Фиксированная высота для предотвращения прыжков */
     margin-bottom: 10px;
     position: relative;
     overflow: hidden;
@@ -75,6 +77,7 @@
     margin-left: -6px;
     border: 6px solid transparent;
     border-bottom-color: #333;
+    bottom: -12px;
 }
 
 /* Стрелка вверх для tooltip сверху */
@@ -89,6 +92,20 @@
     top: -12px;
     border-top-color: #333;
     border-bottom: none;
+}
+
+/* Гарантируем, что тултип не будет перекрывать ссылку */
+.megalinks-tooltip.top-arrow {
+    transform: translateY(-5px);
+}
+
+.megalinks-tooltip.bottom-arrow {
+    transform: translateY(5px);
+}
+
+.megalinks-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Адаптивность для разных устройств */

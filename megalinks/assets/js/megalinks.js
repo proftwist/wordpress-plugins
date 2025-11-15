@@ -335,42 +335,57 @@
             var windowWidth = $(window).width();
             var windowHeight = $(window).height();
             var scrollTop = $(window).scrollTop();
-            var tooltipWidth = 400; // Максимальная ширина из CSS (увеличена для изображения)
+            var scrollLeft = $(window).scrollLeft();
+            var tooltipWidth = 400; // Максимальная ширина из CSS
 
             // Создаем временный tooltip для точного измерения высоты
             var tempTooltip = this.tooltip.clone().css({
                 visibility: 'hidden',
                 position: 'absolute',
                 top: '-9999px',
-                left: '-9999px'
+                left: '-9999px',
+                width: tooltipWidth + 'px' // Фиксируем ширину для точного расчета
             }).appendTo('body');
 
-            tempTooltip.html('<div class="megalinks-image"><img src="" alt=""></div><div class="megalinks-content">' + excerpt + '</div>');
+            tempTooltip.html('<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>');
+            // Создаем финальный HTML с фиксированным контейнером для изображения
+            var finalHtml = '<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>';
 
             var tooltipHeight = tempTooltip.outerHeight();
             tempTooltip.remove();
 
-            // Минимальная и максимальная высота
-            tooltipHeight = Math.max(80, Math.min(200, tooltipHeight));
+            // Добавляем отступ для стрелки
+            var arrowHeight = 12;
+            var verticalMargin = 10;
+
+            // Рассчитываем доступное пространство
+            var spaceAbove = linkRect.top - verticalMargin - arrowHeight;
+            var spaceBelow = windowHeight - linkRect.bottom - verticalMargin - arrowHeight;
+
+            // Определяем позиционирование
+            var positionAbove = spaceAbove >= tooltipHeight;
+            var positionBelow = !positionAbove && spaceBelow >= tooltipHeight;
+
+            // Если места ни сверху, ни снизу недостаточно, выбираем сторону с большим пространством
+            if (!positionAbove && !positionBelow) {
+                positionAbove = spaceAbove >= spaceBelow;
+                positionBelow = !positionAbove;
+            }
+
+            var top, arrowClass;
+
+            if (positionAbove) {
+                // Позиционируем сверху
+                top = linkRect.top - tooltipHeight - arrowHeight - verticalMargin + scrollTop;
+                arrowClass = 'top-arrow';
+            } else {
+                // Позиционируем снизу
+                top = linkRect.bottom + arrowHeight + verticalMargin + scrollTop;
+                arrowClass = 'bottom-arrow';
+            }
 
             // Центрируем по горизонтали относительно ссылки
-            var left = linkRect.left + (linkRect.width / 2) - (tooltipWidth / 2);
-            var top;
-
-            // Проверяем, достаточно ли места сверху для отображения
-            var spaceAbove = linkRect.top;
-            var spaceBelow = windowHeight - linkRect.bottom;
-
-            // Проверяем место сверху
-            if (spaceAbove >= tooltipHeight + 15) {
-                // Достаточно места сверху - показываем над ссылкой
-                top = linkRect.top - tooltipHeight - 10 + scrollTop;
-                this.tooltip.removeClass('bottom-arrow').addClass('top-arrow');
-            } else {
-                // Недостаточно места сверху - показываем под ссылкой
-                top = linkRect.bottom + 10 + scrollTop;
-                this.tooltip.removeClass('top-arrow').addClass('bottom-arrow');
-            }
+            var left = linkRect.left + (linkRect.width / 2) - (tooltipWidth / 2) + scrollLeft;
 
             // Проверяем горизонтальные границы
             if (left < 10) {
@@ -379,15 +394,18 @@
                 left = windowWidth - tooltipWidth - 10;
             }
 
-            // Устанавливаем позицию и содержимое с заглушкой для изображения
+            // Устанавливаем позицию и содержимое с фиксированным контейнером для изображения
+            var finalHtml = '<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>';
             this.tooltip
-                .html('<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>')
+                .html(finalHtml)
                 .css({
                     left: left + 'px',
                     top: top + 'px',
+                    width: tooltipWidth + 'px', // Фиксируем ширину
                     position: 'absolute'
                 })
-                .addClass('visible');
+                .removeClass('top-arrow bottom-arrow')
+                .addClass(arrowClass + ' visible');
 
             // Загружаем миниатюру поста
             this.loadPostThumbnail(postId);
