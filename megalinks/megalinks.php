@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Megalinks
  * Description: Добавляет всплывающие подсказки с цитатами для внутренних ссылок на посты и страницы
- * Version: 1.2.1
+ * Version: 2.0.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: megalinks
@@ -30,6 +30,9 @@ class Megalinks {
      * Конструктор класса
      */
     public function __construct() {
+        // Загрузка текстового домена
+        add_action('plugins_loaded', array($this, 'load_textdomain'));
+
         // Регистрация основных хуков
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
@@ -86,6 +89,38 @@ class Megalinks {
     }
 
     /**
+     * Загрузка текстового домена для переводов
+     */
+    public function load_textdomain() {
+        $selected_language = get_option('megalinks_language');
+
+        // Если настройка не сохранена, используем текущую локаль WordPress
+        if (!$selected_language) {
+            $selected_language = get_locale();
+            update_option('megalinks_language', $selected_language);
+        }
+
+        // Всегда используем load_plugin_textdomain, но с принудительной установкой локали
+        // WordPress сам определит какой .mo файл загрузить на основе $selected_language
+        load_plugin_textdomain('megalinks', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+
+        // Для принудительного переключения локали используем фильтр
+        add_filter('locale', function($locale) use ($selected_language) {
+            // В админке используем выбранный язык для нашего плагина
+            if (is_admin()) {
+                return $selected_language;
+            }
+            return $locale;
+        });
+
+        // Принудительно перезагружаем переводы для админки
+        if (is_admin()) {
+            unload_textdomain('megalinks');
+            load_plugin_textdomain('megalinks', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+        }
+    }
+
+    /**
      * Добавление пункта меню в админке
      */
     public function add_admin_menu() {
@@ -104,21 +139,64 @@ class Megalinks {
      */
     public function register_settings() {
         register_setting('megalinks_settings', 'megalinks_enabled');
+        register_setting('megalinks_settings', 'megalinks_language', array($this, 'sanitize_language_callback'));
 
         add_settings_section(
             'megalinks_main_section',
-            'Основные настройки',
+            __('Основные настройки', 'megalinks'),
             null,
             'megalinks_settings'
         );
 
         add_settings_field(
             'megalinks_enabled',
-            'Включить плагин',
+            __('Включить плагин', 'megalinks'),
             array($this, 'enabled_field_callback'),
             'megalinks_settings',
             'megalinks_main_section'
         );
+
+        add_settings_field(
+            'megalinks_language',
+            __('Язык', 'megalinks'),
+            array($this, 'language_field_callback'),
+            'megalinks_settings',
+            'megalinks_main_section'
+        );
+    }
+
+    /**
+     * Санитизация настройки языка
+     */
+    public function sanitize_language_callback($value) {
+        $available_languages = $this->get_available_languages();
+
+        // Проверяем, что выбранный язык доступен
+        if (!array_key_exists($value, $available_languages)) {
+            // Если язык недоступен, возвращаем русский по умолчанию
+            return 'ru_RU';
+        }
+
+        // Очищаем переводы после изменения языка
+        $this->clear_textdomain_cache();
+
+        return $value;
+    }
+
+    /**
+     * Очистка кеша текстового домена
+     */
+    private function clear_textdomain_cache() {
+        // Очищаем кеш переводов для принудительной перезагрузки
+        if (function_exists('wp_cache_flush')) {
+            wp_cache_flush();
+        }
+
+        // Принудительно перезагружаем текстовый домен
+        unload_textdomain('megalinks');
+
+        // Принудительно перезагружаем переводы сразу
+        $this->load_textdomain();
     }
 
     /**
@@ -132,7 +210,7 @@ class Megalinks {
                name="megalinks_enabled"
                value="1"
                <?php checked('1', $enabled); ?> />
-        <label for="megalinks_enabled">Включить всплывающие подсказки для внутренних ссылок</label>
+        <label for="megalinks_enabled"><?php _e('Включить всплывающие подсказки для внутренних ссылок', 'megalinks'); ?></label>
         <?php
     }
 
@@ -142,7 +220,7 @@ class Megalinks {
     public function options_page() {
         ?>
         <div class="wrap">
-            <h1>Megalinks Настройки</h1>
+            <h1><?php _e('Megalinks Настройки', 'megalinks'); ?></h1>
             <form action="options.php" method="post">
                 <?php
                 settings_fields('megalinks_settings');
@@ -152,6 +230,79 @@ class Megalinks {
             </form>
         </div>
         <?php
+    }
+    /**
+     * Callback для поля выбора языка
+     */
+    public function language_field_callback() {
+        $current_language = get_option('megalinks_language');
+        if (!$current_language) {
+            // Если настройка не сохранена, используем текущую локаль WordPress
+            $current_language = get_locale();
+        }
+        $available_languages = $this->get_available_languages();
+
+        ?>
+        <select id="megalinks_language" name="megalinks_language">
+            <?php foreach ($available_languages as $locale => $name) : ?>
+                <option value="<?php echo esc_attr($locale); ?>" <?php selected($locale, $current_language); ?>>
+                    <?php echo esc_html($name); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <p class="description"><?php _e('Выберите язык интерфейса плагина', 'megalinks'); ?></p>
+        <?php
+    }
+
+    /**
+     * Получение списка доступных языков
+     */
+    private function get_available_languages() {
+        $languages = array(
+            'ru_RU' => __('Русский', 'megalinks'),
+            'en_US' => __('English', 'megalinks'),
+        );
+
+        // Сканируем папку languages на наличие .mo файлов
+        $languages_dir = MEGALINKS_PLUGIN_PATH . 'languages/';
+        if (is_dir($languages_dir)) {
+            $files = glob($languages_dir . 'megalinks-*.mo');
+            if ($files) {
+                foreach ($files as $file) {
+                    $filename = basename($file, '.mo');
+                    if (preg_match('/megalinks-(.+)\.mo$/', $filename, $matches)) {
+                        $locale = $matches[1];
+                        if (!isset($languages[$locale])) {
+                            // Пытаемся получить название языка из WordPress
+                            $locale_name = $this->get_locale_display_name($locale);
+                            $languages[$locale] = $locale_name;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $languages;
+    }
+
+    /**
+     * Получение отображаемого названия локали
+     */
+    private function get_locale_display_name($locale) {
+        // Список известных локалей
+        $locale_names = array(
+            'ru_RU' => __('Русский', 'megalinks'),
+            'en_US' => __('English', 'megalinks'),
+            'de_DE' => __('Deutsch', 'megalinks'),
+            'fr_FR' => __('Français', 'megalinks'),
+            'es_ES' => __('Español', 'megalinks'),
+            'it_IT' => __('Italiano', 'megalinks'),
+            'pt_BR' => __('Português (Brasil)', 'megalinks'),
+            'zh_CN' => __('中文 (简体)', 'megalinks'),
+            'ja_JP' => __('日本語', 'megalinks'),
+        );
+
+        return isset($locale_names[$locale]) ? $locale_names[$locale] : $locale;
     }
 
     /**

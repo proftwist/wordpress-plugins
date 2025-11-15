@@ -1,6 +1,8 @@
 /**
  * Megalinks Plugin JavaScript
  * Обрабатывает hover эффекты для внутренних ссылок на посты и страницы
+ *
+ * @param {object} megalinksAjax - Локализованные данные от сервера
  */
 
 (function($) {

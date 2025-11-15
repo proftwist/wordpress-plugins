@@ -1,0 +1,78 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Megalinks package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Megalinks 1.2.1\n"
+"Report-Msgid-Bugs-To: bychko.ru\n"
+"POT-Creation-Date: 2025-11-15 17:22+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: megalinks.php:130
+msgid "Основные настройки"
+msgstr ""
+
+#: megalinks.php:137
+msgid "Включить плагин"
+msgstr ""
+
+#: megalinks.php:145
+msgid "Язык"
+msgstr ""
+
+#: megalinks.php:194
+msgid "Включить всплывающие подсказки для внутренних ссылок"
+msgstr ""
+
+#: megalinks.php:204
+msgid "Megalinks Настройки"
+msgstr ""
+
+#: megalinks.php:230
+msgid "Выберите язык интерфейса плагина"
+msgstr ""
+
+#: megalinks.php:239 megalinks.php:271
+msgid "Русский"
+msgstr ""
+
+#: megalinks.php:240 megalinks.php:272
+msgid "English"
+msgstr ""
+
+#: megalinks.php:273
+msgid "Deutsch"
+msgstr ""
+
+#: megalinks.php:274
+msgid "Français"
+msgstr ""
+
+#: megalinks.php:275
+msgid "Español"
+msgstr ""
+
+#: megalinks.php:276
+msgid "Italiano"
+msgstr ""
+
+#: megalinks.php:277
+msgid "Português (Brasil)"
+msgstr ""
+
+#: megalinks.php:278
+msgid "中文 (简体)"
+msgstr ""
+
+#: megalinks.php:279
+msgid "日本語"
+msgstr ""
