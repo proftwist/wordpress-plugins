@@ -21,17 +21,17 @@ if (!function_exists('add_action')) {
  *
  * Регистрирует все необходимые настройки, секции и поля для страницы настроек в админке.
  * Вызывается через хук admin_init.
- * 
+ *
  * @since 1.0.0
  */
 function github_commit_chart_settings_init() {
     // Проверяем наличие необходимых функций
-    if (!function_exists('register_setting') || 
-        !function_exists('add_settings_section') || 
+    if (!function_exists('register_setting') ||
+        !function_exists('add_settings_section') ||
         !function_exists('add_settings_field')) {
         return;
     }
-    
+
     // Регистрация основной настройки - профиля GitHub
     register_setting('github_commit_chart_settings', 'github_commit_chart_github_profile', array(
         'type' => 'string',                                     // Тип данных - строка
@@ -94,15 +94,19 @@ function github_commit_chart_settings_init() {
  *
  * Вызывается WordPress для отображения описательного текста в секции настроек.
  * Поясняет пользователю, что нужно ввести в поле.
- * 
+ *
  * @since 1.0.0
  */
 function github_commit_chart_settings_section_callback() {
-    echo 'Введите ваш никнейм на GitHub для отображения статистики коммитов.<br>';
-    echo 'Вы можете использовать шорткод <code>[github-c github_profile="username"]</code> для отображения диаграммы в записях и страницах.<br>';
-    echo 'Если не указан параметр github_profile, будет использоваться значение из глобальных настроек.<br><br>';
-    echo '<strong>GitHub токен:</strong> Добавление токена повышает лимиты на обращение к API, что очень важно, если на сайте много посетителей и диаграмму могут открыть много пользователей одновременно.<br>';
-    echo 'Инструкция по созданию токена: <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens" target="_blank">Managing your personal access tokens</a>';
+    _e('Введите ваш никнейм на GitHub для отображения статистики коммитов.<br>', 'github-commit-chart');
+    _e('Вы можете использовать шорткод <code>[github-c github_profile="username"]</code> для отображения диаграммы в записях и страницах.<br>', 'github-commit-chart');
+    _e('Если не указан параметр github_profile, будет использоваться значение из глобальных настроек.<br><br>', 'github-commit-chart');
+    _e('<strong>GitHub токен:</strong> Добавление токена повышает лимиты на обращение к API, что очень важно, если на сайте много посетителей и диаграмму могут открыть много пользователей одновременно.<br>', 'github-commit-chart');
+    printf(
+        /* translators: %s: URL to GitHub documentation */
+        __('Инструкция по созданию токена: <a href="%s" target="_blank">Managing your personal access tokens</a>', 'github-commit-chart'),
+        'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens'
+    );
 }
 
 /**
@@ -110,7 +114,7 @@ function github_commit_chart_settings_section_callback() {
  *
  * Выводит HTML элемент input с текущим значением настройки из базы данных.
  * Использует esc_attr для безопасного экранирования значения.
- * 
+ *
  * @since 1.0.0
  */
 function github_commit_chart_github_profile_render() {
@@ -118,7 +122,7 @@ function github_commit_chart_github_profile_render() {
     if (!function_exists('get_option') || !function_exists('esc_attr') || !function_exists('wp_create_nonce')) {
         return;
     }
-    
+
     // Получаем текущее значение настройки из базы данных WordPress
     $github_profile = get_option('github_commit_chart_github_profile');
     ?>
@@ -220,7 +224,7 @@ function github_commit_chart_sanitize_github_token($input) {
  * Функция отрисовки чекбокса для прикрепления ссылок к именам пользователей
  *
  * Выводит HTML элемент checkbox с текущим значением настройки из базы данных.
- * 
+ *
  * @since 1.0.0
  */
 function github_commit_chart_link_usernames_render() {
@@ -228,7 +232,7 @@ function github_commit_chart_link_usernames_render() {
     if (!function_exists('get_option') || !function_exists('checked')) {
         return;
     }
-    
+
     // Получаем текущее значение настройки из базы данных WordPress
     $link_usernames = get_option('github_commit_chart_link_usernames', false);
     ?>
@@ -243,7 +247,7 @@ function github_commit_chart_link_usernames_render() {
  *
  * Выводит HTML элемент input с текущим значением настройки из базы данных.
  * Использует esc_attr для безопасного экранирования значения.
- * 
+ *
  * @since 1.0.0
  */
 function github_commit_chart_github_token_render() {
@@ -251,7 +255,7 @@ function github_commit_chart_github_token_render() {
     if (!function_exists('get_option') || !function_exists('esc_attr') || !function_exists('wp_create_nonce')) {
         return;
     }
-    
+
     // Получаем текущее значение настройки из базы данных WordPress
     $github_token = get_option('github_commit_chart_github_token');
     ?>
@@ -319,14 +323,14 @@ function github_commit_chart_github_token_render() {
  */
 function github_commit_chart_check_username() {
     // Проверяем наличие необходимых функций
-    if (!function_exists('wp_verify_nonce') || 
-        !function_exists('sanitize_text_field') || 
-        !function_exists('wp_send_json_error') || 
-        !function_exists('wp_send_json_success') || 
+    if (!function_exists('wp_verify_nonce') ||
+        !function_exists('sanitize_text_field') ||
+        !function_exists('wp_send_json_error') ||
+        !function_exists('wp_send_json_success') ||
         !function_exists('wp_die')) {
         return;
     }
-    
+
     // Логгируем начало обработки запроса
     if (defined('WP_DEBUG') && WP_DEBUG) {
         error_log('GitHub Commit Chart: Username check request received');
@@ -379,18 +383,18 @@ function github_commit_chart_check_username() {
  */
 function github_commit_chart_check_token() {
     // Проверяем наличие необходимых функций
-    if (!function_exists('wp_verify_nonce') || 
-        !function_exists('sanitize_text_field') || 
-        !function_exists('wp_remote_get') || 
-        !function_exists('is_wp_error') || 
-        !function_exists('wp_remote_retrieve_response_code') || 
-        !function_exists('wp_remote_retrieve_body') || 
-        !function_exists('wp_send_json_error') || 
-        !function_exists('wp_send_json_success') || 
+    if (!function_exists('wp_verify_nonce') ||
+        !function_exists('sanitize_text_field') ||
+        !function_exists('wp_remote_get') ||
+        !function_exists('is_wp_error') ||
+        !function_exists('wp_remote_retrieve_response_code') ||
+        !function_exists('wp_remote_retrieve_body') ||
+        !function_exists('wp_send_json_error') ||
+        !function_exists('wp_send_json_success') ||
         !function_exists('wp_die')) {
         return;
     }
-    
+
     // Логгируем начало обработки запроса
     if (defined('WP_DEBUG') && WP_DEBUG) {
         error_log('GitHub Commit Chart: Token check request received');
@@ -442,11 +446,11 @@ function github_commit_chart_check_token() {
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
         $error_message = isset($data['message']) ? $data['message'] : 'Токен недействителен';
-        
+
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: Token is invalid - ' . $error_message);
         }
-        
+
         wp_send_json_error('Ошибка: ' . $error_message);
     }
 }

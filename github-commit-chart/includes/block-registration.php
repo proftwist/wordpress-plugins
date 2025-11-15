@@ -41,21 +41,33 @@ function github_commit_chart_register_block() {
  * @return string HTML-разметка контейнера диаграммы или сообщение об ошибке
  */
 function github_commit_chart_render_block($attributes, $content) {
+    // Валидация входных данных
+    if (!is_array($attributes)) {
+        $attributes = array();
+    }
+
     // Получаем профиль GitHub из атрибутов блока или из глобальных настроек плагина
     $github_profile = !empty($attributes['githubProfile']) ?
-                     $attributes['githubProfile'] :
-                     get_option('github_commit_chart_github_profile', '');
+                      sanitize_text_field($attributes['githubProfile']) :
+                      get_option('github_commit_chart_github_profile', '');
 
     // Проверяем, указан ли профиль GitHub
     if (empty($github_profile)) {
-        return '<p>Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в атрибутах блока.</p>';
+        return '<p>' . __('Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в атрибутах блока.', 'github-commit-chart') . '</p>';
+    }
+
+    // Валидация формата github_profile
+    if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $github_profile)) {
+        return '<p>' . __('Неверный формат профиля GitHub.', 'github-commit-chart') . '</p>';
     }
 
     // Генерируем уникальный ID для контейнера (чтобы избежать конфликтов на странице)
     $unique_id = uniqid('gcc-');
 
     // Получаем тег заголовка из атрибутов блока или используем значение по умолчанию
-    $heading_tag = !empty($attributes['headingTag']) ? $attributes['headingTag'] : 'h3';
+    $allowed_heading_tags = array('h1', 'h2', 'h3', 'h4', 'h5', 'h6');
+    $heading_tag = !empty($attributes['headingTag']) && in_array($attributes['headingTag'], $allowed_heading_tags) ?
+                   $attributes['headingTag'] : 'h3';
 
     // Формируем data-атрибуты для передачи данных в JavaScript
     // Безопасно экранируем значения функцией esc_attr
@@ -63,7 +75,7 @@ function github_commit_chart_render_block($attributes, $content) {
 
     // Возвращаем HTML контейнер для диаграммы
     return '<div class="github-commit-chart-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '>
-                <div class="github-commit-chart-loading">Загрузка диаграммы коммитов...</div>
+                <div class="github-commit-chart-loading">' . __('Загрузка диаграммы коммитов...', 'github-commit-chart') . '</div>
             </div>';
 }
 

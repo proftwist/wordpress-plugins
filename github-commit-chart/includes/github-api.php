@@ -80,12 +80,12 @@ if (!class_exists('GitHubCommitChart_API')) {
          */
         private static function handle_api_error($data) {
             $error_message = isset($data['message']) ? $data['message'] : 'Неизвестная ошибка';
-            
+
             // Добавляем информацию о лимитах API, если доступна
             if (isset($data['documentation_url'])) {
                 $error_message .= ' Подробнее: ' . $data['documentation_url'];
             }
-            
+
             // Возвращаем WP_Error если функция доступна, иначе создаем исключение
             if (class_exists('WP_Error')) {
                 return new WP_Error('github_api_error', 'Ошибка GitHub API: ' . $error_message);
@@ -99,7 +99,7 @@ if (!class_exists('GitHubCommitChart_API')) {
          *
          * @param string $username GitHub username
          * @return array|WP_Error Array of commits or WP_Error on failure
-         * @since 1.0.0
+         * @since 1.8.4
          */
         public static function get_user_commits($username) {
             // Проверяем кэш если функция доступна
@@ -149,7 +149,7 @@ if (!class_exists('GitHubCommitChart_API')) {
          *
          * @param string $username GitHub username
          * @return array|WP_Error Array of repositories or WP_Error on failure
-         * @since 1.0.0
+         * @since 1.8.4
          */
         private static function get_user_repos($username) {
             // Проверяем кэш если функция доступна
@@ -163,7 +163,7 @@ if (!class_exists('GitHubCommitChart_API')) {
             }
 
             $url = self::$api_url . '/users/' . $username . '/repos?per_page=100&sort=updated&direction=desc';
-            
+
             // Выполняем запрос если функция доступна
             if (function_exists('wp_remote_get')) {
                 $response = wp_remote_get($url, array(
@@ -233,7 +233,7 @@ if (!class_exists('GitHubCommitChart_API')) {
             }
 
             $url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&sort=author-date&order=desc&committer=' . $username;
-            
+
             // Выполняем запрос если функция доступна
             if (function_exists('wp_remote_get')) {
                 $response = wp_remote_get($url, array(
