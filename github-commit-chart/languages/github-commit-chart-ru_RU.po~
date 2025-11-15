@@ -1,0 +1,207 @@
+# Copyright (C) 2025 Владимир Бычко
+# This file is distributed under the same license as the GitHub Commit Chart plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: GitHub Commit Chart 1.8.4\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/github-commit-"
+"chart\n"
+"POT-Creation-Date: 2025-11-15T17:11:14+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Russian <ru@li.org>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: github-commit-chart\n"
+
+#. Plugin Name of the plugin
+#: github-commit-chart.php
+msgid "GitHub Commit Chart"
+msgstr "GitHub Commit Chart"
+
+#. Description of the plugin
+#: github-commit-chart.php
+msgid ""
+"Отображает диаграмму коммитов GitHub в виде Gutenberg-блока или шорткода"
+msgstr ""
+"Отображает диаграмму коммитов GitHub в виде Gutenberg-блока или шорткода"
+
+#. Author of the plugin
+#: github-commit-chart.php
+msgid "Владимир Бычко"
+msgstr "Владимир Бычко"
+
+#: github-commit-chart.php:177 github-commit-chart.php:178
+msgid "Git-диаграмма"
+msgstr "Git-диаграмма"
+
+#: github-commit-chart.php:196
+msgid "Git-диаграмма Настройки"
+msgstr "Git-диаграмма Настройки"
+
+#: includes/admin-settings.php:59
+msgid "Настройки GitHub Commit Chart"
+msgstr "Настройки GitHub Commit Chart"
+
+#: includes/admin-settings.php:67
+msgid "Юзернейм Github"
+msgstr "Юзернейм Github"
+
+#: includes/admin-settings.php:76
+msgid "Прикрепить к имени пользователя ссылку на гитхаб-профиль"
+msgstr "Прикрепить к имени пользователя ссылку на гитхаб-профиль"
+
+#: includes/admin-settings.php:85
+msgid "Язык плагина"
+msgstr "Язык плагина"
+
+#: includes/admin-settings.php:94
+msgid "GitHub токен"
+msgstr "GitHub токен"
+
+#: includes/admin-settings.php:110
+msgid "Введите ваш никнейм на GitHub для отображения статистики коммитов.<br>"
+msgstr "Введите ваш никнейм на GitHub для отображения статистики коммитов.<br>"
+
+#: includes/admin-settings.php:111
+msgid ""
+"Вы можете использовать шорткод <code>[github-c github_profile=\"username\"]</"
+"code> для отображения диаграммы в записях и страницах.<br>"
+msgstr ""
+"Вы можете использовать шорткод <code>[github-c github_profile=\"username\"]</"
+"code> для отображения диаграммы в записях и страницах.<br>"
+
+#: includes/admin-settings.php:112
+msgid ""
+"Если не указан параметр github_profile, будет использоваться значение из "
+"глобальных настроек.<br><br>"
+msgstr ""
+"Если не указан параметр github_profile, будет использоваться значение из "
+"глобальных настроек.<br><br>"
+
+#: includes/admin-settings.php:113
+msgid ""
+"<strong>GitHub токен:</strong> Добавление токена повышает лимиты на "
+"обращение к API, что очень важно, если на сайте много посетителей и "
+"диаграмму могут открыть много пользователей одновременно.<br>"
+msgstr ""
+"<strong>GitHub токен:</strong> Добавление токена повышает лимиты на "
+"обращение к API, что очень важно, если на сайте много посетителей и "
+"диаграмму могут открыть много пользователей одновременно.<br>"
+
+#. translators: %s: URL to GitHub documentation
+#: includes/admin-settings.php:116
+#, php-format
+msgid ""
+"Инструкция по созданию токена: <a href=\"%s\" target=\"_blank\">Managing "
+"your personal access tokens</a>"
+msgstr ""
+"Инструкция по созданию токена: <a href=\"%s\" target=\"_blank\">Managing "
+"your personal access tokens</a>"
+
+#: includes/admin-settings.php:139
+msgid "например: username"
+msgstr "например: username"
+
+#: includes/admin-settings.php:140
+msgid "Проверить юзернейм"
+msgstr "Проверить юзернейм"
+
+#: includes/admin-settings.php:250
+msgid "Включить ссылки на GitHub-профили в диаграммах"
+msgstr "Включить ссылки на GitHub-профили в диаграммах"
+
+#: includes/admin-settings.php:272
+msgid "Автоопределение (по языку сайта)"
+msgstr "Автоопределение (по языку сайта)"
+
+#: includes/admin-settings.php:279
+msgid ""
+"Выберите язык для интерфейса плагина. При автоопределении будет "
+"использоваться язык сайта."
+msgstr ""
+"Выберите язык для интерфейса плагина. При автоопределении будет "
+"использоваться язык сайта."
+
+#: includes/admin-settings.php:302
+msgid "Показать токен"
+msgstr "Показать токен"
+
+#: includes/admin-settings.php:303
+msgid "Проверить токен"
+msgstr "Проверить токен"
+
+#: includes/block-registration.php:56
+msgid ""
+"Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в "
+"атрибутах блока."
+msgstr ""
+"Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в "
+"атрибутах блока."
+
+#: includes/block-registration.php:61 includes/class-shortcode-handler.php:58
+msgid "Неверный формат профиля GitHub."
+msgstr "Неверный формат профиля GitHub."
+
+#: includes/block-registration.php:78 includes/class-shortcode-handler.php:70
+msgid "Загрузка диаграммы коммитов..."
+msgstr "Загрузка диаграммы коммитов..."
+
+#: includes/class-ajax-handler.php:74
+msgid "Security check failed"
+msgstr "Ошибка проверки безопасности"
+
+#: includes/class-ajax-handler.php:129
+msgid "GitHub profile is required"
+msgstr "Требуется профиль GitHub"
+
+#: includes/class-ajax-handler.php:134
+msgid "Invalid GitHub profile format"
+msgstr "Неверный формат профиля GitHub"
+
+#: includes/class-ajax-handler.php:139
+msgid "Invalid year specified"
+msgstr "Указан неверный год"
+
+#: includes/class-shortcode-handler.php:53
+msgid ""
+"Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в "
+"атрибутах шорткода."
+msgstr ""
+"Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в "
+"атрибутах шорткода."
+
+#~ msgid "Введите юзернейм"
+#~ msgstr "Введите юзернейм"
+
+#~ msgid "Проверяем..."
+#~ msgstr "Проверяем..."
+
+#~ msgid "Недействительный запрос"
+#~ msgstr "Недействительный запрос"
+
+#~ msgid "Юзернейм не может быть пустым"
+#~ msgstr "Юзернейм не может быть пустым"
+
+#~ msgid "Профиль найден"
+#~ msgstr "Профиль найден"
+
+#~ msgid "Профиль не найден"
+#~ msgstr "Профиль не найден"
+
+#~ msgid "API class not found"
+#~ msgstr "API class not found"
+
+#~ msgid "Токен не может быть пустым"
+#~ msgstr "Токен не может быть пустым"
+
+#~ msgid "Ошибка сети: "
+#~ msgstr "Ошибка сети: "
+
+#~ msgid "Токен действителен"
+#~ msgstr "Токен действителен"
+
+#~ msgid "Ошибка: "
+#~ msgstr "Ошибка: "
