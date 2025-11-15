@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!chartElement) {
             // Если нет, создаем базовую структуру
             renderCommitChartStructure(container, githubProfile, selectedYear);
+            
+            // Показываем плейсхолдер для области диаграммы
+            setTimeout(function() {
+                var chartContainer = container.querySelector('.chart-container');
+                if (chartContainer) {
+                    chartContainer.innerHTML = '<div class="chart-loading-placeholder"><div class="loading-spinner"></div><p>Идёт загрузка коммитов…</p></div>';
+                }
+            }, 100);
         } else {
             // Если да, показываем плейсхолдер только для области диаграммы
             var chartContainer = container.querySelector('.chart-container');
@@ -275,38 +283,34 @@ document.addEventListener('DOMContentLoaded', function() {
         html += '<div class="heatmap-row month-labels">';
         html += '<div class="heatmap-label"></div>'; // Пустая ячейка для выравнивания
 
-        // Создаем отображение месяцев
-        var currentDate = new Date(startDate);
-        var monthStarts = []; // Храним позиции начала месяцев
-
-        // Определяем позиции начала месяцев
-        var maxWeeksForMonths = selectedYear === new Date().getFullYear() ? weeksCount : Math.min(weeksCount, 53);
-        for (var week = 0; week < maxWeeksForMonths; week++) {
-            var monday = new Date(currentDate);
-            var dayOfWeek = monday.getDay();
-            if (dayOfWeek === 0) dayOfWeek = 7; // Воскресенье = 7
-            monday.setDate(monday.getDate() - (dayOfWeek - 1)); // Устанавливаем на понедельник
-
-            // Проверяем, является ли этот понедельник началом месяца
-            if (monday.getDate() <= 7) { // Если 1-е число находится в первой неделе месяца
-                var monthIndex = monday.getMonth();
-                if (monthStarts.length === 0 || monthStarts[monthStarts.length - 1].month !== monthIndex) {
-                    monthStarts.push({
-                        week: week,
-                        month: monthIndex,
-                        name: months[monthIndex]
-                    });
-                }
-            }
-
-            currentDate.setDate(currentDate.getDate() + 7); // Переходим к следующей неделе
+        // Создаем отображение месяцев - всегда отображаем все 12 месяцев
+        var monthPositions = []; // Храним позиции начала каждого месяца
+        
+        // Определяем позиции начала каждого месяца
+        var jan1 = new Date(selectedYear, 0, 1);
+        var firstMonday = new Date(jan1);
+        var dayOfWeek = firstMonday.getDay();
+        if (dayOfWeek === 0) dayOfWeek = 7; // Воскресенье = 7
+        firstMonday.setDate(jan1.getDate() - (dayOfWeek - 1)); // Устанавливаем на понедельник
+        
+        // Для каждого месяца определяем его позицию (неделю) начала
+        for (var monthIndex = 0; monthIndex < 12; monthIndex++) {
+            var monthStart = new Date(selectedYear, monthIndex, 1);
+            var daysFromStart = Math.floor((monthStart - firstMonday) / (1000 * 3600 * 24));
+            var weekPosition = Math.floor(daysFromStart / 7);
+            
+            monthPositions[monthIndex] = {
+                week: weekPosition,
+                name: months[monthIndex]
+            };
         }
 
         // Создаем ячейки для месяцев
         var lastPosition = 0;
-
-        for (var m = 0; m < monthStarts.length; m++) {
-            var monthInfo = monthStarts[m];
+        
+        // Отображаем все 12 месяцев
+        for (var monthIndex = 0; monthIndex < 12; monthIndex++) {
+            var monthInfo = monthPositions[monthIndex];
             var position = monthInfo.week;
 
             // Добавляем пустые ячейки перед месяцем
@@ -328,8 +332,6 @@ document.addEventListener('DOMContentLoaded', function() {
         html += '</div>';
 
         // Создаем строки для каждой недели
-        var currentDate = new Date(startDate);
-
         // Создаем 7 строк для дней недели (Пн-Вс)
         var daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
         for (var dayIndex = 0; dayIndex < 7; dayIndex++) {
@@ -338,16 +340,22 @@ document.addEventListener('DOMContentLoaded', function() {
             // Добавляем метку дня недели
             html += '<div class="heatmap-label">' + daysOfWeek[dayIndex] + '</div>';
 
-            // Создаем ячейки для каждого дня от startDate до endDate
-            var currentWeek = new Date(currentDate);
-            // Устанавливаем на понедельник той недели, в которой находится startDate
-            var dayOfWeek = currentWeek.getDay();
-            if (dayOfWeek === 0) dayOfWeek = 7; // Воскресенье = 7
-            currentWeek.setDate(currentWeek.getDate() - (dayOfWeek - 1) + dayIndex);
-
-            // Отображаем недели от startDate до endDate (всегда полный год)
-            for (var week = 0; week < weeksCount; week++) {
-                var dateStr = currentWeek.toISOString().split('T')[0];
+            // Создаем ячейки для каждого дня недели на протяжении всего года
+            // Для текущего года отображаем только прошедшие недели, для прошлых лет - весь год
+            var weeksToShow = 53;
+            if (selectedYear === new Date().getFullYear()) {
+                // Для текущего года вычисляем количество прошедших недель
+                var today = new Date();
+                var firstDayOfYear = new Date(selectedYear, 0, 1);
+                var daysPassed = Math.floor((today - firstDayOfYear) / (1000 * 3600 * 24));
+                weeksToShow = Math.min(Math.ceil(daysPassed / 7) + 1, 53); // +1 для полноты недели
+            }
+            
+            for (var week = 0; week < weeksToShow; week++) {
+                // Вычисляем дату для текущей ячейки
+                var cellDate = new Date(firstMonday);
+                cellDate.setDate(firstMonday.getDate() + (week * 7) + dayIndex);
+                var dateStr = cellDate.toISOString().split('T')[0];
                 var commits = commitData[dateStr] || 0;
 
                 // Определяем интенсивность цвета (от 0 до 4)
@@ -359,19 +367,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Проверяем, что дата находится в выбранном году
-                var cellDate = new Date(dateStr);
                 var cellYear = cellDate.getFullYear();
 
-                if (cellYear === selectedYear && cellDate <= endDate) {
-                    // Дата в выбранном году и не превышает endDate - показываем коммиты
-                    html += '<div class="heatmap-cell intensity-' + intensity + '" title="' + dateStr + ': ' + commits + ' коммитов"></div>';
+                if (cellYear === selectedYear) {
+                    // Дата в выбранном году - показываем коммиты или пустую ячейку
+                    if (commits > 0) {
+                        html += '<div class="heatmap-cell intensity-' + intensity + '" title="' + dateStr + ': ' + commits + ' коммитов"></div>';
+                    } else {
+                        html += '<div class="heatmap-cell intensity-0" title="' + dateStr + ': 0 коммитов"></div>';
+                    }
                 } else {
-                    // Дата вне диапазона - пустая ячейка
-                    html += '<div class="heatmap-cell"></div>';
+                    // Дата вне выбранного года - пустая ячейка с интенсивностью 0
+                    html += '<div class="heatmap-cell intensity-0"></div>';
                 }
-
-                // Переходим к следующей неделе
-                currentWeek.setDate(currentWeek.getDate() + 7);
+            }
+            
+            // Заполняем оставшиеся ячейки пустыми блоками до 53 недель
+            for (var week = weeksToShow; week < 53; week++) {
+                html += '<div class="heatmap-cell intensity-0"></div>';
             }
 
             html += '</div>';
