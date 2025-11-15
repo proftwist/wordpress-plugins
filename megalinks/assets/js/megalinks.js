@@ -311,7 +311,7 @@
                 left: '-9999px'
             }).appendTo('body');
 
-            tempTooltip.html('<div class="megalinks-content">' + excerpt + '</div><div class="megalinks-image"><img src="" alt=""></div>');
+            tempTooltip.html('<div class="megalinks-image"><img src="" alt=""></div><div class="megalinks-content">' + excerpt + '</div>');
 
             var tooltipHeight = tempTooltip.outerHeight();
             tempTooltip.remove();
@@ -327,14 +327,14 @@
             var spaceAbove = linkRect.top;
             var spaceBelow = windowHeight - linkRect.bottom;
 
-            // Всегда показываем НАД ссылкой, кроме случаев когда ссылка у верхней кромки
-            if (spaceAbove >= tooltipHeight + 25) {
-                // Достаточно места сверху - tooltip вплотную над ссылкой
-                top = linkRect.top - tooltipHeight - 8 + scrollTop;
+            // Проверяем место сверху
+            if (spaceAbove >= tooltipHeight + 15) {
+                // Достаточно места сверху - показываем над ссылкой
+                top = linkRect.top - tooltipHeight - 10 + scrollTop;
                 this.tooltip.removeClass('bottom-arrow').addClass('top-arrow');
             } else {
                 // Недостаточно места сверху - показываем под ссылкой
-                top = linkRect.bottom + 15 + scrollTop;
+                top = linkRect.bottom + 10 + scrollTop;
                 this.tooltip.removeClass('top-arrow').addClass('bottom-arrow');
             }
 
@@ -347,7 +347,7 @@
 
             // Устанавливаем позицию и содержимое с заглушкой для изображения
             this.tooltip
-                .html('<div class="megalinks-content">' + excerpt + '</div><div class="megalinks-image"><div class="image-placeholder"></div></div>')
+                .html('<div class="megalinks-image"><div class="image-placeholder"></div></div><div class="megalinks-content">' + excerpt + '</div>')
                 .css({
                     left: left + 'px',
                     top: top + 'px',
