@@ -48,9 +48,14 @@ class TypoReporterAjaxHandler {
         $error_description = sanitize_textarea_field($_POST['error_description'] ?? '');
         $page_url = esc_url_raw($_POST['page_url'] ?? '');
 
-        // Простая валидация
+        // Валидация
         if (empty($selected_text)) {
             wp_send_json_error(array('message' => __('Selected text is required.', 'typo-reporter')));
+            return;
+        }
+
+        if (strlen($error_description) > 1000) {
+            wp_send_json_error(array('message' => __('Error description is too long. Maximum 1000 characters allowed.', 'typo-reporter')));
             return;
         }
 

@@ -182,14 +182,11 @@
         submitReport: function() {
             if (!this.currentModal) return;
 
+            var self = this;
             var selectedText = $('#typo-reporter-selected-text').val();
             var errorDescription = $('#typo-reporter-error-description').val();
             var pageUrl = window.location.href;
 
-            console.log('=== TYPO REPORTER SUBMIT ===');
-            console.log('Selected text:', selectedText);
-            console.log('Error description:', errorDescription);
-            console.log('Page URL:', pageUrl);
 
             // Валидация - только проверка на наличие выделенного текста
             if (!selectedText.trim()) {
@@ -215,8 +212,6 @@
                     submitButton.prop('disabled', true).text(wp.i18n.__('Sending...', 'typo-reporter'));
                 },
                 success: function(response) {
-                    console.log('Server response:', response);
-
                     if (response.success) {
                         self.showMessage(response.data.message, 'success');
                         self.closeModal();
@@ -226,7 +221,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('AJAX Error:', error);
                     self.showMessage(typoReporterSettings.messages.error, 'error');
                     submitButton.prop('disabled', false).text(originalText);
                 }

@@ -70,12 +70,10 @@ class TypoReporterDatabase {
 
         $table_name = $wpdb->prefix . self::$table_name;
 
-        // Детальное логирование
-        error_log('[TYPO REPORTER DB] Adding report to database:');
-        error_log('[TYPO REPORTER DB] Selected text: "' . $selected_text . '"');
-        error_log('[TYPO REPORTER DB] Error description: "' . $error_description . '"');
-        error_log('[TYPO REPORTER DB] Page URL: "' . $page_url . '"');
-        error_log('[TYPO REPORTER DB] Error description length: ' . strlen($error_description));
+        // Валидация длины описания ошибки
+        if (strlen($error_description) > 1000) {
+            return new WP_Error('description_too_long', __('Error description is too long. Maximum 1000 characters allowed.', 'typo-reporter'));
+        }
 
         $data = array(
             'selected_text' => $selected_text,
@@ -95,26 +93,10 @@ class TypoReporterDatabase {
             '%s'  // status
         );
 
-        error_log('[TYPO REPORTER DB] Data to insert: ' . print_r($data, true));
-        error_log('[TYPO REPORTER DB] Format: ' . print_r($format, true));
-
         $result = $wpdb->insert($table_name, $data, $format);
 
         if ($result === false) {
-            error_log('[TYPO REPORTER DB] INSERT FAILED: ' . $wpdb->last_error);
-            error_log('[TYPO REPORTER DB] Last query: ' . $wpdb->last_query);
             return new WP_Error('db_insert_error', __('Failed to save typo report', 'typo-reporter'));
-        }
-
-        error_log('[TYPO REPORTER DB] INSERT SUCCESS. Report ID: ' . $wpdb->insert_id);
-
-        // Проверим, что действительно сохранилось
-        $saved_report = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $wpdb->insert_id));
-        if ($saved_report) {
-            error_log('[TYPO REPORTER DB] VERIFICATION - Saved report:');
-            error_log('[TYPO REPORTER DB] Selected text: "' . $saved_report->selected_text . '"');
-            error_log('[TYPO REPORTER DB] Error description: "' . $saved_report->error_description . '"');
-            error_log('[TYPO REPORTER DB] Error description length: ' . strlen($saved_report->error_description));
         }
 
         return $wpdb->insert_id;
