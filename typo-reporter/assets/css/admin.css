@@ -1,0 +1,206 @@
+/**
+ * Стили админки для плагина Typo Reporter
+ *
+ * @package TypoReporter
+ * @since 1.0.0
+ */
+
+/* Стили для таблицы репортов */
+.typo-reporter-reports-table {
+    margin-top: 20px;
+}
+
+.typo-reporter-reports-table .column-selected-text {
+    width: 25%;
+}
+
+.typo-reporter-reports-table .column-error-description {
+    width: 30%;
+}
+
+.typo-reporter-reports-table .column-page-url {
+    width: 20%;
+}
+
+.typo-reporter-reports-table .column-status {
+    width: 10%;
+}
+
+.typo-reporter-reports-table .column-created-at {
+    width: 10%;
+}
+
+.typo-reporter-reports-table .column-actions {
+    width: 5%;
+}
+
+/* Стили для статусов */
+.typo-reporter-status-new {
+    background: #fff3cd;
+    color: #856404;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.typo-reporter-status-resolved {
+    background: #d4edda;
+    color: #155724;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.typo-reporter-status-dismissed {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Стили для селектора статуса в таблице */
+.status-select {
+    padding: 2px 4px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #fff;
+    font-size: 12px;
+}
+
+/* Стили для кнопок действий */
+.typo-reporter-action-button {
+    padding: 4px 8px;
+    margin-right: 5px;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+/* Фильтры */
+.typo-reporter-filters {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.typo-reporter-filters .filter-group {
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 10px;
+}
+
+.typo-reporter-filters label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.typo-reporter-filters select,
+.typo-reporter-filters input[type="text"] {
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.typo-reporter-filters .button {
+    padding: 6px 12px;
+    background: #007cba;
+    color: #fff;
+    border: 1px solid #007cba;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.typo-reporter-filters .button:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+/* Статистика */
+.typo-reporter-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.typo-reporter-stat-card {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.typo-reporter-stat-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #007cba;
+}
+
+.typo-reporter-stat-card p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .typo-reporter-stats {
+        flex-direction: column;
+    }
+
+    .typo-reporter-filters .filter-group {
+        display: block;
+        margin-right: 0;
+    }
+
+    .typo-reporter-reports-table .column-selected-text,
+    .typo-reporter-reports-table .column-error-description {
+        width: auto;
+    }
+}
+
+/* Темная тема для админки (если включена) */
+@media (prefers-color-scheme: dark) {
+    .typo-reporter-filters {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
+
+    .typo-reporter-filters label {
+        color: #e2e8f0;
+    }
+
+    .typo-reporter-filters select,
+    .typo-reporter-filters input[type="text"] {
+        background: #1a202c;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+
+    .typo-reporter-stat-card {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
+
+    .typo-reporter-stat-card h3 {
+        color: #63b3ed;
+    }
+
+    .typo-reporter-stat-card p {
+        color: #a0aec0;
+    }
+}

@@ -1,0 +1,263 @@
+/**
+ * Фронтенд стили для плагина Typo Reporter
+ *
+ * @package TypoReporter
+ * @since 1.0.0
+ */
+
+/* Модальное окно */
+.typo-reporter-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.typo-reporter-modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: typoReporterModalFadeIn 0.3s ease-out;
+}
+
+@keyframes typoReporterModalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Заголовок модального окна */
+.typo-reporter-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #ddd;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.typo-reporter-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.typo-reporter-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.typo-reporter-modal-close:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+/* Тело модального окна */
+.typo-reporter-modal-body {
+    padding: 25px;
+}
+
+.typo-reporter-field {
+    margin-bottom: 20px;
+}
+
+.typo-reporter-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+}
+
+.typo-reporter-field textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.typo-reporter-field textarea:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.1);
+}
+
+.typo-reporter-field textarea[readonly] {
+    background: #f8f9fa;
+    cursor: default;
+}
+
+/* Подвал модального окна */
+.typo-reporter-modal-footer {
+    padding: 20px 25px;
+    border-top: 1px solid #ddd;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.typo-reporter-modal-footer .button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #ccc;
+    background: #fff;
+}
+
+.typo-reporter-modal-footer .button:hover {
+    border-color: #999;
+}
+
+.typo-reporter-modal-footer .button.button-primary {
+    background: #007cba;
+    border-color: #007cba;
+    color: #fff;
+}
+
+.typo-reporter-modal-footer .button.button-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+.typo-reporter-modal-footer .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Сообщения */
+.typo-reporter-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: 500;
+    z-index: 1000000;
+    max-width: 400px;
+    animation: typoReporterMessageSlideIn 0.3s ease-out;
+}
+
+@keyframes typoReporterMessageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.typo-reporter-message-success {
+    background: #46b450;
+    border-left: 4px solid #2e7d33;
+}
+
+.typo-reporter-message-error {
+    background: #dc3232;
+    border-left: 4px solid #a00;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+    .typo-reporter-modal {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .typo-reporter-modal-header,
+    .typo-reporter-modal-body,
+    .typo-reporter-modal-footer {
+        padding: 15px 20px;
+    }
+
+    .typo-reporter-modal-footer {
+        flex-direction: column;
+    }
+
+    .typo-reporter-modal-footer .button {
+        width: 100%;
+    }
+}
+
+/* Темная тема (если нужно) */
+@media (prefers-color-scheme: dark) {
+    .typo-reporter-modal {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+
+    .typo-reporter-modal-header {
+        background: #1a202c;
+        border-bottom-color: #4a5568;
+    }
+
+    .typo-reporter-modal-header h3 {
+        color: #e2e8f0;
+    }
+
+    .typo-reporter-field label {
+        color: #e2e8f0;
+    }
+
+    .typo-reporter-field textarea {
+        background: #1a202c;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+
+    .typo-reporter-field textarea:focus {
+        border-color: #63b3ed;
+        box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.2);
+    }
+
+    .typo-reporter-field textarea[readonly] {
+        background: #2d3748;
+    }
+
+    .typo-reporter-modal-footer {
+        background: #1a202c;
+        border-top-color: #4a5568;
+    }
+}

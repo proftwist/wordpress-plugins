@@ -1,0 +1,254 @@
+# Copyright (C) 2025 Владимир Бычко
+# This file is distributed under the same license as the Typo Reporter plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Typo Reporter 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/typo-reporter\n"
+"Last-Translator: Vladimir Bychko <bychko.ru>\n"
+"Language-Team: English <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-11-16T17:22:59+00:00\n"
+"PO-Revision-Date: 2025-11-16 17:24+0000\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: typo-reporter\n"
+
+#. Plugin Name of the plugin
+#: typo-reporter.php
+#: typo-reporter.php:191
+msgid "Typo Reporter"
+msgstr "Typo Reporter"
+
+#. Description of the plugin
+#: typo-reporter.php
+msgid "Позволяет пользователям сообщать об опечатках на сайте"
+msgstr "Allows users to report typos on the website"
+
+#. Author of the plugin
+#: typo-reporter.php
+msgid "Владимир Бычко"
+msgstr "Vladimir Bychko"
+
+#: includes/admin-settings.php:34
+msgid "Main Settings"
+msgstr ""
+
+#: includes/admin-settings.php:42
+msgid "Enable Typo Reporter"
+msgstr ""
+
+#: includes/admin-settings.php:56
+msgid "Configure the main settings for Typo Reporter plugin."
+msgstr ""
+
+#: includes/admin-settings.php:67
+msgid "Enable typo reporting functionality on the frontend"
+msgstr ""
+
+#: includes/admin-settings.php:102
+#: includes/admin-settings.php:273
+#: includes/admin-settings.php:274
+msgid "Typo Reports"
+msgstr ""
+
+#: includes/admin-settings.php:108
+msgid "All statuses"
+msgstr ""
+
+#: includes/admin-settings.php:109
+#: includes/admin-settings.php:167
+msgid "New"
+msgstr ""
+
+#: includes/admin-settings.php:110
+#: includes/admin-settings.php:168
+msgid "Resolved"
+msgstr ""
+
+#: includes/admin-settings.php:111
+#: includes/admin-settings.php:169
+msgid "Dismissed"
+msgstr ""
+
+#: includes/admin-settings.php:113
+msgid "Filter"
+msgstr ""
+
+#: includes/admin-settings.php:118
+#, php-format
+msgid "%s item"
+msgid_plural "%s items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin-settings.php:126
+msgid "Current Page"
+msgstr ""
+
+#: includes/admin-settings.php:128
+msgid "of"
+msgstr ""
+
+#: includes/admin-settings.php:144
+msgid "ID"
+msgstr ""
+
+#: includes/admin-settings.php:145
+msgid "Selected Text"
+msgstr ""
+
+#: includes/admin-settings.php:146
+msgid "Error Description"
+msgstr ""
+
+#: includes/admin-settings.php:147
+msgid "Page URL"
+msgstr ""
+
+#: includes/admin-settings.php:148
+msgid "Status"
+msgstr ""
+
+#: includes/admin-settings.php:149
+msgid "Created At"
+msgstr ""
+
+#: includes/admin-settings.php:150
+msgid "Actions"
+msgstr ""
+
+#: includes/admin-settings.php:156
+msgid "No reports found."
+msgstr ""
+
+#: includes/admin-settings.php:174
+#: assets/js/admin.js:72
+#: assets/js/admin.js:77
+msgid "Delete"
+msgstr ""
+
+#: includes/class-ajax-handler.php:42
+#: includes/class-ajax-handler.php:93
+#: includes/class-ajax-handler.php:128
+msgid "Security check failed."
+msgstr ""
+
+#: includes/class-ajax-handler.php:52
+msgid "Selected text is required."
+msgstr ""
+
+#: includes/class-ajax-handler.php:57
+msgid "Error description is required."
+msgstr ""
+
+#: includes/class-ajax-handler.php:74
+msgid "Report submitted successfully!"
+msgstr ""
+
+#: includes/class-ajax-handler.php:87
+#: includes/class-ajax-handler.php:122
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/class-ajax-handler.php:100
+#: includes/class-ajax-handler.php:136
+msgid "Invalid report ID."
+msgstr ""
+
+#: includes/class-ajax-handler.php:107
+msgid "Failed to delete report."
+msgstr ""
+
+#: includes/class-ajax-handler.php:111
+#: includes/class-assets-manager.php:103
+msgid "Report deleted successfully."
+msgstr ""
+
+#: includes/class-ajax-handler.php:142
+msgid "Invalid status."
+msgstr ""
+
+#: includes/class-ajax-handler.php:149
+msgid "Failed to update report status."
+msgstr ""
+
+#: includes/class-ajax-handler.php:153
+msgid "Report status updated successfully."
+msgstr ""
+
+#: includes/class-assets-manager.php:46
+msgid "Report sent successfully!"
+msgstr ""
+
+#: includes/class-assets-manager.php:47
+msgid "Error sending report. Please try again."
+msgstr ""
+
+#: includes/class-assets-manager.php:48
+msgid "Please select some text first."
+msgstr ""
+
+#: includes/class-assets-manager.php:49
+msgid "Please describe the error."
+msgstr ""
+
+#: includes/class-assets-manager.php:102
+msgid "Are you sure you want to delete this report?"
+msgstr ""
+
+#: includes/class-assets-manager.php:104
+msgid "Error deleting report."
+msgstr ""
+
+#: includes/class-database.php:85
+msgid "Failed to save typo report"
+msgstr ""
+
+#: typo-reporter.php:190
+#: typo-reporter.php:209
+msgid "Typo Reporter Settings"
+msgstr ""
+
+#: assets/js/admin.js:50
+msgid "Deleting..."
+msgstr ""
+
+#: assets/js/admin.js:156
+msgid "Settings saved successfully."
+msgstr ""
+
+#: assets/js/admin.js:158
+#: assets/js/admin.js:162
+msgid "Error saving settings."
+msgstr ""
+
+#: assets/js/frontend.js:83
+msgid "Report Typo"
+msgstr ""
+
+#: assets/js/frontend.js:88
+msgid "Selected Text:"
+msgstr ""
+
+#: assets/js/frontend.js:92
+msgid "Error Description:"
+msgstr ""
+
+#: assets/js/frontend.js:93
+msgid "Please describe what's wrong with the text..."
+msgstr ""
+
+#: assets/js/frontend.js:97
+msgid "Cancel"
+msgstr ""
+
+#: assets/js/frontend.js:98
+#: assets/js/frontend.js:165
+#: assets/js/frontend.js:174
+msgid "Submit Report"
+msgstr ""
+
+#: assets/js/frontend.js:147
+msgid "Sending..."
+msgstr ""
