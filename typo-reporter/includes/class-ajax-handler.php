@@ -43,17 +43,16 @@ class TypoReporterAjaxHandler {
             return;
         }
 
-        // Валидация входных данных
+        // Получаем данные
         $selected_text = sanitize_text_field($_POST['selected_text'] ?? '');
         $error_description = sanitize_textarea_field($_POST['error_description'] ?? '');
         $page_url = esc_url_raw($_POST['page_url'] ?? '');
 
+        // Простая валидация
         if (empty($selected_text)) {
             wp_send_json_error(array('message' => __('Selected text is required.', 'typo-reporter')));
             return;
         }
-
-        // Описание ошибки может быть пустым - просто экранируем для безопасности
 
         if (empty($page_url)) {
             $page_url = home_url($_SERVER['REQUEST_URI'] ?? '/');

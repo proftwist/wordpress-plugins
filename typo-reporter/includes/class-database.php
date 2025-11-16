@@ -38,7 +38,7 @@ class TypoReporterDatabase {
         $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             selected_text text NOT NULL,
-            error_description text NOT NULL,
+            error_description text,
             page_url varchar(255) NOT NULL,
             user_ip varchar(45) NOT NULL,
             user_agent text,
@@ -70,19 +70,51 @@ class TypoReporterDatabase {
 
         $table_name = $wpdb->prefix . self::$table_name;
 
+        // Детальное логирование
+        error_log('[TYPO REPORTER DB] Adding report to database:');
+        error_log('[TYPO REPORTER DB] Selected text: "' . $selected_text . '"');
+        error_log('[TYPO REPORTER DB] Error description: "' . $error_description . '"');
+        error_log('[TYPO REPORTER DB] Page URL: "' . $page_url . '"');
+        error_log('[TYPO REPORTER DB] Error description length: ' . strlen($error_description));
+
         $data = array(
-            'selected_text' => sanitize_text_field($selected_text),
-            'error_description' => sanitize_textarea_field($error_description),
-            'page_url' => esc_url_raw($page_url),
+            'selected_text' => $selected_text,
+            'error_description' => $error_description,
+            'page_url' => $page_url,
             'user_ip' => self::get_user_ip(),
-            'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field($_SERVER['HTTP_USER_AGENT']) : '',
+            'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
             'status' => 'new'
         );
 
-        $result = $wpdb->insert($table_name, $data);
+        $format = array(
+            '%s', // selected_text
+            '%s', // error_description
+            '%s', // page_url
+            '%s', // user_ip
+            '%s', // user_agent
+            '%s'  // status
+        );
+
+        error_log('[TYPO REPORTER DB] Data to insert: ' . print_r($data, true));
+        error_log('[TYPO REPORTER DB] Format: ' . print_r($format, true));
+
+        $result = $wpdb->insert($table_name, $data, $format);
 
         if ($result === false) {
+            error_log('[TYPO REPORTER DB] INSERT FAILED: ' . $wpdb->last_error);
+            error_log('[TYPO REPORTER DB] Last query: ' . $wpdb->last_query);
             return new WP_Error('db_insert_error', __('Failed to save typo report', 'typo-reporter'));
+        }
+
+        error_log('[TYPO REPORTER DB] INSERT SUCCESS. Report ID: ' . $wpdb->insert_id);
+
+        // Проверим, что действительно сохранилось
+        $saved_report = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $wpdb->insert_id));
+        if ($saved_report) {
+            error_log('[TYPO REPORTER DB] VERIFICATION - Saved report:');
+            error_log('[TYPO REPORTER DB] Selected text: "' . $saved_report->selected_text . '"');
+            error_log('[TYPO REPORTER DB] Error description: "' . $saved_report->error_description . '"');
+            error_log('[TYPO REPORTER DB] Error description length: ' . strlen($saved_report->error_description));
         }
 
         return $wpdb->insert_id;

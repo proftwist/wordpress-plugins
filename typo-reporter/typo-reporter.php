@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Typo Reporter
  * Description: Позволяет пользователям сообщать об опечатках на сайте
- * Version: 1.0.2
+ * Version: 1.0.1
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: typo-reporter

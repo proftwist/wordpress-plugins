@@ -13,6 +13,11 @@
     window.TypoReporterFrontend = {
 
         /**
+         * Текущее модальное окно
+         */
+        currentModal: null,
+
+        /**
          * Инициализация фронтенда
          */
         init: function() {
@@ -25,27 +30,6 @@
         bindEvents: function() {
             // Обработчик клавиш для выделения текста
             $(document).on('keydown', this.handleKeydown.bind(this));
-
-            // Обработчики для модального окна
-            $(document).on('click', '.typo-reporter-modal-overlay', this.closeModal.bind(this));
-            $(document).on('click', '.typo-reporter-modal-close', this.closeModal.bind(this));
-            $(document).on('click', '.typo-reporter-modal .typo-reporter-cancel', this.closeModal.bind(this));
-            $(document).on('click', '.typo-reporter-modal .typo-reporter-submit', this.submitReport.bind(this));
-            $(document).on('keydown', '.typo-reporter-modal', this.handleModalKeydown.bind(this));
-
-            // Предотвращаем закрытие модального окна при клике внутри него
-            $(document).on('click', '.typo-reporter-modal', function(e) {
-                e.stopPropagation();
-            });
-
-            // Предотвращаем закрытие модального окна при фокусе на полях
-            $(document).on('focus', '.typo-reporter-modal textarea', function(e) {
-                e.stopPropagation();
-            });
-
-            $(document).on('focus', '.typo-reporter-modal input', function(e) {
-                e.stopPropagation();
-            });
         },
 
         /**
@@ -90,6 +74,11 @@
          * @param {string} selectedText
          */
         showModal: function(selectedText) {
+            // Закрываем предыдущее модальное окно если есть
+            if (this.currentModal) {
+                this.closeModal();
+            }
+
             // Создаем HTML модального окна
             var modalHtml = `
                 <div class="typo-reporter-modal-overlay">
@@ -118,6 +107,10 @@
 
             // Добавляем модальное окно в body
             $('body').append(modalHtml);
+            this.currentModal = $('.typo-reporter-modal-overlay');
+
+            // Привязываем события для этого модального окна
+            this.bindModalEvents();
 
             // Фокусируемся на поле описания ошибки
             setTimeout(function() {
@@ -126,25 +119,86 @@
         },
 
         /**
+         * Привязка событий модального окна
+         */
+        bindModalEvents: function() {
+            var self = this;
+
+            // Закрытие по клику на оверлей
+            this.currentModal.on('click', function(e) {
+                if (e.target === this) {
+                    self.closeModal();
+                }
+            });
+
+            // Закрытие по кнопке закрытия
+            this.currentModal.find('.typo-reporter-modal-close').on('click', function() {
+                self.closeModal();
+            });
+
+            // Отмена
+            this.currentModal.find('.typo-reporter-cancel').on('click', function() {
+                self.closeModal();
+            });
+
+            // Отправка
+            this.currentModal.find('.typo-reporter-submit').on('click', function() {
+                self.submitReport();
+            });
+
+            // Обработка клавиш в модальном окне
+            this.currentModal.on('keydown', function(e) {
+                // ESC для закрытия
+                if (e.key === 'Escape') {
+                    self.closeModal();
+                }
+
+                // Enter + Ctrl для отправки
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    e.preventDefault();
+                    self.submitReport();
+                }
+            });
+
+            // Предотвращаем закрытие при клике внутри модального окна
+            this.currentModal.find('.typo-reporter-modal').on('click', function(e) {
+                e.stopPropagation();
+            });
+        },
+
+        /**
          * Закрытие модального окна
          */
         closeModal: function() {
-            $('.typo-reporter-modal-overlay').remove();
+            if (this.currentModal) {
+                this.currentModal.remove();
+                this.currentModal = null;
+            }
         },
 
         /**
          * Отправка репорта
          */
         submitReport: function() {
+            if (!this.currentModal) return;
+
             var selectedText = $('#typo-reporter-selected-text').val();
-            var errorDescription = $('#typo-reporter-error-description').val().trim();
+            var errorDescription = $('#typo-reporter-error-description').val();
             var pageUrl = window.location.href;
+
+            console.log('=== TYPO REPORTER SUBMIT ===');
+            console.log('Selected text:', selectedText);
+            console.log('Error description:', errorDescription);
+            console.log('Page URL:', pageUrl);
 
             // Валидация - только проверка на наличие выделенного текста
             if (!selectedText.trim()) {
                 this.showMessage(typoReporterSettings.messages.emptyText, 'error');
                 return;
             }
+
+            var submitButton = this.currentModal.find('.typo-reporter-submit');
+            var originalText = submitButton.text();
 
             // Отправляем AJAX запрос
             $.ajax({
@@ -158,52 +212,25 @@
                     nonce: typoReporterSettings.nonce
                 },
                 beforeSend: function() {
-                    $('.typo-reporter-submit').prop('disabled', true).text(wp.i18n.__('Sending...', 'typo-reporter'));
+                    submitButton.prop('disabled', true).text(wp.i18n.__('Sending...', 'typo-reporter'));
                 },
-                success: this.handleSubmitSuccess.bind(this),
-                error: this.handleSubmitError.bind(this)
+                success: function(response) {
+                    console.log('Server response:', response);
+
+                    if (response.success) {
+                        self.showMessage(response.data.message, 'success');
+                        self.closeModal();
+                    } else {
+                        self.showMessage(response.data.message, 'error');
+                        submitButton.prop('disabled', false).text(originalText);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('AJAX Error:', error);
+                    self.showMessage(typoReporterSettings.messages.error, 'error');
+                    submitButton.prop('disabled', false).text(originalText);
+                }
             });
-        },
-
-        /**
-         * Обработка успешной отправки
-         *
-         * @param {Object} response
-         */
-        handleSubmitSuccess: function(response) {
-            if (response.success) {
-                this.showMessage(response.data.message, 'success');
-                this.closeModal();
-            } else {
-                this.showMessage(response.data.message, 'error');
-                $('.typo-reporter-submit').prop('disabled', false).text(wp.i18n.__('Submit Report', 'typo-reporter'));
-            }
-        },
-
-        /**
-         * Обработка ошибки отправки
-         */
-        handleSubmitError: function() {
-            this.showMessage(typoReporterSettings.messages.error, 'error');
-            $('.typo-reporter-submit').prop('disabled', false).text(wp.i18n.__('Submit Report', 'typo-reporter'));
-        },
-
-        /**
-         * Обработчик клавиш в модальном окне
-         *
-         * @param {Event} e
-         */
-        handleModalKeydown: function(e) {
-            // ESC для закрытия
-            if (e.key === 'Escape') {
-                this.closeModal();
-            }
-
-            // Enter в поле описания для отправки
-            if (e.key === 'Enter' && e.ctrlKey && e.target.id === 'typo-reporter-error-description') {
-                e.preventDefault();
-                this.submitReport();
-            }
         },
 
         /**
@@ -242,10 +269,10 @@
          */
         escapeHtml: function(text) {
             var map = {
-                '&': '&',
-                '<': '<',
-                '>': '>',
-                '"': '"',
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
                 "'": '&#039;'
             };
 
