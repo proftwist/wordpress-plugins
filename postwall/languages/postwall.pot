@@ -1,0 +1,63 @@
+# Copyright (C) 2025 Владимир Бычко
+# This file is distributed under the same license as the Post Wall plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Post Wall 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/postwall\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-11-16T20:33:29+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: postwall\n"
+
+#. Plugin Name of the plugin
+#: postwall.php
+#: build/index.js:22
+msgid "Post Wall"
+msgstr ""
+
+#. Description of the plugin
+#: postwall.php
+msgid "Displays post wall charts as Gutenberg blocks or shortcodes"
+msgstr ""
+
+#. Author of the plugin
+#: postwall.php
+msgid "Владимир Бычко"
+msgstr ""
+
+#: includes/block-registration.php:52
+msgid "Please specify the site URL in the block settings."
+msgstr ""
+
+#: includes/block-registration.php:57
+msgid "Invalid site URL format."
+msgstr ""
+
+#: includes/block-registration.php:69
+msgid "Posts from the site for the last 12 months"
+msgstr ""
+
+#: includes/block-registration.php:70
+msgid "Loading post wall..."
+msgstr ""
+
+#: build/index.js:50
+msgid "Кафельная стенка постов"
+msgstr ""
+
+#: build/index.js:57
+msgid "Настройки Post Wall"
+msgstr ""
+
+#: build/index.js:59
+msgid "Адрес сайта"
+msgstr ""
+
+#: build/index.js:64
+msgid "https://example.com"
+msgstr ""

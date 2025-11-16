@@ -1,0 +1,127 @@
+/* Post Wall Frontend Styles */
+
+.postwall-container {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 100%;
+}
+
+.postwall-title {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.postwall-loading {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+/* Heatmap styles from verstka.html */
+:root {
+    --size: 14px;
+    --gap: 4px;
+    --month-gap: 32px;
+
+    --empty: #e5e7eb;
+    --lvl0: #eef2ef;
+    --lvl1: #d5e8d5;
+    --lvl2: #a6d28c;
+    --lvl3: #4fa640;
+    --lvl4: #146c25;
+
+    font-family: Inter, sans-serif;
+}
+
+.heatmap-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 100%;
+}
+
+.months {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--month-gap);
+    flex-wrap: nowrap;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Один месяц */
+.month {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Сетка месяца — ровно 7 строк × N колонок */
+.month-grid {
+    display: grid;
+    grid-template-rows: repeat(7, var(--size));
+    grid-auto-flow: column;
+    grid-auto-columns: var(--size);
+    gap: var(--gap);
+}
+
+/* Клетка */
+.day {
+    width: var(--size);
+    height: var(--size);
+    border-radius: 2px;
+}
+
+.empty { background: var(--empty); }
+
+.lvl-0 { background: var(--lvl0); }
+.lvl-1 { background: var(--lvl1); }
+.lvl-2 { background: var(--lvl2); }
+.lvl-3 { background: var(--lvl3); }
+.lvl-4 { background: var(--lvl4); }
+
+.month-label {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
+/* Чтобы сетка помещалась без горизонтального скролла */
+.months {
+    overflow: hidden;
+}
+
+/* Responsive design */
+@media (max-width: 900px) {
+    :root {
+        --size: 12px;
+        --gap: 3px;
+        --month-gap: 20px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .postwall-container {
+        background: #1a1a1a;
+        border-color: #333;
+    }
+
+    .postwall-title {
+        color: #e1e1e1;
+    }
+
+    .postwall-loading {
+        color: #ccc;
+    }
+
+    .postwall-months {
+        color: #ccc;
+    }
+}
