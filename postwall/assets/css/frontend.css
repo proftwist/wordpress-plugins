@@ -30,11 +30,11 @@
     --month-gap: 32px;
 
     --empty: #e5e7eb;
-    --lvl0: #eef2ef;
-    --lvl1: #d5e8d5;
-    --lvl2: #a6d28c;
-    --lvl3: #4fa640;
-    --lvl4: #146c25;
+    --lvl0: #f0f9f0;
+    --lvl1: #9be69b;
+    --lvl2: #4ade80;
+    --lvl3: #22c55e;
+    --lvl4: #16a34a;
 
     font-family: Inter, sans-serif;
 }

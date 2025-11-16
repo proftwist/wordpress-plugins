@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Post Wall
  * Description: Displays post wall charts as Gutenberg blocks or shortcodes
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: postwall
