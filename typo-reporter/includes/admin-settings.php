@@ -486,18 +486,8 @@ function typo_reporter_display_reports() {
 }
 
 /**
- * Добавление пункта меню для просмотра репортов
+ * Добавление пункта меню для просмотра репортов (удалено - все на одной странице)
  *
  * @since 1.0.0
+ * @deprecated 1.0.1 Все функционал объединен на основной странице настроек
  */
-function typo_reporter_add_reports_menu() {
-    add_submenu_page(
-        'options-general.php',
-        __('Typo Reports', 'typo-reporter'),
-        __('Typo Reports', 'typo-reporter'),
-        'manage_options',
-        'typo-reports',
-        'typo_reporter_display_reports'
-    );
-}
-add_action('admin_menu', 'typo_reporter_add_reports_menu');
