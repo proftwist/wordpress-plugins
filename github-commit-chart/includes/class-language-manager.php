@@ -43,6 +43,9 @@ class GitHubCommitChart_Language_Manager {
      * @since 1.8.5
      */
     public static function init() {
+        // Filter to set plugin locale to Russian by default
+        add_filter('plugin_locale', array(__CLASS__, 'filter_plugin_locale'), 10, 2);
+
         // Load text domain after theme and plugins are loaded
         add_action('init', array(__CLASS__, 'load_textdomain'), 1);
 
@@ -76,7 +79,10 @@ class GitHubCommitChart_Language_Manager {
             }
         }
 
-        // Always include English as fallback
+        // Always include English as fallback, but prioritize Russian
+        if (!isset(self::$available_languages['ru_RU'])) {
+            self::$available_languages['ru_RU'] = 'Русский';
+        }
         if (!isset(self::$available_languages['en_US'])) {
             self::$available_languages['en_US'] = 'English (US)';
         }
@@ -140,14 +146,37 @@ class GitHubCommitChart_Language_Manager {
             }
         }
 
-        // Fallback to English
-        return 'en_US';
+        // Default to Russian if no match found
+        return 'ru_RU';
+    }
+
+    /**
+     * Filter plugin locale to set Russian as default
+     *
+     * @param string $locale Current locale
+     * @param string $domain Text domain
+     * @return string Filtered locale
+     * @since 1.8.5
+     */
+    public static function filter_plugin_locale($locale, $domain) {
+        // Only affect our plugin
+        if ($domain === 'github-commit-chart') {
+            // If WordPress locale is English, use Russian as default
+            if ($locale === 'en_US') {
+                return 'ru_RU';
+            }
+            // If locale is not available, default to Russian
+            if (!in_array($locale, array_keys(self::get_available_languages()))) {
+                return 'ru_RU';
+            }
+        }
+        return $locale;
     }
 
     /**
      * Load text domain for the plugin
      *
-     * Uses standard WordPress locale detection
+     * Uses standard WordPress locale detection, but defaults to Russian
      *
      * @since 1.8.5
      */
@@ -155,7 +184,7 @@ class GitHubCommitChart_Language_Manager {
         // Store current language
         self::$current_language = get_locale();
 
-        // Load the text domain
+        // Load the text domain (locale will be filtered by filter_plugin_locale)
         load_plugin_textdomain(
             'github-commit-chart',
             false,

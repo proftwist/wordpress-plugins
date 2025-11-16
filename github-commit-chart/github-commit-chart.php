@@ -1,11 +1,12 @@
 <?php
 /**
  * Plugin Name: GitHub Commit Chart
- * Description: Отображает диаграмму коммитов GitHub в виде Gutenberg-блока или шорткода
- * Version: 1.8.4
+ * Description: Displays GitHub commit charts as Gutenberg blocks or shortcodes
+ * Version: 2.0.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: github-commit-chart
+ * Domain Path: /languages
  *
  * @package GitHubCommitChart
  */
@@ -16,7 +17,7 @@ defined('ABSPATH') || exit;
 // Определение констант для удобства работы с путями
 define('GCC_PLUGIN_PATH', plugin_dir_path(__FILE__)); // Абсолютный путь к папке плагина
 define('GCC_PLUGIN_URL', plugin_dir_url(__FILE__));   // URL к папке плагина
-define('GCC_PLUGIN_VERSION', '1.8.3');                // Версия плагина
+define('GCC_PLUGIN_VERSION', '2.0.0');                // Версия плагина
 
 // Подключение вспомогательных файлов
 require_once GCC_PLUGIN_PATH . 'includes/class-assets-manager.php';       // Менеджер ресурсов
@@ -69,6 +70,22 @@ class GitHubCommitChart {
         // Регистрация основных хуков WordPress
         add_action('init', array($this, 'init'));  // Инициализация плагина
         add_action('admin_menu', array($this, 'add_admin_menu')); // Меню в админке
+
+        // Загрузка текстового домена
+        add_action('plugins_loaded', array($this, 'load_textdomain'));
+    }
+
+    /**
+     * Загрузка текстового домена для локализации
+     *
+     * @since 2.0.0
+     */
+    public function load_textdomain() {
+        load_plugin_textdomain(
+            'github-commit-chart',
+            false,
+            dirname(plugin_basename(__FILE__)) . '/languages/'
+        );
     }
 
     /**
@@ -103,10 +120,13 @@ class GitHubCommitChart {
         wp_enqueue_script(
             'github-commit-chart-block',        // Уникальный идентификатор скрипта
             GCC_PLUGIN_URL . 'build/index.js',  // URL к файлу
-            array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components'), // Зависимости WordPress
+            array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n'), // Зависимости WordPress
             file_exists($index_js) ? filemtime($index_js) : time(), // Версия на основе времени изменения файла
             true // Загружать в футере
         );
+
+        // Установка переводов для скрипта
+        wp_set_script_translations('github-commit-chart-block', 'github-commit-chart', GCC_PLUGIN_PATH . 'languages');
 
         // Подключение CSS для блока в редакторе
         wp_enqueue_style(
@@ -136,10 +156,13 @@ class GitHubCommitChart {
         wp_enqueue_script(
             'github-commit-chart-frontend',     // Уникальный идентификатор скрипта
             GCC_PLUGIN_URL . 'build/frontend.js', // URL к файлу
-            array('wp-element'),                 // Зависимость React для работы с компонентами
+            array('wp-element', 'wp-i18n'),                 // Зависимость React для работы с компонентами
             file_exists($frontend_js) ? filemtime($frontend_js) : time(), // Версия файла
             true                                 // Загружать в футере
         );
+
+        // Установка переводов для фронтенд скрипта
+        wp_set_script_translations('github-commit-chart-frontend', 'github-commit-chart', GCC_PLUGIN_PATH . 'languages');
 
         // Передача настроек плагина в JavaScript
         // Создает глобальный объект githubCommitChartSettings доступный в JS
@@ -147,7 +170,8 @@ class GitHubCommitChart {
             'ajaxUrl' => admin_url('admin-ajax.php'),    // URL для AJAX запросов
             'githubProfile' => get_option('github_commit_chart_github_profile', ''), // Профиль GitHub из настроек
             'nonce' => wp_create_nonce('gcc_get_commit_data'), // Токен безопасности для AJAX
-            'linkUsernames' => get_option('github_commit_chart_link_usernames', false) // Настройка для ссылок на профили
+            'linkUsernames' => get_option('github_commit_chart_link_usernames', false), // Настройка для ссылок на профили
+            'locale' => get_locale() // Передаем локаль для фронтенда
         ));
 
         // Подключение CSS стилей для фронтенда
@@ -162,7 +186,7 @@ class GitHubCommitChart {
     /**
      * Добавление пункта меню в админке
      *
-     * Создает подменю в разделе "Настройки" для управления настройками плагина.
+     * Создает подменю в раздел "Настройки" для управления настройками плагина.
      *
      * @since 1.8.4
      */
@@ -170,8 +194,8 @@ class GitHubCommitChart {
         // Добавляем подменю в раздел "Настройки"
         add_submenu_page(
             'options-general.php',
-            __('Git-диаграмма', 'github-commit-chart'),
-            __('Git-диаграмма', 'github-commit-chart'),
+            __('GitHub Commit Chart Settings', 'github-commit-chart'),
+            __('GitHub Commit Chart', 'github-commit-chart'),
             'manage_options',
             'github-commit-chart',
             array($this, 'options_page')
@@ -189,7 +213,7 @@ class GitHubCommitChart {
     public function options_page() {
         ?>
         <div class="wrap">
-            <h1><?php _e('Git-диаграмма Настройки', 'github-commit-chart'); ?></h1>
+            <h1><?php _e('GitHub Commit Chart Settings', 'github-commit-chart'); ?></h1>
             <form action="options.php" method="post">
                 <?php
                 settings_fields('github_commit_chart_settings');

@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "i18n:pot": "wp i18n make-pot . languages/github-commit-chart.pot --domain=github-commit-chart --include=includes,build --exclude=node_modules,vendor",
+    "i18n:mo": "msgfmt languages/github-commit-chart-ru_RU.po -o languages/github-commit-chart-ru_RU.mo && msgfmt languages/github-commit-chart-en_US.po -o languages/github-commit-chart-en_US.mo",
+    "i18n:json": "wp i18n make-json languages --no-purge",
+    "i18n:build": "npm-run-all i18n:pot i18n:mo i18n:json"
+  },
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}

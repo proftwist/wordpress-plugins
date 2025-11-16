@@ -56,7 +56,7 @@ function github_commit_chart_settings_init() {
     // Добавление секции настроек
     add_settings_section(
         'github_commit_chart_settings_section',           // ID секции
-        'Настройки GitHub Commit Chart',                  // Заголовок секции
+        __('GitHub Commit Chart Settings', 'github-commit-chart'), // Заголовок секции
         'github_commit_chart_settings_section_callback',  // Callback функция описания секции
         'github_commit_chart_settings'                    // ID страницы настроек
     );
@@ -64,7 +64,7 @@ function github_commit_chart_settings_init() {
     // Добавление поля для ввода профиля GitHub
     add_settings_field(
         'github_commit_chart_github_profile',               // ID поля
-        'Юзернейм Github',                                  // Метка поля
+        __('GitHub Username', 'github-commit-chart'),       // Метка поля
         'github_commit_chart_github_profile_render',        // Функция отрисовки поля
         'github_commit_chart_settings',                     // ID страницы настроек
         'github_commit_chart_settings_section'              // ID секции
@@ -73,7 +73,7 @@ function github_commit_chart_settings_init() {
     // Добавление поля для чекбокса прикрепления ссылок
     add_settings_field(
         'github_commit_chart_link_usernames',               // ID поля
-        'Прикрепить к имени пользователя ссылку на гитхаб-профиль', // Метка поля
+        __('Link usernames to GitHub profiles', 'github-commit-chart'), // Метка поля
         'github_commit_chart_link_usernames_render',        // Функция отрисовки поля
         'github_commit_chart_settings',                     // ID страницы настроек
         'github_commit_chart_settings_section'              // ID секции
@@ -82,7 +82,7 @@ function github_commit_chart_settings_init() {
     // Добавление поля для ввода GitHub токена
     add_settings_field(
         'github_commit_chart_github_token',                 // ID поля
-        'GitHub токен',                                     // Метка поля
+        __('GitHub Token', 'github-commit-chart'),          // Метка поля
         'github_commit_chart_github_token_render',          // Функция отрисовки поля
         'github_commit_chart_settings',                     // ID страницы настроек
         'github_commit_chart_settings_section'              // ID секции
@@ -98,13 +98,13 @@ function github_commit_chart_settings_init() {
  * @since 1.0.0
  */
 function github_commit_chart_settings_section_callback() {
-    _e('Введите ваш никнейм на GitHub для отображения статистики коммитов.<br>', 'github-commit-chart');
-    _e('Вы можете использовать шорткод <code>[github-c github_profile="username"]</code> для отображения диаграммы в записях и страницах.<br>', 'github-commit-chart');
-    _e('Если не указан параметр github_profile, будет использоваться значение из глобальных настроек.<br><br>', 'github-commit-chart');
-    _e('<strong>GitHub токен:</strong> Добавление токена повышает лимиты на обращение к API, что очень важно, если на сайте много посетителей и диаграмму могут открыть много пользователей одновременно.<br>', 'github-commit-chart');
+    _e('Enter your GitHub username to display commit statistics.<br>', 'github-commit-chart');
+    _e('You can use the shortcode <code>[github-c github_profile="username"]</code> to display the chart in posts and pages.<br>', 'github-commit-chart');
+    _e('If the github_profile parameter is not specified, the value from global settings will be used.<br><br>', 'github-commit-chart');
+    _e('<strong>GitHub Token:</strong> Adding a token increases API rate limits, which is very important if your site has many visitors and the chart can be viewed by many users simultaneously.<br>', 'github-commit-chart');
     printf(
         /* translators: %s: URL to GitHub documentation */
-        __('Инструкция по созданию токена: <a href="%s" target="_blank">Managing your personal access tokens</a>', 'github-commit-chart'),
+        __('Token creation instructions: <a href="%s" target="_blank">Managing your personal access tokens</a>', 'github-commit-chart'),
         'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens'
     );
 }
@@ -127,8 +127,8 @@ function github_commit_chart_github_profile_render() {
     $github_profile = get_option('github_commit_chart_github_profile');
     ?>
     <!-- Поле ввода с экранированным значением для безопасности -->
-    <input type='text' id='github_commit_chart_github_profile' name='github_commit_chart_github_profile' value='<?php echo esc_attr($github_profile); ?>' placeholder='например: username'>
-    <button type="button" id="check_username_btn" class="button">Проверить юзернейм</button>
+    <input type='text' id='github_commit_chart_github_profile' name='github_commit_chart_github_profile' value='<?php echo esc_attr($github_profile); ?>' placeholder='<?php _e('e.g., username', 'github-commit-chart'); ?>'>
+    <button type="button" id="check_username_btn" class="button"><?php _e('Check Username', 'github-commit-chart'); ?></button>
     <span id="username_check_result"></span>
     <script type="text/javascript">
     jQuery(document).ready(function($) {
@@ -137,11 +137,11 @@ function github_commit_chart_github_profile_render() {
             var resultSpan = $('#username_check_result');
 
             if (username === '') {
-                resultSpan.html('<span style="color: red;">Введите юзернейм</span>');
+                resultSpan.html('<span style="color: red;"><?php _e('Please enter username', 'github-commit-chart'); ?></span>');
                 return;
             }
 
-            resultSpan.html('<span style="color: blue;">Проверяем...</span>');
+            resultSpan.html('<span style="color: blue;"><?php _e('Checking...', 'github-commit-chart'); ?></span>');
 
             $.ajax({
                 url: ajaxurl,
@@ -159,7 +159,7 @@ function github_commit_chart_github_profile_render() {
                     }
                 },
                 error: function() {
-                    resultSpan.html('<span style="color: red;">Ошибка при проверке</span>');
+                    resultSpan.html('<span style="color: red;"><?php _e('Error checking username', 'github-commit-chart'); ?></span>');
                 }
             });
         });
@@ -238,7 +238,7 @@ function github_commit_chart_link_usernames_render() {
     ?>
     <!-- Чекбокс для прикрепления ссылок -->
     <input type='checkbox' id='github_commit_chart_link_usernames' name='github_commit_chart_link_usernames' value='1' <?php checked($link_usernames, true); ?>>
-    <label for='github_commit_chart_link_usernames'>Включить ссылки на GitHub-профили в диаграммах</label>
+    <label for='github_commit_chart_link_usernames'><?php _e('Enable links to GitHub profiles in charts', 'github-commit-chart'); ?></label>
     <?php
 }
 
@@ -261,8 +261,8 @@ function github_commit_chart_github_token_render() {
     ?>
     <!-- Поле ввода с экранированным значением для безопасности -->
     <input type='password' id='github_commit_chart_github_token' name='github_commit_chart_github_token' value='<?php echo esc_attr($github_token); ?>' placeholder='ghp_xxxxxxxxxxxxxxxxxxxx'>
-    <button type="button" id="toggle_token_visibility" class="button">Показать токен</button>
-    <button type="button" id="check_token_btn" class="button">Проверить токен</button>
+    <button type="button" id="toggle_token_visibility" class="button"><?php _e('Show Token', 'github-commit-chart'); ?></button>
+    <button type="button" id="check_token_btn" class="button"><?php _e('Check Token', 'github-commit-chart'); ?></button>
     <span id="token_check_result"></span>
     <script type="text/javascript">
     jQuery(document).ready(function($) {
@@ -273,10 +273,10 @@ function github_commit_chart_github_token_render() {
         toggleBtn.on('click', function() {
             if (tokenInput.attr('type') === 'password') {
                 tokenInput.attr('type', 'text');
-                toggleBtn.text('Скрыть токен');
+                toggleBtn.text('<?php _e('Hide Token', 'github-commit-chart'); ?>');
             } else {
                 tokenInput.attr('type', 'password');
-                toggleBtn.text('Показать токен');
+                toggleBtn.text('<?php _e('Show Token', 'github-commit-chart'); ?>');
             }
         });
 
@@ -285,11 +285,11 @@ function github_commit_chart_github_token_render() {
             var resultSpan = $('#token_check_result');
 
             if (token === '') {
-                resultSpan.html('<span style="color: red;">Введите токен</span>');
+                resultSpan.html('<span style="color: red;"><?php _e('Please enter token', 'github-commit-chart'); ?></span>');
                 return;
             }
 
-            resultSpan.html('<span style="color: blue;">Проверяем...</span>');
+            resultSpan.html('<span style="color: blue;"><?php _e('Checking...', 'github-commit-chart'); ?></span>');
 
             $.ajax({
                 url: ajaxurl,
@@ -307,7 +307,7 @@ function github_commit_chart_github_token_render() {
                     }
                 },
                 error: function() {
-                    resultSpan.html('<span style="color: red;">Ошибка при проверке</span>');
+                    resultSpan.html('<span style="color: red;"><?php _e('Error checking token', 'github-commit-chart'); ?></span>');
                 }
             });
         });
@@ -341,7 +341,7 @@ function github_commit_chart_check_username() {
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: Invalid nonce in username check');
         }
-        wp_die('Недействительный запрос');
+        wp_die(__('Invalid request', 'github-commit-chart'));
     }
 
     // Получаем юзернейм из POST данных
@@ -352,7 +352,7 @@ function github_commit_chart_check_username() {
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: Empty username in check request');
         }
-        wp_send_json_error('Юзернейм не может быть пустым');
+        wp_send_json_error(__('Username cannot be empty', 'github-commit-chart'));
     }
 
     // Проверяем существование пользователя
@@ -361,18 +361,18 @@ function github_commit_chart_check_username() {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log('GitHub Commit Chart: Username ' . $username . ' found');
             }
-            wp_send_json_success('Профиль найден');
+            wp_send_json_success(__('Profile found', 'github-commit-chart'));
         } else {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log('GitHub Commit Chart: Username ' . $username . ' not found');
             }
-            wp_send_json_error('Профиль не найден');
+            wp_send_json_error(__('Profile not found', 'github-commit-chart'));
         }
     } else {
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: API class not found in username check');
         }
-        wp_send_json_error('API class not found');
+        wp_send_json_error(__('API class not found', 'github-commit-chart'));
     }
 }
 
@@ -405,7 +405,7 @@ function github_commit_chart_check_token() {
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: Invalid nonce in token check');
         }
-        wp_die('Недействительный запрос');
+        wp_die(__('Invalid request', 'github-commit-chart'));
     }
 
     // Получаем токен из POST данных
@@ -416,7 +416,7 @@ function github_commit_chart_check_token() {
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: Empty token in check request');
         }
-        wp_send_json_error('Токен не может быть пустым');
+        wp_send_json_error(__('Token cannot be empty', 'github-commit-chart'));
     }
 
     // Проверяем токен через API
@@ -432,7 +432,7 @@ function github_commit_chart_check_token() {
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: Network error in token check - ' . $response->get_error_message());
         }
-        wp_send_json_error('Ошибка сети: ' . $response->get_error_message());
+        wp_send_json_error(__('Network error:', 'github-commit-chart') . ' ' . $response->get_error_message());
     }
 
     $status_code = wp_remote_retrieve_response_code($response);
@@ -441,17 +441,17 @@ function github_commit_chart_check_token() {
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: Token is valid');
         }
-        wp_send_json_success('Токен действителен');
+        wp_send_json_success(__('Token is valid', 'github-commit-chart'));
     } else {
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
-        $error_message = isset($data['message']) ? $data['message'] : 'Токен недействителен';
+        $error_message = isset($data['message']) ? $data['message'] : __('Token is invalid', 'github-commit-chart');
 
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('GitHub Commit Chart: Token is invalid - ' . $error_message);
         }
 
-        wp_send_json_error('Ошибка: ' . $error_message);
+        wp_send_json_error(__('Error:', 'github-commit-chart') . ' ' . $error_message);
     }
 }
 

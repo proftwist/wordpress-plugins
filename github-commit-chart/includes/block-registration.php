@@ -53,12 +53,12 @@ function github_commit_chart_render_block($attributes, $content) {
 
     // Проверяем, указан ли профиль GitHub
     if (empty($github_profile)) {
-        return '<p>' . __('Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в атрибутах блока.', 'github-commit-chart') . '</p>';
+        return '<p>' . __('Please specify GitHub profile path in plugin settings or block attributes.', 'github-commit-chart') . '</p>';
     }
 
     // Валидация формата github_profile
     if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $github_profile)) {
-        return '<p>' . __('Неверный формат профиля GitHub.', 'github-commit-chart') . '</p>';
+        return '<p>' . __('Invalid GitHub profile format.', 'github-commit-chart') . '</p>';
     }
 
     // Генерируем уникальный ID для контейнера (чтобы избежать конфликтов на странице)
@@ -75,7 +75,7 @@ function github_commit_chart_render_block($attributes, $content) {
 
     // Возвращаем HTML контейнер для диаграммы
     return '<div class="github-commit-chart-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '>
-                <div class="github-commit-chart-loading">' . __('Загрузка диаграммы коммитов...', 'github-commit-chart') . '</div>
+                <div class="github-commit-chart-loading">' . __('Loading commit chart...', 'github-commit-chart') . '</div>
             </div>';
 }
 

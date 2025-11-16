@@ -1,0 +1,345 @@
+# Russian translations for GitHub Commit Chart plugin
+# Copyright (C) 2025 Vladimir Bychko
+# This file is distributed under the same license as the GitHub Commit Chart plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: GitHub Commit Chart 2.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-15 12:00+0000\n"
+"PO-Revision-Date: 2025-01-15 12:00+0000\n"
+"Last-Translator: Vladimir Bychko <vladimir@bychko.ru>\n"
+"Language-Team: Russian\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: github-commit-chart.php:10
+msgid "GitHub Commit Chart"
+msgstr "GitHub Диаграмма Коммитов"
+
+#: github-commit-chart.php:11
+msgid "Displays GitHub commit charts as Gutenberg blocks or shortcodes"
+msgstr "Отображает диаграммы коммитов GitHub в виде блоков Gutenberg или шорткодов"
+
+#: includes/admin-settings.php:89
+msgid "GitHub Commit Chart Settings"
+msgstr "Настройки GitHub Диаграммы Коммитов"
+
+#: includes/admin-settings.php:90
+msgid "Enter your GitHub username to display commit statistics.<br>"
+msgstr "Введите ваш никнейм на GitHub для отображения статистики коммитов.<br>"
+
+#: includes/admin-settings.php:91
+msgid "You can use the shortcode <code>[github-c github_profile=\"username\"]</code> to display the chart in posts and pages.<br>"
+msgstr "Вы можете использовать шорткод <code>[github-c github_profile=\"username\"]</code> для отображения диаграммы в записях и страницах.<br>"
+
+#: includes/admin-settings.php:92
+msgid "If the github_profile parameter is not specified, the value from global settings will be used.<br><br>"
+msgstr "Если не указан параметр github_profile, будет использоваться значение из глобальных настроек.<br><br>"
+
+#: includes/admin-settings.php:93
+msgid "<strong>GitHub Token:</strong> Adding a token increases API rate limits, which is very important if your site has many visitors and the chart can be viewed by many users simultaneously.<br>"
+msgstr "<strong>GitHub токен:</strong> Добавление токена повышает лимиты на обращение к API, что очень важно, если на сайте много посетителей и диаграмму могут открыть много пользователей одновременно.<br>"
+
+#: includes/admin-settings.php:94
+msgid "Token creation instructions: <a href=\"%s\" target=\"_blank\">Managing your personal access tokens</a>"
+msgstr "Инструкция по созданию токена: <a href=\"%s\" target=\"_blank\">Managing your personal access tokens</a>"
+
+#: includes/admin-settings.php:124
+msgid "GitHub Username"
+msgstr "Юзернейм Github"
+
+#: includes/admin-settings.php:125
+msgid "e.g., username"
+msgstr "например: username"
+
+#: includes/admin-settings.php:126
+msgid "Check Username"
+msgstr "Проверить юзернейм"
+
+#: includes/admin-settings.php:127
+msgid "Please enter username"
+msgstr "Введите юзернейм"
+
+#: includes/admin-settings.php:128
+msgid "Checking..."
+msgstr "Проверяем..."
+
+#: includes/admin-settings.php:129
+msgid "Error checking username"
+msgstr "Ошибка при проверке"
+
+#: includes/admin-settings.php:191
+msgid "Link usernames to GitHub profiles"
+msgstr "Прикрепить к имени пользователя ссылку на гитхаб-профиль"
+
+#: includes/admin-settings.php:192
+msgid "Enable links to GitHub profiles in charts"
+msgstr "Включить ссылки на GitHub-профили в диаграммах"
+
+#: includes/admin-settings.php:225
+msgid "GitHub Token"
+msgstr "GitHub токен"
+
+#: includes/admin-settings.php:226
+msgid "Show Token"
+msgstr "Показать токен"
+
+#: includes/admin-settings.php:227
+msgid "Hide Token"
+msgstr "Скрыть токен"
+
+#: includes/admin-settings.php:228
+msgid "Check Token"
+msgstr "Проверить токен"
+
+#: includes/admin-settings.php:229
+msgid "Please enter token"
+msgstr "Введите токен"
+
+#: includes/admin-settings.php:230
+msgctxt "token_check"
+msgid "Checking..."
+msgstr "Проверяем токен..."
+
+#: includes/admin-settings.php:231
+msgctxt "token_error"
+msgid "Error checking token"
+msgstr "Ошибка при проверке токена"
+
+#: includes/admin-settings.php:262
+msgid "Invalid request"
+msgstr "Недействительный запрос"
+
+#: includes/admin-settings.php:271
+msgid "Username cannot be empty"
+msgstr "Юзернейм не может быть пустым"
+
+#: includes/admin-settings.php:279
+msgid "Profile found"
+msgstr "Профиль найден"
+
+#: includes/admin-settings.php:283
+msgid "Profile not found"
+msgstr "Профиль не найден"
+
+#: includes/admin-settings.php:287
+msgid "API class not found"
+msgstr "API class not found"
+
+#: includes/admin-settings.php:315
+msgid "Token cannot be empty"
+msgstr "Токен не может быть пустым"
+
+#: includes/admin-settings.php:324
+msgid "Network error:"
+msgstr "Ошибка сети:"
+
+#: includes/admin-settings.php:332
+msgid "Token is valid"
+msgstr "Токен действителен"
+
+#: includes/admin-settings.php:336
+msgid "Token is invalid"
+msgstr "Токен недействителен"
+
+#: includes/admin-settings.php:337
+msgid "Error:"
+msgstr "Ошибка:"
+
+#: includes/class-ajax-handler.php:50
+msgid "Security check failed"
+msgstr "Проверка безопасности не пройдена"
+
+#: includes/class-ajax-handler.php:94
+msgid "GitHub profile is required"
+msgstr "Требуется профиль GitHub"
+
+#: includes/class-ajax-handler.php:99
+msgid "Invalid GitHub profile format"
+msgstr "Неверный формат профиля GitHub"
+
+#: includes/class-ajax-handler.php:104
+msgid "Invalid year specified"
+msgstr "Указан неверный год"
+
+#: includes/class-shortcode-handler.php:41
+msgid "Please specify GitHub profile path in plugin settings or shortcode attributes."
+msgstr "Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в атрибутах шорткода."
+
+#: includes/class-shortcode-handler.php:46
+msgid "Invalid GitHub profile format."
+msgstr "Неверный формат профиля GitHub."
+
+#: includes/class-shortcode-handler.php:60
+msgid "Loading commit chart..."
+msgstr "Загрузка диаграммы коммитов..."
+
+#: includes/block-registration.php:42
+msgid "Please specify GitHub profile path in plugin settings or block attributes."
+msgstr "Пожалуйста, укажите путь к профилю GitHub в настройках плагина или в атрибутах блока."
+
+#: includes/block-registration.php:47
+msgctxt "block_error"
+msgid "Invalid GitHub profile format."
+msgstr "Неверный формат профиля GitHub в блоке."
+
+#: includes/block-registration.php:61
+msgctxt "block_loading"
+msgid "Loading commit chart..."
+msgstr "Загрузка диаграммы коммитов в блоке..."
+
+#: build/index.js:22
+msgid "Git Diagram"
+msgstr "Git-диаграмма"
+
+#: build/index.js:56
+msgid "Git diagram for"
+msgstr "Git-диаграмма для"
+
+#: build/index.js:57
+msgid "will be displayed here"
+msgstr "будет отображаться здесь"
+
+#: build/index.js:58
+msgid "Enter GitHub username in block settings"
+msgstr "Введите имя пользователя GitHub в настройках блока"
+
+#: build/index.js:65
+msgid "Git Diagram Settings"
+msgstr "Настройки Git-диаграммы"
+
+#: build/index.js:69
+msgid "GitHub Profile Path"
+msgstr "Путь к профилю Github"
+
+#: build/index.js:78
+msgid "Heading Tag"
+msgstr "Тег заголовка"
+
+#: build/index.js:85
+msgid "Plain Text"
+msgstr "Обычный текст"
+
+#: build/frontend.js:45
+msgid "Error: GitHub profile not specified"
+msgstr "Ошибка: Не указан профиль GitHub"
+
+#: build/frontend.js:104
+msgid "Loading commits..."
+msgstr "Идёт загрузка коммитов…"
+
+#: build/frontend.js:134
+msgctxt "frontend_error"
+msgid "Error:"
+msgstr "Ошибка сети:"
+
+#: build/frontend.js:135
+msgid "Unknown error"
+msgstr "Неизвестная ошибка"
+
+#: build/frontend.js:140
+msgid "Error parsing data"
+msgstr "Ошибка парсинга данных"
+
+#: build/frontend.js:145
+msgid "Error loading data:"
+msgstr "Ошибка загрузки данных:"
+
+#: build/frontend.js:150
+msgid "Network error"
+msgstr "Ошибка сети"
+
+#: build/frontend.js:181
+msgid "Commit diagram for"
+msgstr "Диаграмма коммитов для"
+
+#: build/frontend.js:266
+msgid "No data to display"
+msgstr "Нет данных для отображения"
+
+#: build/frontend.js:279
+msgid "Jan"
+msgstr "Янв"
+
+#: build/frontend.js:280
+msgid "Feb"
+msgstr "Фев"
+
+#: build/frontend.js:281
+msgid "Mar"
+msgstr "Мар"
+
+#: build/frontend.js:282
+msgid "Apr"
+msgstr "Апр"
+
+#: build/frontend.js:283
+msgid "May"
+msgstr "Май"
+
+#: build/frontend.js:284
+msgid "Jun"
+msgstr "Июн"
+
+#: build/frontend.js:285
+msgid "Jul"
+msgstr "Июл"
+
+#: build/frontend.js:286
+msgid "Aug"
+msgstr "Авг"
+
+#: build/frontend.js:287
+msgid "Sep"
+msgstr "Сен"
+
+#: build/frontend.js:288
+msgid "Oct"
+msgstr "Окт"
+
+#: build/frontend.js:289
+msgid "Nov"
+msgstr "Ноя"
+
+#: build/frontend.js:290
+msgid "Dec"
+msgstr "Дек"
+
+#: build/frontend.js:377
+msgid "Mon"
+msgstr "Пн"
+
+#: build/frontend.js:378
+msgid "Tue"
+msgstr "Вт"
+
+#: build/frontend.js:379
+msgid "Wed"
+msgstr "Ср"
+
+#: build/frontend.js:380
+msgid "Thu"
+msgstr "Чт"
+
+#: build/frontend.js:381
+msgid "Fri"
+msgstr "Пт"
+
+#: build/frontend.js:382
+msgid "Sat"
+msgstr "Сб"
+
+#: build/frontend.js:383
+msgid "Sun"
+msgstr "Вс"
+
+#: build/frontend.js:413
+msgid "commit"
+msgstr "коммит"
+
+#: build/frontend.js:413
+msgid "commits"
+msgstr "коммитов"

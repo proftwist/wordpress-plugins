@@ -1,0 +1,18 @@
+# English translations for GitHub Commit Chart plugin
+# Copyright (C) 2025 Vladimir Bychko
+# This file is distributed under the same license as the GitHub Commit Chart plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: GitHub Commit Chart 2.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-15 12:00+0000\n"
+"PO-Revision-Date: 2025-01-15 12:00+0000\n"
+"Last-Translator: Vladimir Bychko <vladimir@bychko.ru>\n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Все строки остаются на английском, так как это исходный язык
