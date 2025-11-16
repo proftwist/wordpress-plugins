@@ -253,3 +253,35 @@ msgstr "Отправить репорт"
 #: assets/js/frontend.js:147
 msgid "Sending..."
 msgstr "Отправка..."
+
+#: includes/class-ajax-handler.php:62
+msgid "Error description is too long. Maximum 1000 characters allowed."
+msgstr "Описание ошибки слишком длинное. Максимум 1000 символов разрешено."
+
+#: includes/class-ajax-handler.php:84
+msgid "Failed to clear table."
+msgstr "Не удалось очистить таблицу."
+
+#: includes/class-ajax-handler.php:88
+msgid "Table cleared successfully."
+msgstr "Таблица успешно очищена."
+
+#: includes/admin-settings.php:82
+msgid "Clear Table"
+msgstr "Очистить таблицу"
+
+#: includes/admin-settings.php:84
+msgid "This will permanently delete all typo reports from the database."
+msgstr "Это навсегда удалит все репорты об опечатках из базы данных."
+
+#: includes/admin-settings.php:86
+msgid "confirmClearTable"
+msgstr "confirmClearTable"
+
+#: includes/admin-settings.php:87
+msgid "clearing"
+msgstr "очистка"
+
+#: includes/admin-settings.php:88
+msgid "clearError"
+msgstr "ошибка очистки"

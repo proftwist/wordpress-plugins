@@ -29,6 +29,7 @@ class TypoReporterAjaxHandler {
         // AJAX обработчики для админки
         add_action('wp_ajax_typo_reporter_delete_report', array(__CLASS__, 'handle_delete_report'));
         add_action('wp_ajax_typo_reporter_update_status', array(__CLASS__, 'handle_update_status'));
+        add_action('wp_ajax_typo_reporter_clear_table', array(__CLASS__, 'handle_clear_table'));
     }
 
     /**
@@ -152,6 +153,34 @@ class TypoReporterAjaxHandler {
         }
 
         wp_send_json_success(array('message' => __('Report status updated successfully.', 'typo-reporter')));
+    }
+
+    /**
+     * Обработка очистки таблицы репортов
+     *
+     * @since 2.0.0
+     */
+    public static function handle_clear_table() {
+        // Проверка прав доступа
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Insufficient permissions.', 'typo-reporter')));
+            return;
+        }
+
+        // Проверка nonce для безопасности
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'typo_reporter_admin')) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'typo-reporter')));
+            return;
+        }
+
+        $result = TypoReporterDatabase::clear_table();
+
+        if (!$result) {
+            wp_send_json_error(array('message' => __('Failed to clear table.', 'typo-reporter')));
+            return;
+        }
+
+        wp_send_json_success(array('message' => __('Table cleared successfully.', 'typo-reporter')));
     }
 }
 

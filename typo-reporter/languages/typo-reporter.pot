@@ -142,6 +142,38 @@ msgstr ""
 msgid "Error description is required."
 msgstr ""
 
+#: includes/class-ajax-handler.php:62
+msgid "Error description is too long. Maximum 1000 characters allowed."
+msgstr ""
+
+#: includes/class-ajax-handler.php:84
+msgid "Failed to clear table."
+msgstr ""
+
+#: includes/class-ajax-handler.php:88
+msgid "Table cleared successfully."
+msgstr ""
+
+#: includes/admin-settings.php:82
+msgid "Clear Table"
+msgstr ""
+
+#: includes/admin-settings.php:84
+msgid "This will permanently delete all typo reports from the database."
+msgstr ""
+
+#: includes/admin-settings.php:86
+msgid "confirmClearTable"
+msgstr ""
+
+#: includes/admin-settings.php:87
+msgid "clearing"
+msgstr ""
+
+#: includes/admin-settings.php:88
+msgid "clearError"
+msgstr ""
+
 #: includes/class-ajax-handler.php:74
 msgid "Report submitted successfully!"
 msgstr ""

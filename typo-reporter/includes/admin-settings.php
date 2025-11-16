@@ -78,6 +78,13 @@ function typo_reporter_options_page() {
 
         <!-- Репорты опечаток -->
         <h2><?php _e('Typo Reports', 'typo-reporter'); ?></h2>
+
+        <!-- Кнопка очистки таблицы -->
+        <div class="typo-reporter-clear-table-container">
+            <button type="button" id="clear-reports-table" class="button button-secondary"><?php _e('Clear Table', 'typo-reporter'); ?></button>
+            <p class="description"><?php _e('This will permanently delete all typo reports from the database.', 'typo-reporter'); ?></p>
+        </div>
+
         <?php typo_reporter_display_reports_content(); ?>
     </div>
     <?php
@@ -261,6 +268,40 @@ function typo_reporter_display_reports_content() {
                 },
                 error: function() {
                     alert(typoReporterAdminSettings.messages.deleteError);
+                }
+            });
+        });
+
+        // Очистка таблицы
+        $('#clear-reports-table').on('click', function() {
+            if (!confirm(typoReporterAdminSettings.messages.confirmClearTable)) {
+                return;
+            }
+
+            var $button = $(this);
+            var originalText = $button.text();
+
+            $.ajax({
+                url: typoReporterAdminSettings.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'typo_reporter_clear_table',
+                    nonce: typoReporterAdminSettings.nonce
+                },
+                beforeSend: function() {
+                    $button.prop('disabled', true).text(typoReporterAdminSettings.messages.clearing);
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.data.message);
+                        $button.prop('disabled', false).text(originalText);
+                    }
+                },
+                error: function() {
+                    alert(typoReporterAdminSettings.messages.clearError);
+                    $button.prop('disabled', false).text(originalText);
                 }
             });
         });

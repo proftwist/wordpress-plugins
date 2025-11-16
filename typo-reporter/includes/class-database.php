@@ -217,6 +217,22 @@ class TypoReporterDatabase {
     }
 
     /**
+     * Очистка всей таблицы репортов
+     *
+     * @return bool Успешно ли очищена
+     * @since 2.0.0
+     */
+    public static function clear_table() {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . self::$table_name;
+
+        $result = $wpdb->query("TRUNCATE TABLE $table_name");
+
+        return $result !== false;
+    }
+
+    /**
      * Получение IP адреса пользователя
      *
      * @return string IP адрес
