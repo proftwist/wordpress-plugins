@@ -28,7 +28,56 @@
          */
         init() {
             console.log('PostWall init called');
-            this.generateCalendar();
+            if (this.siteUrl) {
+                this.fetchPostData();
+            } else {
+                this.generateCalendar();
+            }
+        }
+
+        /**
+         * Fetch post data via AJAX
+         */
+        fetchPostData() {
+            console.log('Fetching post data for', this.siteUrl);
+
+            $.ajax({
+                url: postwallSettings.ajaxUrl,
+                method: 'POST',
+                data: {
+                    action: 'postwall_get_post_data',
+                    nonce: postwallSettings.nonce,
+                    site_url: this.siteUrl
+                },
+                success: (response) => {
+                    console.log('AJAX success:', response);
+                    if (response.success && response.data) {
+                        this.postData = response.data;
+                        this.generateCalendar();
+                    } else {
+                        this.showError('Не удалось загрузить данные постов');
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('AJAX error:', error);
+                    this.showError('Ошибка при загрузке данных');
+                }
+            });
+        }
+
+        /**
+         * Show error message
+         * @param {string} message Error message to display
+         */
+        showError(message) {
+            if (this.loadingElement) {
+                this.loadingElement.textContent = message;
+            } else {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'postwall-error';
+                errorDiv.textContent = message;
+                this.container.appendChild(errorDiv);
+            }
         }
 
         /**
@@ -109,24 +158,26 @@
             }
 
             // Days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayCell = document.createElement('span');
-                const cellDate = new Date(year, month, day);
+         for (let day = 1; day <= daysInMonth; day++) {
+             const dayCell = document.createElement('span');
+             const cellDate = new Date(year, month, day);
 
-                // Determine activity level (random for demo)
-                const activityLevel = this.getActivityLevel(cellDate);
+             // Determine activity level
+             const activityLevel = this.getActivityLevel(cellDate);
 
-                if (activityLevel === 0) {
-                    dayCell.className = 'day empty';
-                } else {
-                    dayCell.className = `day lvl-${activityLevel}`;
-                }
+             if (activityLevel === 0) {
+                 dayCell.className = 'day empty';
+             } else {
+                 dayCell.className = `day lvl-${activityLevel}`;
+             }
 
-                // Add tooltip
-                dayCell.title = cellDate.toLocaleDateString();
+             // Add tooltip with post count
+             const postCount = this.postData ?
+                 (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
+             dayCell.title = `${cellDate.toLocaleDateString()}: ${postCount} постов`;
 
-                monthGrid.appendChild(dayCell);
-            }
+             monthGrid.appendChild(dayCell);
+         }
 
             monthDiv.appendChild(monthGrid);
 
@@ -141,22 +192,32 @@
         }
 
         /**
-         * Get activity level for a date (demo implementation)
-         * In real implementation, this would query the site's API for post count on that date
+         * Get activity level for a date based on real post data
          *
          * @param {Date} date The date to check
          * @return {number} Activity level (0-4)
          */
         getActivityLevel(date) {
-            // Demo: simulate random activity
-            // In production, this would make an AJAX call to get actual post data
-            const random = Math.random();
+            // If we have real data, use it
+            if (this.postData) {
+                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const postCount = this.postData[dateKey] || 0;
 
-            if (random < 0.3) return 0; // No posts
-            if (random < 0.5) return 1; // Few posts
-            if (random < 0.7) return 2; // Some posts
-            if (random < 0.9) return 3; // Many posts
-            return 4; // Lots of posts
+                // Determine activity level based on post count
+                if (postCount === 0) return 0; // No posts
+                if (postCount === 1) return 1; // 1 post
+                if (postCount === 2) return 2; // 2 posts
+                if (postCount <= 4) return 3; // 3-4 posts
+                return 4; // 5+ posts
+            }
+
+            // Fallback to random for demo when no data available
+            const random = Math.random();
+            if (random < 0.3) return 0;
+            if (random < 0.5) return 1;
+            if (random < 0.7) return 2;
+            if (random < 0.9) return 3;
+            return 4;
         }
 
         /**

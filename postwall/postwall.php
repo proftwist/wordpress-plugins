@@ -22,6 +22,8 @@ define('POSTWALL_PLUGIN_VERSION', '1.0.0');                // Версия пл�
 // Подключение вспомогательных файлов
 require_once POSTWALL_PLUGIN_PATH . 'includes/class-assets-manager.php';       // Менеджер ресурсов
 require_once POSTWALL_PLUGIN_PATH . 'includes/class-language-manager.php';     // Менеджер языков
+require_once POSTWALL_PLUGIN_PATH . 'includes/class-ajax-handler.php';          // AJAX обработчики
+require_once POSTWALL_PLUGIN_PATH . 'includes/class-postwall-api.php';          // API для получения данных
 require_once POSTWALL_PLUGIN_PATH . 'includes/block-registration.php';         // Регистрация Gutenberg-блока
 
 /**
