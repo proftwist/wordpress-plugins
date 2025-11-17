@@ -171,7 +171,8 @@ class GitHubCommitChart {
             'githubProfile' => get_option('github_commit_chart_github_profile', ''), // Профиль GitHub из настроек
             'nonce' => wp_create_nonce('gcc_get_commit_data'), // Токен безопасности для AJAX
             'linkUsernames' => get_option('github_commit_chart_link_usernames', false), // Настройка для ссылок на профили
-            'locale' => get_locale() // Передаем локаль для фронтенда
+            'locale' => get_locale(), // Передаем локаль для фронтенда
+            'dateFormat' => get_option('date_format') // Передаем формат даты из WordPress настроек
         ));
 
         // Подключение CSS стилей для фронтенда

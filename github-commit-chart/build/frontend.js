@@ -242,6 +242,39 @@
         }
 
         /**
+         * Функция для форматирования даты согласно WordPress настройкам
+         *
+         * @param {string} dateStr - Дата в формате YYYY-MM-DD
+         * @return {string} Отформатированная дата
+         */
+        function formatDate(dateStr) {
+            // Проверяем, что формат даты задан в настройках
+            var dateFormat = githubCommitChartSettings.dateFormat || 'Y-m-d';
+
+            // Создаем объект даты
+            var date = new Date(dateStr);
+
+            // Если дата некорректная, возвращаем исходную строку
+            if (isNaN(date.getTime())) {
+                return dateStr;
+            }
+
+            // Преобразуем WordPress формат даты в JavaScript
+            // Y = год (4 цифры), m = месяц (2 цифры), d = день (2 цифры)
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+
+            // Заменяем WordPress плейсхолдеры
+            var formatted = dateFormat
+                .replace('Y', year)
+                .replace('m', month)
+                .replace('d', day);
+
+            return formatted;
+        }
+
+        /**
          * Функция для отображения диаграммы в виде тепловой карты
          *
          * @param {HTMLElement} container - Контейнер для диаграммы
@@ -428,10 +461,11 @@
                     if (cellYear === selectedYear) {
                         // Дата в выбранном году - показываем коммиты или пустую ячейку
                         var commitText = commits === 1 ? __('commit', 'github-commit-chart') : __('commits', 'github-commit-chart');
+                        var formattedDate = formatDate(dateStr);
                         if (commits > 0) {
-                            html += '<div class="heatmap-cell intensity-' + intensity + '" title="' + dateStr + ': ' + commits + ' ' + commitText + '"></div>';
+                            html += '<div class="heatmap-cell intensity-' + intensity + '" title="' + formattedDate + ': ' + commits + ' ' + commitText + '"></div>';
                         } else {
-                            html += '<div class="heatmap-cell intensity-0" title="' + dateStr + ': 0 ' + commitText + '"></div>';
+                            html += '<div class="heatmap-cell intensity-0" title="' + formattedDate + ': 0 ' + commitText + '"></div>';
                         }
                     } else {
                         // Дата вне выбранного года - пустая ячейка с интенсивностью 0
