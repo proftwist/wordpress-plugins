@@ -1,0 +1,66 @@
+# Russian translation for Quick Link Checker
+msgid ""
+msgstr ""
+"Project-Id-Version: Quick Link Checker 1.0.0\n"
+"Report-Msgid-Bugs-To: http://bychko.ru\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Last-Translator: Vladimir Bychko <vladimir@bychko.ru>\n"
+"Language-Team: Russian\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+#: quick-link-checker.php
+msgid "Quick Link Checker"
+msgstr "Быстрая проверка ссылок"
+
+#: quick-link-checker.php
+msgid "Checking links..."
+msgstr "Проверка ссылок..."
+
+#: quick-link-checker.php
+msgid "Broken links found:"
+msgstr "Найдены битые ссылки:"
+
+#: quick-link-checker.php
+msgid "No broken links found"
+msgstr "Битые ссылки не найдены"
+
+#: includes/class-editor-integration.php
+msgid "Broken Links"
+msgstr "Битые ссылки"
+
+#: includes/class-editor-integration.php
+msgid "No broken links found."
+msgstr "Битые ссылки не найдены."
+
+#: includes/class-editor-integration.php
+msgid "Found %d broken links:"
+msgstr "Найдено %d битых ссылок:"
+
+#: quick-link-checker.php
+msgid "Check Links Now"
+msgstr "Проверить ссылки сейчас"
+
+#: admin/settings.php
+msgid "Quick Link Checker Settings"
+msgstr "Настройки быстрой проверки ссылок"
+
+#: admin/settings.php
+msgid "Main Settings"
+msgstr "Основные настройки"
+
+#: admin/settings.php
+msgid "Configure the Quick Link Checker settings."
+msgstr "Настройте параметры быстрой проверки ссылок."
+
+#: admin/settings.php
+msgid "Enable Broken Link Checking"
+msgstr "Включить проверку битых ссылок"
+
+#: admin/settings.php
+msgid "Enable automatic link checking when saving posts"
+msgstr "Включить автоматическую проверку ссылок при сохранении записей"

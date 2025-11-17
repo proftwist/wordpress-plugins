@@ -1,0 +1,36 @@
+.qlc-broken-link {
+    border: 2px solid #dc3232 !important;
+    background-color: #ffeaea !important;
+    padding: 2px 4px !important;
+    border-radius: 3px !important;
+    position: relative !important;
+}
+
+.qlc-broken-link::after {
+    content: " 🔗 BROKEN";
+    color: #dc3232;
+    font-weight: bold;
+    font-size: 10px;
+    margin-left: 5px;
+}
+
+#qlc-broken-links-container {
+    margin: 10px 0;
+}
+
+#qlc-broken-links-container ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+#qlc-broken-links-container code {
+    background: #f1f1f1;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+#qlc-check-now {
+    margin-top: 10px;
+}
