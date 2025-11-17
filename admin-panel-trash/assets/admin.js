@@ -14,11 +14,6 @@ jQuery(document).ready(function($) {
         loadAdminBarItems();
     });
 
-    // Обновление отображения кода функции
-    $('#apt-refresh-function').on('click', function() {
-        updateFunctionCode();
-    });
-
     function checkFileAccess() {
         $('#apt-check-access').prop('disabled', true).text(apt_localize.checking);
         $('#apt-access-result').html('<p>' + apt_localize.checking + '</p>');
@@ -108,8 +103,11 @@ jQuery(document).ready(function($) {
                 'Убрать элемент из админ-панели' :
                 'Вернуть элемент в админ-панель';
 
+            // Используем display_id вместо id (без префикса wp-admin-bar-)
+            var displayId = item.display_id || item.cleaned_id || item.id;
+
             html += '<tr>';
-            html += '<td><code>' + item.id + '</code></td>';
+            html += '<td><code>' + displayId + '</code></td>';
             html += '<td>' + item.name + '</td>';
             html += '<td><span class="' + statusClass + '">' + statusText + '</span></td>';
             html += '<td>';
@@ -146,7 +144,6 @@ jQuery(document).ready(function($) {
                         var actionText = enable ? apt_localize.item_enabled : apt_localize.item_disabled;
                         showMessage('✅ ' + actionText, 'success');
                         loadAdminBarItems(); // Обновляем список
-                        updateFunctionCode(); // Обновляем код функции
                     } else {
                         showMessage('❌ ' + response.data, 'error');
                         $button.prop('disabled', false).text(originalText);
@@ -161,29 +158,12 @@ jQuery(document).ready(function($) {
         });
     }
 
-    function updateFunctionCode() {
-        $.ajax({
-            url: apt_ajax.url,
-            type: 'POST',
-            data: {
-                action: 'apt_get_function_code',
-                nonce: apt_ajax.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#apt-function-code-block code').text(response.data.code);
-                }
-            }
-        });
-    }
-
     function showMessage(message, type) {
         var noticeClass = type === 'success' ? 'notice-success' : 'notice-error';
         var html = '<div class="notice ' + noticeClass + ' is-dismissible" style="margin-top: 10px;">' +
                   '<p>' + message + '</p>' +
                   '<button type="button" class="notice-dismiss">' +
-                  '<span class="screen-reader-text">Скрыть уведомление</span>' +
-                  '</button>' +
+                  '<span class="screen-reader-text">Скрыть уведомление</span></button>' +
                   '</div>';
 
         $('.wrap h1').after(html);

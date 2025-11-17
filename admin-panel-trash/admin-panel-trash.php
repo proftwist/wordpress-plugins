@@ -123,44 +123,6 @@ class AdminPanelTrash {
                 </table>
             </div>
 
-            <div class="card">
-                <h2><?php _e('Код функции', 'admin-panel-trash'); ?></h2>
-                <p>Текущий код функции в файле functions.php:</p>
-                <details id="apt-function-code-block">
-                    <summary><?php _e('Показать/скрыть код функции', 'admin-panel-trash'); ?></summary>
-                    <pre style="background: #f1f1f1; padding: 15px; border: 1px solid #ddd; overflow: auto; max-height: 300px;"><code><?php echo esc_html($this->generate_function_code()); ?></code></pre>
-                </details>
-                <button id="apt-refresh-function" class="button button-secondary" style="margin-top: 10px;">
-                    <?php _e('Обновить код функции', 'admin-panel-trash'); ?>
-                </button>
-            </div>
-
-            <div class="card">
-                <h2>Отладочная информация</h2>
-                <details>
-                    <summary>Показать отладочную информацию</summary>
-                    <?php
-                    $file_items = $this->get_disabled_items_from_file();
-                    $option_items = get_option('admin_panel_trash_settings', array());
-                    $all_items = $this->get_all_admin_bar_items();
-
-                    echo '<p><strong>Элементов в файле:</strong> ' . count($file_items) . ' - ' . implode(', ', $file_items) . '</p>';
-                    echo '<p><strong>Элементов в настройках:</strong> ' . count($option_items) . ' - ' . implode(', ', $option_items) . '</p>';
-                    echo '<p><strong>Всего элементов админ-панели найдено:</strong> ' . count($all_items) . '</p>';
-
-                    // Показываем содержимое файла для отладки
-                    $file_path = get_stylesheet_directory() . '/functions.php';
-                    if (file_exists($file_path)) {
-                        echo '<details style="margin-top: 10px;">';
-                        echo '<summary>Показать содержимое functions.php</summary>';
-                        echo '<pre style="background: #f1f1f1; padding: 10px; border: 1px solid #ddd; overflow: auto; max-height: 300px; font-size: 12px;">';
-                        echo htmlspecialchars(file_get_contents($file_path));
-                        echo '</pre>';
-                        echo '</details>';
-                    }
-                    ?>
-                </details>
-            </div>
         </div>
         <?php
     }
@@ -290,6 +252,7 @@ class AdminPanelTrash {
             $items[] = array(
                 'id' => $item['id'],
                 'cleaned_id' => $cleaned_id,
+                'display_id' => $display_id, // ID для отображения (без префикса)
                 'name' => $item['title'],
                 'title' => $item['title'],
                 'enabled' => !$is_disabled,
@@ -311,6 +274,7 @@ class AdminPanelTrash {
                 $items[] = array(
                     'id' => 'wp-admin-bar-' . $file_item,
                     'cleaned_id' => $file_item,
+                    'display_id' => $file_item, // ID для отображения (без префикса)
                     'name' => $file_item . ' (только в файле)',
                     'title' => $file_item . ' (только в файле)',
                     'enabled' => false,
@@ -326,39 +290,51 @@ class AdminPanelTrash {
      * Получение всех элементов админ-панели
      */
     private function get_all_admin_bar_items() {
-        global $wp_admin_bar;
         $items = array();
 
-        // Сохраняем исходное состояние admin bar
+        // Список стандартных элементов WordPress которые всегда есть
+        $standard_items = array(
+            'wp-logo' => 'Логотип WordPress',
+            'site-name' => 'Название сайта',
+            'dashboard' => 'Консоль',
+            'appearance' => 'Внешний вид',
+            'updates' => 'Обновления',
+            'comments' => 'Комментарии',
+            'new-content' => 'Добавить',
+            'edit' => 'Редактировать',
+            'user-info' => 'Информация пользователя',
+            'user-actions' => 'Действия пользователя',
+            'search' => 'Поиск',
+            'my-account' => 'Мой аккаунт',
+            'logout' => 'Выйти',
+            'menu-toggle' => 'Переключение меню',
+            'my-sites' => 'Мои сайты',
+            'get-shortlink' => 'Получить короткую ссылку',
+            'edit-profile' => 'Редактировать профиль'
+        );
+
+        // Сначала добавляем стандартные элементы
+        foreach ($standard_items as $id => $title) {
+            $full_id = 'wp-admin-bar-' . $id;
+            $items[] = array(
+                'id' => $full_id,
+                'title' => $title,
+                'href' => '',
+                'parent' => ''
+            );
+        }
+
+        // Затем добавляем элементы из текущего контекста
+        global $wp_admin_bar;
         $original_admin_bar = isset($wp_admin_bar) ? $wp_admin_bar : null;
 
-        // Создаем новый экземпляр admin bar для сбора всех возможных элементов
+        // Создаем временный admin bar для сбора элементов
         require_once ABSPATH . WPINC . '/class-wp-admin-bar.php';
         $wp_admin_bar = new WP_Admin_Bar();
 
-        // Добавляем все возможные элементы
+        // Собираем все возможные элементы
         do_action('admin_bar_menu', $wp_admin_bar);
-
-        // Также выполняем действия для разных контекстов
-        if (is_admin()) {
-            do_action('admin_bar_menu', $wp_admin_bar);
-        } else {
-            do_action('admin_bar_menu', $wp_admin_bar);
-        }
-
-        // Пробуем добавить элементы для разных ролей/контекстов
-        $current_user = wp_get_current_user();
-
-        // Эмулируем разные контексты чтобы собрать больше элементов
-        $contexts = array('admin', 'frontend');
-
-        foreach ($contexts as $context) {
-            // Временно меняем контекст
-            if ($context === 'admin' && !is_admin()) {
-                // Пробуем собрать админские элементы
-                do_action('admin_bar_menu', $wp_admin_bar);
-            }
-        }
+        do_action('wp_before_admin_bar_render', $wp_admin_bar);
 
         $nodes = $wp_admin_bar->get_nodes();
         if (!empty($nodes)) {
@@ -375,7 +351,7 @@ class AdminPanelTrash {
                 if (!$exists) {
                     $items[] = array(
                         'id' => $node->id,
-                        'title' => wp_strip_all_tags($node->title),
+                        'title' => wp_strip_all_tags($node->title) ?: $node->id,
                         'href' => $node->href,
                         'parent' => $node->parent
                     );
@@ -383,7 +359,7 @@ class AdminPanelTrash {
             }
         }
 
-        // Восстанавливаем исходное состояние admin bar
+        // Восстанавливаем исходный admin bar
         if ($original_admin_bar) {
             $wp_admin_bar = $original_admin_bar;
         }
