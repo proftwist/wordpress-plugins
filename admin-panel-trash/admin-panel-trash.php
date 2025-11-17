@@ -134,6 +134,33 @@ class AdminPanelTrash {
                     <?php _e('Обновить код функции', 'admin-panel-trash'); ?>
                 </button>
             </div>
+
+            <div class="card">
+                <h2>Отладочная информация</h2>
+                <details>
+                    <summary>Показать отладочную информацию</summary>
+                    <?php
+                    $file_items = $this->get_disabled_items_from_file();
+                    $option_items = get_option('admin_panel_trash_settings', array());
+                    $all_items = $this->get_all_admin_bar_items();
+
+                    echo '<p><strong>Элементов в файле:</strong> ' . count($file_items) . ' - ' . implode(', ', $file_items) . '</p>';
+                    echo '<p><strong>Элементов в настройках:</strong> ' . count($option_items) . ' - ' . implode(', ', $option_items) . '</p>';
+                    echo '<p><strong>Всего элементов админ-панели найдено:</strong> ' . count($all_items) . '</p>';
+
+                    // Показываем содержимое файла для отладки
+                    $file_path = get_stylesheet_directory() . '/functions.php';
+                    if (file_exists($file_path)) {
+                        echo '<details style="margin-top: 10px;">';
+                        echo '<summary>Показать содержимое functions.php</summary>';
+                        echo '<pre style="background: #f1f1f1; padding: 10px; border: 1px solid #ddd; overflow: auto; max-height: 300px; font-size: 12px;">';
+                        echo htmlspecialchars(file_get_contents($file_path));
+                        echo '</pre>';
+                        echo '</details>';
+                    }
+                    ?>
+                </details>
+            </div>
         </div>
         <?php
     }
@@ -173,24 +200,32 @@ class AdminPanelTrash {
         // Очищаем ID от префикса для хранения
         $cleaned_id = $this->clean_item_id($item_id);
 
+        error_log('Admin Panel Trash: Toggling item - ID: ' . $item_id . ', Cleaned: ' . $cleaned_id . ', Enable: ' . ($enable ? 'true' : 'false'));
+
         if ($enable) {
             // Включаем элемент - удаляем из списка отключенных
             $settings = array_diff($settings, array($cleaned_id));
+            error_log('Admin Panel Trash: Enabling item, new settings: ' . implode(', ', $settings));
         } else {
             // Отключаем элемент - добавляем в список отключенных
             if (!in_array($cleaned_id, $settings)) {
                 $settings[] = $cleaned_id;
+                error_log('Admin Panel Trash: Disabling item, new settings: ' . implode(', ', $settings));
             }
         }
 
         update_option('admin_panel_trash_settings', $settings);
 
         // Обновляем файл functions.php
-        $this->update_functions_file($settings);
+        $update_result = $this->update_functions_file($settings);
 
-        wp_send_json_success(array(
-            'message' => $enable ? __('Item enabled', 'admin-panel-trash') : __('Item disabled', 'admin-panel-trash')
-        ));
+        if ($update_result) {
+            wp_send_json_success(array(
+                'message' => $enable ? __('Item enabled', 'admin-panel-trash') : __('Item disabled', 'admin-panel-trash')
+            ));
+        } else {
+            wp_send_json_error(__('Failed to update functions.php file', 'admin-panel-trash'));
+        }
     }
 
     /**
@@ -235,6 +270,19 @@ class AdminPanelTrash {
         // Получаем все элементы админ-панели
         $admin_bar_items = $this->get_all_admin_bar_items();
 
+        // Получаем отключенные элементы из файла functions.php
+        $file_disabled_items = $this->get_disabled_items_from_file();
+
+        // Объединяем списки отключенных элементов
+        $all_disabled_items = array_unique(array_merge($disabled_items, $file_disabled_items));
+
+        // Если есть расхождения, обновляем настройки
+        if ($file_disabled_items != $disabled_items) {
+            update_option('admin_panel_trash_settings', $all_disabled_items);
+            $disabled_items = $all_disabled_items;
+        }
+
+        // Создаем элементы из админ-панели
         foreach ($admin_bar_items as $item) {
             $cleaned_id = $this->clean_item_id($item['id']);
             $is_disabled = in_array($cleaned_id, $disabled_items);
@@ -249,6 +297,28 @@ class AdminPanelTrash {
             );
         }
 
+        // Добавляем элементы из файла, которых нет в текущей админ-панели
+        foreach ($file_disabled_items as $file_item) {
+            $found = false;
+            foreach ($items as $item) {
+                if ($item['cleaned_id'] === $file_item) {
+                    $found = true;
+                    break;
+                }
+            }
+
+            if (!$found) {
+                $items[] = array(
+                    'id' => 'wp-admin-bar-' . $file_item,
+                    'cleaned_id' => $file_item,
+                    'name' => $file_item . ' (только в файле)',
+                    'title' => $file_item . ' (только в файле)',
+                    'enabled' => false,
+                    'status' => 'disabled'
+                );
+            }
+        }
+
         return $items;
     }
 
@@ -259,25 +329,63 @@ class AdminPanelTrash {
         global $wp_admin_bar;
         $items = array();
 
-        // Если admin bar не инициализирован, создаем временный
-        if (!isset($wp_admin_bar) || !($wp_admin_bar instanceof WP_Admin_Bar)) {
-            require_once ABSPATH . WPINC . '/class-wp-admin-bar.php';
-            $wp_admin_bar = new WP_Admin_Bar();
+        // Сохраняем исходное состояние admin bar
+        $original_admin_bar = isset($wp_admin_bar) ? $wp_admin_bar : null;
+
+        // Создаем новый экземпляр admin bar для сбора всех возможных элементов
+        require_once ABSPATH . WPINC . '/class-wp-admin-bar.php';
+        $wp_admin_bar = new WP_Admin_Bar();
+
+        // Добавляем все возможные элементы
+        do_action('admin_bar_menu', $wp_admin_bar);
+
+        // Также выполняем действия для разных контекстов
+        if (is_admin()) {
+            do_action('admin_bar_menu', $wp_admin_bar);
+        } else {
+            do_action('admin_bar_menu', $wp_admin_bar);
         }
 
-        // Добавляем основные элементы WordPress
-        do_action('admin_bar_menu', $wp_admin_bar);
+        // Пробуем добавить элементы для разных ролей/контекстов
+        $current_user = wp_get_current_user();
+
+        // Эмулируем разные контексты чтобы собрать больше элементов
+        $contexts = array('admin', 'frontend');
+
+        foreach ($contexts as $context) {
+            // Временно меняем контекст
+            if ($context === 'admin' && !is_admin()) {
+                // Пробуем собрать админские элементы
+                do_action('admin_bar_menu', $wp_admin_bar);
+            }
+        }
 
         $nodes = $wp_admin_bar->get_nodes();
         if (!empty($nodes)) {
             foreach ($nodes as $node) {
-                $items[] = array(
-                    'id' => $node->id,
-                    'title' => wp_strip_all_tags($node->title),
-                    'href' => $node->href,
-                    'parent' => $node->parent
-                );
+                // Проверяем, нет ли уже такого элемента
+                $exists = false;
+                foreach ($items as $existing_item) {
+                    if ($existing_item['id'] === $node->id) {
+                        $exists = true;
+                        break;
+                    }
+                }
+
+                if (!$exists) {
+                    $items[] = array(
+                        'id' => $node->id,
+                        'title' => wp_strip_all_tags($node->title),
+                        'href' => $node->href,
+                        'parent' => $node->parent
+                    );
+                }
             }
+        }
+
+        // Восстанавливаем исходное состояние admin bar
+        if ($original_admin_bar) {
+            $wp_admin_bar = $original_admin_bar;
         }
 
         return $items;
@@ -294,28 +402,75 @@ class AdminPanelTrash {
     }
 
     /**
+     * Получение отключенных элементов из файла functions.php
+     */
+    private function get_disabled_items_from_file() {
+        $file_path = get_stylesheet_directory() . '/functions.php';
+
+        if (!file_exists($file_path) || !is_readable($file_path)) {
+            return array();
+        }
+
+        $content = file_get_contents($file_path);
+        $disabled_items = array();
+
+        // Ищем функцию remove_item_from_admin_bar (ваш оригинальный вариант)
+        if (preg_match('/function\s+remove_item_from_admin_bar\s*\([^)]*\)\s*\{([^}]+)\}/s', $content, $function_match)) {
+            $function_body = $function_match[1];
+
+            // Ищем все вызовы remove_menu - берем ID как есть, без изменений
+            if (preg_match_all('/\$wp_admin_bar->remove_menu\(\s*[\'\"]([^\'\"]+)[\'\"]\s*\)\s*;/', $function_body, $matches)) {
+                $disabled_items = $matches[1];
+                error_log('Admin Panel Trash: Found items in file: ' . implode(', ', $disabled_items));
+            }
+        }
+
+        return $disabled_items; // Возвращаем как есть, без очистки префикса
+    }
+
+    /**
      * Обновление файла functions.php
      */
     private function update_functions_file($disabled_items) {
         $file_path = get_stylesheet_directory() . '/functions.php';
 
         if (!is_writable($file_path) && !is_writable(dirname($file_path))) {
+            error_log('Admin Panel Trash: File not writable: ' . $file_path);
             return false;
         }
 
         $content = file_exists($file_path) ? file_get_contents($file_path) : "<?php\n";
 
-        // Удаляем старую функцию если она существует
-        $content = preg_replace('/\/\* Admin Panel Trash Start \*\/.*\/\* Admin Panel Trash End \*\//s', '', $content);
+        // Удаляем закрывающий тег PHP если он есть в конце
+        $content = preg_replace('/\?>\s*$/', '', $content);
+
+        // Удаляем нашу функцию
+        $content = preg_replace('/\/\*\s*Admin Panel Trash Start\s*\*\/.*?\/\*\s*Admin Panel Trash End\s*\*\//s', '', $content);
+        $content = preg_replace('/function\s+remove_item_from_admin_bar\s*\([^)]*\)\s*\{[^}]+\}\s*add_action\s*\(\s*[\'"]wp_before_admin_bar_render[\'"]\s*,\s*[\'"]remove_item_from_admin_bar[\'"]\s*\)\s*;/s', '', $content);
         $content = preg_replace('/function\s+remove_item_from_admin_bar\s*\([^}]*\}\s*/s', '', $content);
+
+        // Удаляем лишние пустые строки
+        $content = preg_replace('/\n\s*\n\s*\n/', "\n\n", $content);
+        $content = trim($content);
 
         if (!empty($disabled_items)) {
             // Генерируем код функции
             $function_code = $this->generate_function_code($disabled_items);
-            $content .= "\n" . $function_code . "\n";
+            $content .= "\n\n" . $function_code . "\n";
         }
 
-        return file_put_contents($file_path, $content);
+        // Всегда добавляем закрывающий тег в конец
+        $content .= "\n?>";
+
+        $result = file_put_contents($file_path, $content);
+
+        if ($result === false) {
+            error_log('Admin Panel Trash: Failed to write to file: ' . $file_path);
+            return false;
+        }
+
+        error_log('Admin Panel Trash: Successfully updated file with ' . count($disabled_items) . ' items');
+        return true;
     }
 
     /**
@@ -332,8 +487,9 @@ class AdminPanelTrash {
         $code .= "    if (!is_admin_bar_showing()) return;\n\n";
 
         foreach ($disabled_items as $item) {
-            $item_id = strpos($item, 'wp-admin-bar-') === 0 ? $item : 'wp-admin-bar-' . $item;
-            $code .= "    \$wp_admin_bar->remove_menu('{$item_id}');\n";
+            // НЕ добавляем префикс wp-admin-bar- если его нет в исходном элементе
+            // Сохраняем ID как есть (как в вашем исходном файле)
+            $code .= "    \$wp_admin_bar->remove_menu('{$item}');\n";
         }
 
         $code .= "}\n";
