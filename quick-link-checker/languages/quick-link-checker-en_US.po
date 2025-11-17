@@ -69,3 +69,7 @@ msgstr ""
 #: admin/settings.php
 msgid "Enable automatic link checking when saving posts"
 msgstr ""
+
+#: admin/js/admin.js
+msgid "Dismiss this broken link"
+msgstr "Dismiss this broken link"

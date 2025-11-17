@@ -64,3 +64,7 @@ msgstr "Включить проверку битых ссылок"
 #: admin/settings.php
 msgid "Enable automatic link checking when saving posts"
 msgstr "Включить автоматическую проверку ссылок при сохранении записей"
+
+#: admin/js/admin.js
+msgid "Dismiss this broken link"
+msgstr "Исключить эту битую ссылку"

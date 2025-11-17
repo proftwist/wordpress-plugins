@@ -215,7 +215,13 @@
                     const $link = $(this);
                     // Проверяем, что крестик еще не добавлен
                     if ($link.find('.qlc-dismiss').length === 0) {
-                        $link.append('<span class="qlc-dismiss" title="Dismiss this broken link">×</span>');
+                        // Используем локализованную строку для тултипа, если доступна
+                        const dismissTitle = typeof qlc_ajax !== 'undefined' && qlc_ajax.dismiss_title
+                            ? qlc_ajax.dismiss_title
+                            : (typeof wp !== 'undefined' && typeof wp.i18n !== 'undefined'
+                               ? wp.i18n.__('Dismiss this broken link', 'quick-link-checker')
+                               : 'Dismiss this broken link');
+                        $link.append('<span class="qlc-dismiss" title="' + dismissTitle + '">×</span>');
                     }
                 });
             });

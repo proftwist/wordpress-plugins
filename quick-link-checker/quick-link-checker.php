@@ -130,37 +130,41 @@ class QuickLinkChecker {
             QLC_PLUGIN_VERSION,
             true
         );
-
-        // Подключение CSS стилей
-        wp_enqueue_style(
-            'qlc-admin-css',
-            QLC_PLUGIN_URL . 'admin/css/admin.css',
-            array(),
-            QLC_PLUGIN_VERSION
-        );
-
-        // Локализация скриптов только на страницах редактирования постов
-        if (in_array($hook, array('post.php', 'post-new.php'))) {
-            global $post;
-
-            // Передача AJAX данных и текстовых строк
-            wp_localize_script('qlc-admin-js', 'qlc_ajax', array(
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('qlc_nonce'),
-                'checking_text' => __('Checking links...', 'quick-link-checker'),
-                'broken_links_found' => __('Broken links found:', 'quick-link-checker'),
-                'no_broken_links' => __('No broken links found', 'quick-link-checker'),
-                'check_now_text' => __('Check Links Now', 'quick-link-checker'),
-                'enabled' => get_option('qlc_enabled', '1')
-            ));
-
-            // Передача ID текущего поста в JavaScript
-            if ($post) {
-                wp_localize_script('qlc-admin-js', 'qlc_post', array(
-                    'post_id' => $post->ID
-                ));
-            }
-        }
+        
+                // Регистрация локализации для JavaScript
+                wp_set_script_translations('qlc-admin-js', 'quick-link-checker', QLC_PLUGIN_PATH . 'languages');
+        
+                // Подключение CSS стилей
+                wp_enqueue_style(
+                    'qlc-admin-css',
+                    QLC_PLUGIN_URL . 'admin/css/admin.css',
+                    array(),
+                    QLC_PLUGIN_VERSION
+                );
+        
+                // Локализация скриптов только на страницах редактирования постов
+                if (in_array($hook, array('post.php', 'post-new.php'))) {
+                    global $post;
+        
+                    // Передача AJAX данных и текстовых строк
+                    wp_localize_script('qlc-admin-js', 'qlc_ajax', array(
+                        'ajax_url' => admin_url('admin-ajax.php'),
+                        'nonce' => wp_create_nonce('qlc_nonce'),
+                        'checking_text' => __('Checking links...', 'quick-link-checker'),
+                        'broken_links_found' => __('Broken links found:', 'quick-link-checker'),
+                        'no_broken_links' => __('No broken links found', 'quick-link-checker'),
+                        'check_now_text' => __('Check Links Now', 'quick-link-checker'),
+                        'dismiss_title' => __('Dismiss this broken link', 'quick-link-checker'),
+                        'enabled' => get_option('qlc_enabled', '1')
+                    ));
+        
+                    // Передача ID текущего поста в JavaScript
+                    if ($post) {
+                        wp_localize_script('qlc-admin-js', 'qlc_post', array(
+                            'post_id' => $post->ID
+                        ));
+                    }
+                }
     }
 
     /**
