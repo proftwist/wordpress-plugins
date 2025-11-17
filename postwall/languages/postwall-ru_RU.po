@@ -34,6 +34,10 @@ msgid "Posts from the site for the last 12 months"
 msgstr "Посты сайта за последние 12 месяцев"
 
 #: includes/block-registration.php:69
+msgid "Posts from the site {{domain}} for the last 12 months"
+msgstr "Посты сайта {{domain}} за последние 12 месяцев"
+
+#: includes/block-registration.php:70
 msgid "Loading post wall..."
 msgstr "Загрузка кафельной стенки..."
 

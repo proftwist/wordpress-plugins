@@ -27,6 +27,29 @@ function postwall_register_block() {
 }
 
 /**
+ * Извлекает домен из URL
+ *
+ * @param string $url URL сайта
+ * @return string Доменное имя
+ */
+function postwall_extract_domain($url) {
+    if (empty($url)) {
+        return '';
+    }
+
+    // Удаляем протокол (http://, https://)
+    $domain = preg_replace('#^https?://#', '', $url);
+
+    // Удаляем путь после домена
+    $domain = preg_replace('#/.*$#', '', $domain);
+
+    // Удаляем www. если есть
+    $domain = preg_replace('#^www\.#', '', $domain);
+
+    return $domain;
+}
+
+/**
  * Функция серверного рендеринга блока Post Wall
  *
  * Вызывается WordPress при выводе блока на странице. Генерирует HTML-разметку
@@ -47,14 +70,8 @@ function postwall_render_block($attributes, $content) {
                        sanitize_text_field($attributes['siteUrl']) :
                        '';
 
-    // Для демонстрации временно отключим валидацию
-    // if (empty($site_url)) {
-    //     return '<p>' . __('Please specify the site URL in the block settings.', 'postwall') . '</p>';
-    // }
-
-    // if (!filter_var($site_url, FILTER_VALIDATE_URL)) {
-    //     return '<p>' . __('Invalid site URL format.', 'postwall') . '</p>';
-    // }
+    // Извлекаем домен для заголовка
+    $domain = postwall_extract_domain($site_url);
 
     // Генерируем уникальный ID для контейнера (чтобы избежать конфликтов на странице)
     $unique_id = uniqid('postwall-');
@@ -63,11 +80,39 @@ function postwall_render_block($attributes, $content) {
     // Безопасно экранируем значения функцией esc_attr
     $data_attributes = 'data-site-url="' . esc_attr($site_url) . '" data-container-id="' . esc_attr($unique_id) . '"';
 
-    // Возвращаем HTML контейнер для диаграммы
-    return '<div class="postwall-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '>
-                <h3 class="postwall-title">' . __('Posts from the site for the last 12 months', 'postwall') . '</h3>
-                <div class="postwall-loading">' . __('Loading post wall...', 'postwall') . '</div>
+    // Передаем отдельно домен и базовые тексты
+    $base_title = __('Posts from the site for the last 12 months', 'postwall');
+    $loading_text = __('Loading post wall...', 'postwall');
+
+    // Возвращаем HTML контейнер для диаграммы с data-атрибутами
+    return '<div class="postwall-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '
+                data-base-title="' . esc_attr($base_title) . '"
+                data-loading-text="' . esc_attr($loading_text) . '"
+                data-domain="' . esc_attr($domain) . '">
+                <h3 class="postwall-title">' . esc_html(generate_title_with_domain($base_title, $domain)) . '</h3>
+                <div class="postwall-loading">' . esc_html($loading_text) . '</div>
             </div>';
+}
+
+/**
+ * Генерирует заголовок с доменом
+ *
+ * @param string $base_title Базовый заголовок
+ * @param string $domain Домен сайта
+ * @return string Заголовок с доменом
+ */
+function generate_title_with_domain($base_title, $domain) {
+    if (empty($domain)) {
+        return $base_title;
+    }
+
+    // Для русского языка
+    if (get_locale() === 'ru_RU') {
+        return 'Посты сайта ' . $domain . ' за последние 12 месяцев';
+    }
+
+    // Для английского и других языков
+    return 'Posts from the site ' . $domain . ' for the last 12 months';
 }
 
 // Регистрируем блок при инициализации

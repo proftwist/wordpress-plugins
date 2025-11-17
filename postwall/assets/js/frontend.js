@@ -19,10 +19,11 @@
             this.siteUrl = this.container.dataset.siteUrl;
             this.containerId = this.container.dataset.containerId;
             this.loadingElement = this.container.querySelector('.postwall-loading');
-            
-            // Получаем заголовок и текст загрузки из data-атрибутов
-            this.title = this.container.dataset.title || 'Posts from the site for the last 12 months';
+
+            // Получаем данные из data-атрибутов
+            this.baseTitle = this.container.dataset.baseTitle || 'Posts from the site for the last 12 months';
             this.loadingText = this.container.dataset.loadingText || 'Loading post wall...';
+            this.domain = this.container.dataset.domain || '';
 
             this.init();
         }
@@ -94,7 +95,7 @@
                 this.loadingElement.remove();
                 console.log('Loading element removed');
             }
-            
+
             // Создаем или обновляем заголовок
             this.createOrUpdateTitle();
 
@@ -130,21 +131,41 @@
             this.container.appendChild(wrapper);
             console.log('Calendar appended to container');
         }
-        
+
         /**
          * Create or update the title element
          */
         createOrUpdateTitle() {
             let titleElement = this.container.querySelector('.postwall-title');
-            const translatedTitle = this.translate(this.title);
-            
+
+            // Создаем локализованный заголовок с доменом
+            const translatedTitle = this.generateTitleWithDomain();
+
             if (!titleElement) {
                 titleElement = document.createElement('h3');
                 titleElement.className = 'postwall-title';
                 this.container.insertBefore(titleElement, this.container.firstChild);
             }
-            
+
             titleElement.textContent = translatedTitle;
+            console.log('Final title:', translatedTitle);
+        }
+
+        /**
+         * Generate title with domain
+         * @return {string} Localized title with domain
+         */
+        generateTitleWithDomain() {
+            if (!this.domain) {
+                return this.translate(this.baseTitle);
+            }
+
+            // Простой способ - создаем заголовок в зависимости от языка
+            if (this.getLocale().startsWith('ru')) {
+                return 'Посты сайта ' + this.domain + ' за последние 12 месяцев';
+            } else {
+                return 'Posts from the site ' + this.domain + ' for the last 12 months';
+            }
         }
 
         /**

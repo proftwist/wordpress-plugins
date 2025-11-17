@@ -1,6 +1,130 @@
-Проблема с тултипами в том, что они генерируются динамически в JavaScript и содержат переменные данные (дату и количество постов). Давайте это исправим!
+Проблема в том, что мы используем неправильный подход с плейсхолдером. Давайте исправим это самым простым способом!
 
-## 1. Обновляем `frontend.js` - локализуем тултипы
+## 1. Упрощаем `block-registration.php`
+
+```php
+<?php
+// Защита от прямого доступа
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Регистрация Gutenberg-блока Post Wall
+ *
+ * Регистрирует динамический блок в редакторе Gutenberg с указанием
+ * необходимых скриптов, стилей и обработчика рендеринга на сервере.
+ */
+function postwall_register_block() {
+    // Регистрируем блок через WordPress API с полными параметрами
+    register_block_type('postwall/post-wall', array(
+        'editor_script' => 'postwall-block',         // JavaScript для редактора блоков
+        'editor_style' => 'postwall-block-editor',   // CSS стили для редактора
+        'style' => 'postwall-frontend',              // CSS стили для фронтенда
+        'render_callback' => 'postwall_render_block', // Функция серверного рендеринга
+        'attributes' => array(                                   // Определение атрибутов блока
+            'siteUrl' => array(
+                'type' => 'string',    // Тип данных атрибута
+                'default' => ''        // Значение по умолчанию (пустая строка)
+            )
+        )
+    ));
+}
+
+/**
+ * Извлекает домен из URL
+ *
+ * @param string $url URL сайта
+ * @return string Доменное имя
+ */
+function postwall_extract_domain($url) {
+    if (empty($url)) {
+        return '';
+    }
+
+    // Удаляем протокол (http://, https://)
+    $domain = preg_replace('#^https?://#', '', $url);
+
+    // Удаляем путь после домена
+    $domain = preg_replace('#/.*$#', '', $domain);
+
+    // Удаляем www. если есть
+    $domain = preg_replace('#^www\.#', '', $domain);
+
+    return $domain;
+}
+
+/**
+ * Функция серверного рендеринга блока Post Wall
+ *
+ * Вызывается WordPress при выводе блока на странице. Генерирует HTML-разметку
+ * контейнера для диаграммы и передает необходимые данные через data-атрибуты.
+ *
+ * @param array $attributes Атрибуты блока (включая siteUrl)
+ * @param string $content Внутреннее содержимое блока (не используется в динамических блоках)
+ * @return string HTML-разметка контейнера диаграммы или сообщение об ошибке
+ */
+function postwall_render_block($attributes, $content) {
+    // Валидация входных данных
+    if (!is_array($attributes)) {
+        $attributes = array();
+    }
+
+    // Получаем URL сайта из атрибутов блока
+    $site_url = !empty($attributes['siteUrl']) ?
+                       sanitize_text_field($attributes['siteUrl']) :
+                       '';
+
+    // Извлекаем домен для заголовка
+    $domain = postwall_extract_domain($site_url);
+
+    // Генерируем уникальный ID для контейнера (чтобы избежать конфликтов на странице)
+    $unique_id = uniqid('postwall-');
+
+    // Формируем data-атрибуты для передачи данных в JavaScript
+    // Безопасно экранируем значения функцией esc_attr
+    $data_attributes = 'data-site-url="' . esc_attr($site_url) . '" data-container-id="' . esc_attr($unique_id) . '"';
+
+    // Передаем отдельно домен и базовые тексты
+    $base_title = __('Posts from the site for the last 12 months', 'postwall');
+    $loading_text = __('Loading post wall...', 'postwall');
+
+    // Возвращаем HTML контейнер для диаграммы с data-атрибутами
+    return '<div class="postwall-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '
+                data-base-title="' . esc_attr($base_title) . '"
+                data-loading-text="' . esc_attr($loading_text) . '"
+                data-domain="' . esc_attr($domain) . '">
+                <h3 class="postwall-title">' . esc_html($this->generate_title_with_domain($base_title, $domain)) . '</h3>
+                <div class="postwall-loading">' . esc_html($loading_text) . '</div>
+            </div>';
+}
+
+/**
+ * Генерирует заголовок с доменом
+ *
+ * @param string $base_title Базовый заголовок
+ * @param string $domain Домен сайта
+ * @return string Заголовок с доменом
+ */
+function generate_title_with_domain($base_title, $domain) {
+    if (empty($domain)) {
+        return $base_title;
+    }
+
+    // Для русского языка
+    if (get_locale() === 'ru_RU') {
+        return 'Посты сайта ' . $domain . ' за последние 12 месяцев';
+    }
+
+    // Для английского и других языков
+    return 'Posts from the site ' . $domain . ' for the last 12 months';
+}
+
+// Регистрируем блок при инициализации
+add_action('init', 'postwall_register_block');
+```
+
+## 2. Упрощаем `frontend.js`
 
 ```javascript
 /**
@@ -25,9 +149,10 @@
             this.containerId = this.container.dataset.containerId;
             this.loadingElement = this.container.querySelector('.postwall-loading');
 
-            // Получаем заголовок и текст загрузки из data-атрибутов
-            this.title = this.container.dataset.title || 'Posts from the site for the last 12 months';
+            // Получаем данные из data-атрибутов
+            this.baseTitle = this.container.dataset.baseTitle || 'Posts from the site for the last 12 months';
             this.loadingText = this.container.dataset.loadingText || 'Loading post wall...';
+            this.domain = this.container.dataset.domain || '';
 
             this.init();
         }
@@ -141,7 +266,9 @@
          */
         createOrUpdateTitle() {
             let titleElement = this.container.querySelector('.postwall-title');
-            const translatedTitle = this.translate(this.title);
+
+            // Создаем локализованный заголовок с доменом
+            const translatedTitle = this.generateTitleWithDomain();
 
             if (!titleElement) {
                 titleElement = document.createElement('h3');
@@ -150,198 +277,29 @@
             }
 
             titleElement.textContent = translatedTitle;
+            console.log('Final title:', translatedTitle);
         }
 
         /**
-         * Create a month grid
-         * @param {Date} monthDate - The date representing the month to create
-         * @return {HTMLElement} The month container element
+         * Generate title with domain
+         * @return {string} Localized title with domain
          */
-        createMonth(monthDate) {
-            console.log('createMonth called for', monthDate);
-            const monthDiv = document.createElement('div');
-            monthDiv.className = 'month';
-
-            const monthGrid = document.createElement('div');
-            monthGrid.className = 'month-grid';
-
-            const year = monthDate.getFullYear();
-            const month = monthDate.getMonth();
-
-            // Get first day of month and what day of week it falls on
-            const firstDay = new Date(year, month, 1);
-            const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
-
-            // Adjust for Monday first (0 = Monday, 6 = Sunday)
-            const adjustedFirstDay = (firstDayOfWeek + 6) % 7;
-
-            // Get number of days in month
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            console.log(`Month ${month + 1}, days: ${daysInMonth}, first day offset: ${adjustedFirstDay}`);
-
-            // Create cells
-            // Empty cells before first day
-            for (let i = 0; i < adjustedFirstDay; i++) {
-                const emptyCell = document.createElement('span');
-                emptyCell.className = 'day empty';
-                monthGrid.appendChild(emptyCell);
+        generateTitleWithDomain() {
+            if (!this.domain) {
+                return this.translate(this.baseTitle);
             }
 
-            // Days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayCell = document.createElement('span');
-                const cellDate = new Date(year, month, day);
-
-                // Determine activity level
-                const activityLevel = this.getActivityLevel(cellDate);
-
-                if (activityLevel === 0) {
-                    dayCell.className = 'day empty';
-                } else {
-                    dayCell.className = `day lvl-${activityLevel}`;
-                }
-
-                // Add tooltip with post count - ЛОКАЛИЗУЕМ ТУТ!
-                const postCount = this.postData ?
-                    (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
-
-                // Форматируем дату в локализованном формате
-                const formattedDate = cellDate.toLocaleDateString(this.getLocale());
-
-                // Создаем локализованный текст для тултипа
-                const tooltipText = this.formatTooltip(formattedDate, postCount);
-                dayCell.title = tooltipText;
-
-                monthGrid.appendChild(dayCell);
-            }
-
-            monthDiv.appendChild(monthGrid);
-
-            // Add month label
-            const monthLabel = document.createElement('div');
-            monthLabel.className = 'month-label';
-            monthLabel.textContent = this.getMonthName(month);
-            monthDiv.appendChild(monthLabel);
-            console.log('Month created:', this.getMonthName(month));
-
-            return monthDiv;
-        }
-
-        /**
-         * Format tooltip text with proper localization
-         * @param {string} date Formatted date
-         * @param {number} postCount Number of posts
-         * @return {string} Localized tooltip text
-         */
-        formatTooltip(date, postCount) {
-            // Получаем переведенное слово "posts" в правильной форме
-            const postsText = this.getPostsText(postCount);
-            return `${date}: ${postCount} ${postsText}`;
-        }
-
-        /**
-         * Get localized posts text with proper plural forms
-         * @param {number} count Number of posts
-         * @return {string} Localized posts text
-         */
-        getPostsText(count) {
-            // Для русского языка - особые правила множественного числа
+            // Простой способ - создаем заголовок в зависимости от языка
             if (this.getLocale().startsWith('ru')) {
-                if (count === 1) {
-                    return 'пост';
-                } else if (count >= 2 && count <= 4) {
-                    return 'поста';
-                } else {
-                    return 'постов';
-                }
+                return 'Посты сайта ' + this.domain + ' за последние 12 месяцев';
+            } else {
+                return 'Posts from the site ' + this.domain + ' for the last 12 months';
             }
-
-            // Для английского и других языков - простые правила
-            const postsText = this.translate('posts');
-            return postsText;
         }
 
-        /**
-         * Get current locale
-         * @return {string} Current locale
-         */
-        getLocale() {
-            return postwallSettings.locale || 'en_US';
-        }
+        // ... остальные методы без изменений ...
+        // (formatTooltip, getPostsText, getLocale, getActivityLevel, getMonthName, translate)
 
-        /**
-         * Get activity level for a date based on real post data
-         *
-         * @param {Date} date The date to check
-         * @return {number} Activity level (0-4)
-         */
-        getActivityLevel(date) {
-            // If we have real data, use it
-            if (this.postData) {
-                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-                const postCount = this.postData[dateKey] || 0;
-
-                // Determine activity level based on post count
-                if (postCount === 0) return 0; // No posts
-                if (postCount === 1) return 1; // 1 post
-                if (postCount === 2) return 2; // 2 posts
-                if (postCount <= 4) return 3; // 3-4 posts
-                return 4; // 5+ posts
-            }
-
-            // Fallback to random for demo when no data available
-            const random = Math.random();
-            if (random < 0.3) return 0;
-            if (random < 0.5) return 1;
-            if (random < 0.7) return 2;
-            if (random < 0.9) return 3;
-            return 4;
-        }
-
-        /**
-         * Get localized month name
-         * @param {number} monthIndex - Month index (0-11)
-         * @return {string} Month name
-         */
-        getMonthName(monthIndex) {
-            const monthNames = [
-                this.translate('Jan'), this.translate('Feb'), this.translate('Mar'),
-                this.translate('Apr'), this.translate('May'), this.translate('Jun'),
-                this.translate('Jul'), this.translate('Aug'), this.translate('Sep'),
-                this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
-            ];
-            return monthNames[monthIndex];
-        }
-
-        /**
-         * Translation helper with fallback
-         * @param {string} text Text to translate
-         * @return {string} Translated text
-         */
-        translate(text) {
-            // Try to use wp.i18n if available
-            if (typeof wp !== 'undefined' && wp.i18n && typeof wp.i18n.__ === 'function') {
-                return wp.i18n.__(text, 'postwall');
-            }
-
-            // Fallback: manual translation based on locale
-            if (this.getLocale().startsWith('ru')) {
-                const russianTranslations = {
-                    'Posts from the site for the last 12 months': 'Посты с сайта за последние 12 месяцев',
-                    'Loading post wall...': 'Загрузка кафельной стенки...',
-                    'Failed to load post data': 'Не удалось загрузить данные постов',
-                    'Error loading data': 'Ошибка при загрузке данных',
-                    'posts': 'постов', // базовая форма для множественного числа
-                    'Jan': 'янв', 'Feb': 'фев', 'Mar': 'мар', 'Apr': 'апр',
-                    'May': 'май', 'Jun': 'июн', 'Jul': 'июл', 'Aug': 'авг',
-                    'Sep': 'сен', 'Oct': 'окт', 'Nov': 'ноя', 'Dec': 'дек'
-                };
-                return russianTranslations[text] || text;
-            }
-
-            // Default to English
-            return text;
-        }
     }
 
     /**
@@ -356,68 +314,41 @@
 })(jQuery);
 ```
 
-## 2. Обновляем PO файл - добавляем формы для множественного числа
+## 3. Удаляем старые переводы из PO файла
 
-Добавьте в `languages/postwall-ru_RU.po`:
+Удалите из `languages/postwall-ru_RU.po` строку с плейсхолдером:
 
 ```po
-# Множественное число для слова "posts"
-msgid "posts"
-msgstr "постов"
-
-# Дополнительные формы для правильного склонения
-msgctxt "singular form for posts"
-msgid "post"
-msgstr "пост"
-
-msgctxt "plural form for 2-4 posts"
-msgid "posts_2_4"
-msgstr "поста"
+# УДАЛИТЬ эту строку:
+# msgid "Posts from the site %s for the last 12 months"
+# msgstr "Посты сайта %s за последние 12 месяцев"
 ```
 
-## 3. Альтернативный подход - если сложно с контекстами
+Оставьте только базовый заголовок:
 
-Если контексты не работают, можно использовать более простой подход в `getPostsText()`:
-
-```javascript
-getPostsText(count) {
-    // Для русского языка - особые правила множественного числа
-    if (this.getLocale().startsWith('ru')) {
-        const lastDigit = count % 10;
-        const lastTwoDigits = count % 100;
-
-        if (lastDigit === 1 && lastTwoDigits !== 11) {
-            return 'пост';
-        } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
-            return 'поста';
-        } else {
-            return 'постов';
-        }
-    }
-
-    // Для английского и других языков
-    return this.translate('posts');
-}
+```po
+# ОСТАВИТЬ эту строку:
+msgid "Posts from the site for the last 12 months"
+msgstr "Посты сайта за последние 12 месяцев"
 ```
 
-## 4. Обновляем JSON файлы
-
-После добавления переводов в PO файл, перегенерируйте JSON:
+## 4. Перегенерируем JSON файлы
 
 ```bash
+# Перегенерируем JSON файлы
 wp i18n make-json languages/postwall-ru_RU.po languages/ --no-purge --pretty-print
 ```
 
-## Основные изменения:
+## 5. Очищаем кеш
 
-1. **`formatTooltip()`** - новая функция для форматирования тултипов
-2. **`getPostsText()`** - функция для правильного склонения слова "пост" в зависимости от количества
-3. **`getLocale()`** - функция для получения текущей локали
-4. **Правильные правила множественного числа** для русского языка
+- Очистите кеш браузера (Ctrl+F5)
+- Если используете кеширующий плагин - очистите кеш WordPress
 
-Теперь тултипы будут показывать:
-- "1 пост" (для 1)
-- "2 поста" (для 2-4)
-- "5 постов" (для 5+)
+## Что изменилось:
 
-И всё это будет автоматически переключаться между языками!
+1. **Убрали сложные плейсхолдеры** - они ломали систему переводов
+2. **Используем простую логику** - в PHP и JavaScript отдельно обрабатываем домен
+3. **`generateTitleWithDomain()`** - простая функция, которая создает заголовок на нужном языке
+4. **`data-base-title`** - передаем базовый заголовок без домена
+
+Теперь в русской локали будет показывать: "**Посты сайта bychko.ru за последние 12 месяцев**", а в английской: "**Posts from the site bychko.ru for the last 12 months**".

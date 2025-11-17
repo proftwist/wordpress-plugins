@@ -34,6 +34,10 @@ msgid "Posts from the site for the last 12 months"
 msgstr ""
 
 #: includes/block-registration.php:69
+msgid "Posts from the site {{domain}} for the last 12 months"
+msgstr ""
+
+#: includes/block-registration.php:70
 msgid "Loading post wall..."
 msgstr ""
 
