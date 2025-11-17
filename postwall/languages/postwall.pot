@@ -124,3 +124,23 @@ msgstr ""
 #: build/frontend.js:108
 msgid "Dec"
 msgstr ""
+
+#: build/index.js:76
+msgid "Heading Tag"
+msgstr ""
+
+#: build/index.js:81
+msgid "H2"
+msgstr ""
+
+#: build/index.js:82
+msgid "H3"
+msgstr ""
+
+#: build/index.js:83
+msgid "H4"
+msgstr ""
+
+#: build/index.js:84
+msgid "Plain Text"
+msgstr ""

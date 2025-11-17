@@ -77,6 +77,26 @@ msgstr "Post wall"
 msgid "Site URL"
 msgstr "Site URL"
 
+#: build/index.js:76
+msgid "Heading Tag"
+msgstr "Heading Tag"
+
+#: build/index.js:81
+msgid "H2"
+msgstr "H2"
+
+#: build/index.js:82
+msgid "H3"
+msgstr "H3"
+
+#: build/index.js:83
+msgid "H4"
+msgstr "H4"
+
+#: build/index.js:84
+msgid "Plain Text"
+msgstr "Plain Text"
+
 #: build/frontend.js:105
 msgid "Jan"
 msgstr "Jan"

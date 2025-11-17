@@ -176,12 +176,21 @@
         createOrUpdateTitle() {
             let titleElement = this.container.querySelector('.postwall-title');
 
+            // Получаем тег заголовка из data-атрибута или используем значение по умолчанию
+            const headingTag = this.container.getAttribute('data-heading-tag') || 'h3';
+
             // Создаем локализованный заголовок с доменом
             const translatedTitle = this.generateTitleWithDomain();
 
             if (!titleElement) {
-                titleElement = document.createElement('h3');
-                titleElement.className = 'postwall-title';
+                // Создаем элемент заголовка с выбранным тегом
+                if (headingTag === 'div') {
+                    titleElement = document.createElement('div');
+                    titleElement.className = 'postwall-text';
+                } else {
+                    titleElement = document.createElement(headingTag);
+                    titleElement.className = 'postwall-title';
+                }
                 this.container.insertBefore(titleElement, this.container.firstChild);
             }
 

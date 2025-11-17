@@ -30,6 +30,10 @@ function postwall_register_block() {
             'siteUrl' => array(
                 'type' => 'string',    // Тип данных атрибута
                 'default' => ''        // Значение по умолчанию (пустая строка)
+            ),
+            'headingTag' => array(
+                'type' => 'string',    // Тип данных атрибута
+                'default' => 'h3'      // Значение по умолчанию (h3)
             )
         )
     ));
@@ -87,20 +91,28 @@ function postwall_render_block($attributes, $content) {
     // Генерируем уникальный ID для контейнера (чтобы избежать конфликтов на странице)
     $unique_id = uniqid('postwall-');
 
+    // Получаем тег заголовка из атрибутов блока или используем значение по умолчанию
+    $allowed_heading_tags = array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div');
+    $heading_tag = !empty($attributes['headingTag']) && in_array($attributes['headingTag'], $allowed_heading_tags) ?
+                   $attributes['headingTag'] : 'h3';
+
     // Формируем data-атрибуты для передачи данных в JavaScript
     // Безопасно экранируем значения функцией esc_attr
-    $data_attributes = 'data-site-url="' . esc_attr($site_url) . '" data-container-id="' . esc_attr($unique_id) . '"';
+    $data_attributes = 'data-site-url="' . esc_attr($site_url) . '" data-container-id="' . esc_attr($unique_id) . '" data-heading-tag="' . esc_attr($heading_tag) . '"';
 
     // Передаем отдельно домен и базовые тексты
     $base_title = __('Posts from the site for the last 12 months', 'postwall');
     $loading_text = __('Loading post wall...', 'postwall');
+
+    // Генерируем заголовок с соответствующим тегом
+    $title_html = '<' . esc_attr($heading_tag) . ' class="postwall-title">' . esc_html(generate_title_with_domain($base_title, $domain)) . '</' . esc_attr($heading_tag) . '>';
 
     // Возвращаем HTML контейнер для диаграммы с data-атрибутами
     return '<div class="postwall-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '
                 data-base-title="' . esc_attr($base_title) . '"
                 data-loading-text="' . esc_attr($loading_text) . '"
                 data-domain="' . esc_attr($domain) . '">
-                <h3 class="postwall-title">' . esc_html(generate_title_with_domain($base_title, $domain)) . '</h3>
+                ' . $title_html . '
                 <div class="postwall-loading">' . esc_html($loading_text) . '</div>
             </div>';
 }

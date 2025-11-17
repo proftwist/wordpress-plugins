@@ -13,6 +13,7 @@
     var InspectorControls = wp.blockEditor.InspectorControls;
     var PanelBody = wp.components.PanelBody;
     var TextControl = wp.components.TextControl;
+    var SelectControl = wp.components.SelectControl;
     var __ = wp.i18n.__;
 
     /**
@@ -26,6 +27,10 @@
             siteUrl: {
                 type: 'string',
                 default: ''
+            },
+            headingTag: {
+                type: 'string',
+                default: 'h3'
             }
         },
 
@@ -40,6 +45,7 @@
 
             // Получаем значения из атрибутов блока
             var siteUrl = attributes.siteUrl || '';
+            var headingTag = attributes.headingTag || 'h3';
 
             return el(
                 'div',
@@ -62,6 +68,19 @@
                                 setAttributes({ siteUrl: value });
                             },
                             placeholder: __('https://example.com', 'postwall')
+                        }),
+                        el(SelectControl, {
+                            label: __('Heading Tag', 'postwall'),
+                            value: headingTag,
+                            options: [
+                                { label: __('H2', 'postwall'), value: 'h2' },
+                                { label: __('H3', 'postwall'), value: 'h3' },
+                                { label: __('H4', 'postwall'), value: 'h4' },
+                                { label: __('Plain Text', 'postwall'), value: 'div' }
+                            ],
+                            onChange: function (value) {
+                                setAttributes({ headingTag: value });
+                            }
                         })
                     )
                 )

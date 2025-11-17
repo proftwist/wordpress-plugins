@@ -77,18 +77,6 @@ msgstr "Кафельная стенка постов"
 msgid "Site URL"
 msgstr "Адрес сайта"
 
-# Множественное число для слова "posts"
-msgid "posts"
-msgstr "постов"
-
-# Дополнительные формы для правильного склонения
-msgctxt "singular form for posts"
-msgid "post"
-msgstr "пост"
-
-msgctxt "plural form for 2-4 posts"
-msgid "posts_2_4"
-msgstr "поста"
 
 #: build/frontend.js:105
 msgid "Jan"
@@ -137,3 +125,23 @@ msgstr "Ноя"
 #: build/frontend.js:108
 msgid "Dec"
 msgstr "Дек"
+
+#: build/index.js:76
+msgid "Heading Tag"
+msgstr "Тег заголовка"
+
+#: build/index.js:81
+msgid "H2"
+msgstr "H2"
+
+#: build/index.js:82
+msgid "H3"
+msgstr "H3"
+
+#: build/index.js:83
+msgid "H4"
+msgstr "H4"
+
+#: build/index.js:84
+msgid "Plain Text"
+msgstr "Обычный текст"
