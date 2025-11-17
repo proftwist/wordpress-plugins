@@ -35,6 +35,9 @@ class QuickLinkChecker {
     private function __construct() {
         add_action('plugins_loaded', array($this, 'load_textdomain'));
         add_action('init', array($this, 'init')); // Меняем на init
+
+        // Добавляем хук для проверки после сохранения
+        add_action('wp_after_insert_post', array($this, 'after_post_save'), 10, 4);
     }
 
     public function load_textdomain() {
@@ -83,6 +86,7 @@ class QuickLinkChecker {
 
         // Локализация только на нужных страницах
         if (in_array($hook, array('post.php', 'post-new.php'))) {
+            global $post;
             wp_localize_script('qlc-admin-js', 'qlc_ajax', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('qlc_nonce'),
@@ -91,7 +95,42 @@ class QuickLinkChecker {
                 'no_broken_links' => __('No broken links found', 'quick-link-checker'),
                 'check_now_text' => __('Check Links Now', 'quick-link-checker')
             ));
+
+            // Передаем ID поста в JavaScript
+            if ($post) {
+                wp_localize_script('qlc-admin-js', 'qlc_post', array(
+                    'post_id' => $post->ID
+                ));
+            }
         }
+    }
+
+    public function after_post_save($post_id, $post, $update, $post_before) {
+        // Проверяем, включена ли проверка
+        if (!get_option('qlc_enabled', '1')) {
+            return;
+        }
+
+        // Проверяем права и тип поста
+        if (!current_user_can('edit_post', $post_id) || wp_is_post_revision($post_id)) {
+            return;
+        }
+
+        // Проверяем только опубликованные посты и черновики
+        if (!in_array($post->post_status, array('publish', 'draft', 'pending'))) {
+            return;
+        }
+
+        // Запускаем проверку с небольшой задержкой
+        add_action('shutdown', function() use ($post_id) {
+            $this->do_post_save_check($post_id);
+        });
+    }
+
+    public function do_post_save_check($post_id) {
+        require_once QLC_PLUGIN_PATH . 'includes/class-link-checker.php';
+        $checker = new QLC_Link_Checker();
+        $checker->check_post_links_immediately($post_id);
     }
 }
 

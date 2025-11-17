@@ -9,6 +9,7 @@ class QLC_Editor_Integration {
     public function __construct() {
         add_action('add_meta_boxes', array($this, 'add_meta_box'));
         add_action('admin_head', array($this, 'add_editor_styles'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts')); // Новый хук
         add_action('admin_notices', array($this, 'debug_info')); // Добавляем отладку
     }
 
@@ -75,6 +76,22 @@ class QLC_Editor_Integration {
                 padding-left: 20px;
             }
         </style>';
+    }
+
+    public function enqueue_scripts($hook) {
+        if (!in_array($hook, array('post.php', 'post-new.php'))) {
+            return;
+        }
+
+        global $post;
+        if (!$post) {
+            return;
+        }
+
+        // Передаем ID поста в JavaScript
+        wp_localize_script('qlc-admin-js', 'qlc_post', array(
+            'post_id' => $post->ID
+        ));
     }
 
     public function debug_info() {

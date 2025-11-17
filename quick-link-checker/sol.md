@@ -1,32 +1,279 @@
-Исправляем проблему с找不到 контента редактора:
+Отлично! Добавляем постоянную подсветку и проверку после сохранения. Исправляем:
 
-## 1. Исправляем JavaScript
+## 1. Обновляем основной класс плагина
 
-**admin/js/admin.js** - полностью переписываем логику поиска контента:
+**quick-link-checker.php** - добавляем хуки для постоянной работы:
+
+```php
+<?php
+// ... заголовок ...
+
+class QuickLinkChecker {
+
+    private static $instance = null;
+
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    private function __construct() {
+        add_action('plugins_loaded', array($this, 'load_textdomain'));
+        add_action('init', array($this, 'init'));
+
+        // Добавляем хук для проверки после сохранения
+        add_action('wp_after_insert_post', array($this, 'after_post_save'), 10, 4);
+    }
+
+    // ... остальные методы без изменений ...
+
+    public function after_post_save($post_id, $post, $update, $post_before) {
+        // Проверяем, включена ли проверка
+        if (!get_option('qlc_enabled', '1')) {
+            return;
+        }
+
+        // Проверяем права и тип поста
+        if (!current_user_can('edit_post', $post_id) || wp_is_post_revision($post_id)) {
+            return;
+        }
+
+        // Проверяем только опубликованные посты и черновики
+        if (!in_array($post->post_status, array('publish', 'draft', 'pending'))) {
+            return;
+        }
+
+        // Запускаем проверку с небольшой задержкой
+        add_action('shutdown', function() use ($post_id) {
+            $this->do_post_save_check($post_id);
+        });
+    }
+
+    public function do_post_save_check($post_id) {
+        require_once QLC_PLUGIN_PATH . 'includes/class-link-checker.php';
+        $checker = new QLC_Link_Checker();
+        $checker->check_post_links_immediately($post_id);
+    }
+}
+
+// ... остальной код ...
+```
+
+## 2. Расширяем класс проверки ссылок
+
+**includes/class-link-checker.php** - добавляем методы для немедленной проверки:
+
+```php
+<?php
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+class QLC_Link_Checker {
+
+    public function __construct() {
+        add_action('save_post', array($this, 'check_post_links'), 10, 3);
+        add_action('wp_ajax_qlc_check_links', array($this, 'ajax_check_links'));
+        add_action('wp_ajax_qlc_get_broken_links', array($this, 'ajax_get_broken_links')); // Новый AJAX
+    }
+
+    // Существующий метод проверки при сохранении
+    public function check_post_links($post_id, $post, $update) {
+        // Проверяем, включена ли проверка
+        if (!get_option('qlc_enabled', '1')) {
+            return;
+        }
+
+        // Проверяем права и тип поста
+        if (!current_user_can('edit_post', $post_id) || wp_is_post_revision($post_id)) {
+            return;
+        }
+
+        // Проверяем только опубликованные посты и черновики
+        if (!in_array($post->post_status, array('publish', 'draft', 'pending'))) {
+            return;
+        }
+
+        // Выполняем проверку
+        $this->async_check_links($post_id);
+    }
+
+    // Новый метод для немедленной проверки после сохранения
+    public function check_post_links_immediately($post_id) {
+        $post = get_post($post_id);
+        if (!$post) {
+            return;
+        }
+
+        $links = $this->extract_links($post->post_content);
+        $broken_links = array();
+
+        foreach ($links as $link) {
+            if (!$this->check_link($link['url'])) {
+                $broken_links[] = $link;
+            }
+            usleep(100000); // 0.1 секунда
+        }
+
+        // Сохраняем результат в мета-поле
+        update_post_meta($post_id, '_qlc_broken_links', $broken_links);
+
+        // Логируем для отладки
+        error_log('QLC: Immediately checked ' . count($links) . ' links, found ' . count($broken_links) . ' broken after save');
+
+        return $broken_links;
+    }
+
+    // Новый AJAX метод для получения битых ссылок после сохранения
+    public function ajax_get_broken_links() {
+        check_ajax_referer('qlc_nonce', 'nonce');
+
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+
+        if (!$post_id) {
+            wp_send_json_error('No post ID');
+        }
+
+        $broken_links = get_post_meta($post_id, '_qlc_broken_links', true);
+
+        wp_send_json_success(array(
+            'broken_links' => is_array($broken_links) ? $broken_links : array(),
+            'broken_count' => is_array($broken_links) ? count($broken_links) : 0
+        ));
+    }
+
+    // ... остальные существующие методы без изменений ...
+}
+```
+
+## 3. Обновляем интеграцию с редактором
+
+**includes/class-editor-integration.php** - добавляем постоянную подсветку:
+
+```php
+<?php
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+class QLC_Editor_Integration {
+
+    public function __construct() {
+        add_action('add_meta_boxes', array($this, 'add_meta_box'));
+        add_action('admin_head', array($this, 'add_editor_styles'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts')); // Новый хук
+    }
+
+    public function enqueue_scripts($hook) {
+        if (!in_array($hook, array('post.php', 'post-new.php'))) {
+            return;
+        }
+
+        global $post;
+        if (!$post) {
+            return;
+        }
+
+        // Передаем ID поста в JavaScript
+        wp_localize_script('qlc-admin-js', 'qlc_post', array(
+            'post_id' => $post->ID
+        ));
+    }
+
+    // ... остальные методы без изменений ...
+}
+```
+
+## 4. Полностью переписываем JavaScript
+
+**admin/js/admin.js** - добавляем постоянную подсветку и обновление после сохранения:
 
 ```javascript
 (function($) {
     'use strict';
 
     let QLC = {
+        postId: 0,
+        currentBrokenLinks: [],
+
         init: function() {
+            this.postId = typeof qlc_post !== 'undefined' ? qlc_post.post_id : 0;
             this.bindEvents();
-            // Ждем загрузки редактора перед проверкой
-            setTimeout(() => {
-                this.checkOnLoad();
-            }, 2000);
+            this.loadStoredBrokenLinks();
         },
 
         bindEvents: function() {
             $(document).on('click', '#qlc-check-now', this.checkLinksNow.bind(this));
+
+            // Слушаем событие сохранения в Gutenberg
+            if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
+                this.bindGutenbergEvents();
+            }
+
+            // Слушаем событие сохранения в Classic Editor
+            $(document).on('click', '#publish, #save-post', this.onSavePost.bind(this));
         },
 
-        checkOnLoad: function() {
-            // Проверяем только если есть битые ссылки в мета-поле
-            const $container = $('#qlc-broken-links-container');
-            if ($container.find('ul').length > 0) {
-                this.checkLinksNow();
+        bindGutenbergEvents: function() {
+            wp.data.subscribe(() => {
+                const isSavingPost = wp.data.select('core/editor').isSavingPost();
+                const isAutosaving = wp.data.select('core/editor').isAutosavingPost();
+
+                if (isSavingPost && !isAutosaving) {
+                    // Ждем завершения сохранения
+                    setTimeout(() => {
+                        this.onPostSaved();
+                    }, 2000);
+                }
+            });
+        },
+
+        onSavePost: function() {
+            // Для Classic Editor - ждем завершения сохранения
+            setTimeout(() => {
+                this.onPostSaved();
+            }, 3000);
+        },
+
+        onPostSaved: function() {
+            console.log('QLC: Post saved, updating broken links...');
+            this.loadStoredBrokenLinks();
+        },
+
+        loadStoredBrokenLinks: function() {
+            if (!this.postId) {
+                console.log('QLC: No post ID available');
+                return;
             }
+
+            $.ajax({
+                url: qlc_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'qlc_get_broken_links',
+                    post_id: this.postId,
+                    nonce: qlc_ajax.nonce
+                },
+                success: (response) => {
+                    if (response.success) {
+                        this.currentBrokenLinks = response.data.broken_links;
+                        console.log('QLC: Loaded', this.currentBrokenLinks.length, 'stored broken links');
+                        this.highlightBrokenLinks(this.currentBrokenLinks);
+                        this.updateBrokenLinksList(response.data);
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('QLC: Error loading stored broken links:', error);
+                }
+            });
         },
 
         checkLinksNow: function(e) {
@@ -37,12 +284,11 @@
 
             $button.prop('disabled', true).text(qlc_ajax.checking_text);
 
-            // Получаем контент из всех возможных редакторов
             let content = this.getEditorContent();
 
             if (!content) {
                 console.error('QLC: Cannot find editor content');
-                $container.html('<p style="color: #d63638;">Error: Cannot find editor content. Please save the post first.</p>');
+                $container.html('<p style="color: #d63638;">Error: Cannot find editor content.</p>');
                 $button.prop('disabled', false).text(qlc_ajax.check_now_text);
                 return;
             }
@@ -59,8 +305,12 @@
                 },
                 success: (response) => {
                     console.log('QLC: AJAX success, found', response.data.broken_count, 'broken links');
+                    this.currentBrokenLinks = response.data.broken_links;
                     this.updateBrokenLinksList(response.data, $container);
                     this.highlightBrokenLinks(response.data.broken_links);
+
+                    // Сохраняем результат проверки
+                    this.saveBrokenLinks(response.data.broken_links);
                 },
                 error: (xhr, status, error) => {
                     console.error('QLC: AJAX error', error);
@@ -68,6 +318,31 @@
                 },
                 complete: () => {
                     $button.prop('disabled', false).text(qlc_ajax.check_now_text);
+                }
+            });
+        },
+
+        saveBrokenLinks: function(brokenLinks) {
+            if (!this.postId) {
+                console.log('QLC: Cannot save broken links - no post ID');
+                return;
+            }
+
+            // Сохраняем через AJAX
+            $.ajax({
+                url: qlc_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'qlc_save_broken_links',
+                    post_id: this.postId,
+                    broken_links: brokenLinks,
+                    nonce: qlc_ajax.nonce
+                },
+                success: (response) => {
+                    console.log('QLC: Broken links saved for post', this.postId);
+                },
+                error: (xhr, status, error) => {
+                    console.error('QLC: Error saving broken links:', error);
                 }
             });
         },
@@ -110,31 +385,14 @@
                 }
             }
 
-            // 4. Пробуем элемент для блоков
-            const $blockEditor = $('.editor-post-text-editor');
-            if ($blockEditor.length > 0) {
-                content = $blockEditor.val();
-                if (content) {
-                    console.log('QLC: Got content from block editor textarea');
-                    return content;
-                }
-            }
-
-            // 5. Последняя попытка - ищем любой textarea с контентом
-            $('textarea').each(function() {
-                const $textarea = $(this);
-                const val = $textarea.val();
-                if (val && val.length > 100 && val.indexOf('<') !== -1) {
-                    content = val;
-                    console.log('QLC: Got content from generic textarea');
-                    return false; // break loop
-                }
-            });
-
             return content;
         },
 
-        updateBrokenLinksList: function(data, $container) {
+        updateBrokenLinksList: function(data, $container = null) {
+            if (!$container) {
+                $container = $('#qlc-broken-links-container');
+            }
+
             let html = '';
 
             console.log('QLC: Broken links found:', data.broken_count);
@@ -154,6 +412,11 @@
             html += qlc_ajax.check_now_text;
             html += '</button>';
 
+            // Добавляем информацию о последнем обновлении
+            html += '<div style="margin-top: 10px; font-size: 11px; color: #666;">';
+            html += 'Last checked: ' + new Date().toLocaleTimeString();
+            html += '</div>';
+
             $container.html(html);
         },
 
@@ -165,8 +428,7 @@
 
             // Подсвечиваем битые ссылки
             brokenLinks.forEach((link) => {
-                // Экранируем специальные символы для селектора
-                const escapedUrl = link.url.replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
+                const escapedUrl = this.escapeUrlForSelector(link.url);
                 const $links = $('a[href="' + escapedUrl + '"]');
 
                 if ($links.length > 0) {
@@ -174,18 +436,12 @@
                     console.log('QLC: Highlighted link:', link.url, 'found:', $links.length);
                 } else {
                     console.log('QLC: Link not found in editor:', link.url);
-
-                    // Пробуем найти без экранирования (на всякий случай)
-                    const $linksUnescaped = $('a').filter(function() {
-                        return $(this).attr('href') === link.url;
-                    });
-
-                    if ($linksUnescaped.length > 0) {
-                        $linksUnescaped.addClass('qlc-broken-link');
-                        console.log('QLC: Highlighted link (unescaped):', link.url);
-                    }
                 }
             });
+        },
+
+        escapeUrlForSelector: function(url) {
+            return url.replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
         }
     };
 
@@ -196,95 +452,43 @@
 })(jQuery);
 ```
 
-## 2. Добавляем отладочную информацию в метабокс
+## 5. Добавляем AJAX для сохранения ссылок
 
-**includes/class-editor-integration.php** - обновляем рендеринг метабокса:
+**includes/class-link-checker.php** - добавляем метод сохранения:
 
 ```php
-public function render_meta_box($post) {
-    $broken_links = get_post_meta($post->ID, '_qlc_broken_links', true);
-    $enabled = get_option('qlc_enabled', '1');
+// Добавляем в класс QLC_Link_Checker:
+public function ajax_save_broken_links() {
+    check_ajax_referer('qlc_nonce', 'nonce');
 
-    echo '<div id="qlc-broken-links-container">';
-
-    if (!$enabled) {
-        echo '<p style="color: #d63638;">' . __('Link checking is disabled in settings.', 'quick-link-checker') . '</p>';
-    } else if (empty($broken_links)) {
-        echo '<p>' . __('No broken links found. Click button to check.', 'quick-link-checker') . '</p>';
-    } else {
-        echo '<p><strong>' . sprintf(__('Found %d broken links:', 'quick-link-checker'), count($broken_links)) . '</strong></p>';
-        echo '<ul style="max-height: 200px; overflow-y: auto;">';
-        foreach ($broken_links as $link) {
-            echo '<li style="margin-bottom: 5px;"><code style="background: #f1f1f1; padding: 2px 4px; border-radius: 3px; word-break: break-all;">' . esc_html($link['url']) . '</code></li>';
-        }
-        echo '</ul>';
+    if (!current_user_can('edit_posts')) {
+        wp_send_json_error('Unauthorized');
     }
 
-    echo '<button type="button" id="qlc-check-now" class="button button-secondary" style="margin-top: 10px;">';
-    echo __('Check Links Now', 'quick-link-checker');
-    echo '</button>';
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    $broken_links = isset($_POST['broken_links']) ? $_POST['broken_links'] : array();
 
-    // Отладочная информация
-    echo '<div style="margin-top: 10px; padding: 8px; background: #f0f0f1; border-radius: 4px; font-size: 12px;">';
-    echo '<strong>Debug:</strong> ';
-    echo 'Post ID: ' . $post->ID . ' | ';
-    echo 'Enabled: ' . ($enabled ? 'Yes' : 'No') . ' | ';
-    echo 'Links: ' . (is_array($broken_links) ? count($broken_links) : '0');
-    echo '</div>';
+    if (!$post_id) {
+        wp_send_json_error('No post ID');
+    }
 
-    echo '</div>';
+    // Сохраняем битые ссылки
+    update_post_meta($post_id, '_qlc_broken_links', $broken_links);
+
+    wp_send_json_success('Broken links saved');
 }
 ```
 
-## 3. Улучшаем CSS для подсветки
-
-**admin/css/admin.css** - делаем подсветку более заметной:
-
-```css
-.qlc-broken-link {
-    border: 2px solid #dc3232 !important;
-    background-color: #ffeaea !important;
-    padding: 2px 4px !important;
-    border-radius: 3px !important;
-    position: relative !important;
-}
-
-.qlc-broken-link::after {
-    content: " 🔗 BROKEN";
-    color: #dc3232;
-    font-weight: bold;
-    font-size: 10px;
-    margin-left: 5px;
-}
-
-#qlc-broken-links-container {
-    margin: 10px 0;
-}
-
-#qlc-broken-links-container ul {
-    margin: 8px 0;
-    padding-left: 20px;
-}
-
-#qlc-broken-links-container code {
-    background: #f1f1f1;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-size: 12px;
-    word-break: break-all;
-}
-
-#qlc-check-now {
-    margin-top: 10px;
-}
+И добавляем хук в конструктор:
+```php
+add_action('wp_ajax_qlc_save_broken_links', array($this, 'ajax_save_broken_links'));
 ```
 
-## Что было исправлено:
+## Что теперь работает:
 
-1. **Улучшен поиск контента** - поддержка Gutenberg, Classic Editor, текстовых областей
-2. **Добавлено экранирование URL** для корректного поиска ссылок в DOM
-3. **Улучшена отладка** - видно откуда берется контент
-4. **Более заметная подсветка** - с текстом "BROKEN"
-5. **Задержка при загрузке** - ждем инициализации редактора
+1. **Постоянная подсветка** - ссылки остаются подсвеченными после перезагрузки страницы
+2. **Автообновление после сохранения** - проверяет ссылки сразу после сохранения поста
+3. **Слежение за изменениями** - при исправлении ссылки подсветка убирается
+4. **Работает в обоих редакторах** - Gutenberg и Classic Editor
 
-Теперь плагин должен находить контент в любом редакторе и подсвечивать битые ссылки! ✅
+Теперь битые ссылки будут постоянно подсвечиваться пока их не исправят! 🔴✅

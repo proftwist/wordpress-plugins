@@ -2,24 +2,79 @@
     'use strict';
 
     let QLC = {
+        postId: 0,
+        currentBrokenLinks: [],
+
         init: function() {
+            this.postId = typeof qlc_post !== 'undefined' ? qlc_post.post_id : 0;
             this.bindEvents();
-            // Ждем загрузки редактора перед проверкой
-            setTimeout(() => {
-                this.checkOnLoad();
-            }, 2000);
+            this.loadStoredBrokenLinks();
         },
 
         bindEvents: function() {
             $(document).on('click', '#qlc-check-now', this.checkLinksNow.bind(this));
+
+            // Слушаем событие сохранения в Gutenberg
+            if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
+                this.bindGutenbergEvents();
+            }
+
+            // Слушаем событие сохранения в Classic Editor
+            $(document).on('click', '#publish, #save-post', this.onSavePost.bind(this));
         },
 
-        checkOnLoad: function() {
-            // Проверяем только если есть битые ссылки в мета-поле
-            const $container = $('#qlc-broken-links-container');
-            if ($container.find('ul').length > 0) {
-                this.checkLinksNow();
+        bindGutenbergEvents: function() {
+            wp.data.subscribe(() => {
+                const isSavingPost = wp.data.select('core/editor').isSavingPost();
+                const isAutosaving = wp.data.select('core/editor').isAutosavingPost();
+
+                if (isSavingPost && !isAutosaving) {
+                    // Ждем завершения сохранения
+                    setTimeout(() => {
+                        this.onPostSaved();
+                    }, 2000);
+                }
+            });
+        },
+
+        onSavePost: function() {
+            // Для Classic Editor - ждем завершения сохранения
+            setTimeout(() => {
+                this.onPostSaved();
+            }, 3000);
+        },
+
+        onPostSaved: function() {
+            console.log('QLC: Post saved, updating broken links...');
+            this.loadStoredBrokenLinks();
+        },
+
+        loadStoredBrokenLinks: function() {
+            if (!this.postId) {
+                console.log('QLC: No post ID available');
+                return;
             }
+
+            $.ajax({
+                url: qlc_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'qlc_get_broken_links',
+                    post_id: this.postId,
+                    nonce: qlc_ajax.nonce
+                },
+                success: (response) => {
+                    if (response.success) {
+                        this.currentBrokenLinks = response.data.broken_links;
+                        console.log('QLC: Loaded', this.currentBrokenLinks.length, 'stored broken links');
+                        this.highlightBrokenLinks(this.currentBrokenLinks);
+                        this.updateBrokenLinksList(response.data);
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('QLC: Error loading stored broken links:', error);
+                }
+            });
         },
 
         checkLinksNow: function(e) {
@@ -30,12 +85,11 @@
 
             $button.prop('disabled', true).text(qlc_ajax.checking_text);
 
-            // Получаем контент из всех возможных редакторов
             let content = this.getEditorContent();
 
             if (!content) {
                 console.error('QLC: Cannot find editor content');
-                $container.html('<p style="color: #d63638;">Error: Cannot find editor content. Please save the post first.</p>');
+                $container.html('<p style="color: #d63638;">Error: Cannot find editor content.</p>');
                 $button.prop('disabled', false).text(qlc_ajax.check_now_text);
                 return;
             }
@@ -52,8 +106,12 @@
                 },
                 success: (response) => {
                     console.log('QLC: AJAX success, found', response.data.broken_count, 'broken links');
+                    this.currentBrokenLinks = response.data.broken_links;
                     this.updateBrokenLinksList(response.data, $container);
                     this.highlightBrokenLinks(response.data.broken_links);
+
+                    // Сохраняем результат проверки
+                    this.saveBrokenLinks(response.data.broken_links);
                 },
                 error: (xhr, status, error) => {
                     console.error('QLC: AJAX error', error);
@@ -61,6 +119,31 @@
                 },
                 complete: () => {
                     $button.prop('disabled', false).text(qlc_ajax.check_now_text);
+                }
+            });
+        },
+
+        saveBrokenLinks: function(brokenLinks) {
+            if (!this.postId) {
+                console.log('QLC: Cannot save broken links - no post ID');
+                return;
+            }
+
+            // Сохраняем через AJAX
+            $.ajax({
+                url: qlc_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'qlc_save_broken_links',
+                    post_id: this.postId,
+                    broken_links: brokenLinks,
+                    nonce: qlc_ajax.nonce
+                },
+                success: (response) => {
+                    console.log('QLC: Broken links saved for post', this.postId);
+                },
+                error: (xhr, status, error) => {
+                    console.error('QLC: Error saving broken links:', error);
                 }
             });
         },
@@ -127,7 +210,11 @@
             return content;
         },
 
-        updateBrokenLinksList: function(data, $container) {
+        updateBrokenLinksList: function(data, $container = null) {
+            if (!$container) {
+                $container = $('#qlc-broken-links-container');
+            }
+
             let html = '';
 
             console.log('QLC: Broken links found:', data.broken_count);
@@ -147,6 +234,11 @@
             html += qlc_ajax.check_now_text;
             html += '</button>';
 
+            // Добавляем информацию о последнем обновлении
+            html += '<div style="margin-top: 10px; font-size: 11px; color: #666;">';
+            html += 'Last checked: ' + new Date().toLocaleTimeString();
+            html += '</div>';
+
             $container.html(html);
         },
 
@@ -158,8 +250,7 @@
 
             // Подсвечиваем битые ссылки
             brokenLinks.forEach((link) => {
-                // Экранируем специальные символы для селектора
-                const escapedUrl = link.url.replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
+                const escapedUrl = this.escapeUrlForSelector(link.url);
                 const $links = $('a[href="' + escapedUrl + '"]');
 
                 if ($links.length > 0) {
@@ -179,6 +270,10 @@
                     }
                 }
             });
+        },
+
+        escapeUrlForSelector: function(url) {
+            return url.replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
         }
     };
 

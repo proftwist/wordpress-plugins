@@ -9,6 +9,8 @@ class QLC_Link_Checker {
     public function __construct() {
         add_action('save_post', array($this, 'check_post_links'), 10, 3);
         add_action('wp_ajax_qlc_check_links', array($this, 'ajax_check_links'));
+        add_action('wp_ajax_qlc_get_broken_links', array($this, 'ajax_get_broken_links')); // Новый AJAX
+        add_action('wp_ajax_qlc_save_broken_links', array($this, 'ajax_save_broken_links'));
     }
 
     public function check_post_links($post_id, $post, $update) {
@@ -78,6 +80,75 @@ class QLC_Link_Checker {
             'total_checked' => count($links),
             'broken_count' => count($broken_links)
         ));
+    }
+
+    // Новый метод для немедленной проверки после сохранения
+    public function check_post_links_immediately($post_id) {
+        $post = get_post($post_id);
+        if (!$post) {
+            return;
+        }
+
+        $links = $this->extract_links($post->post_content);
+        $broken_links = array();
+
+        foreach ($links as $link) {
+            if (!$this->check_link($link['url'])) {
+                $broken_links[] = $link;
+            }
+            usleep(100000); // 0.1 секунда
+        }
+
+        // Сохраняем результат в мета-поле
+        update_post_meta($post_id, '_qlc_broken_links', $broken_links);
+
+        // Логируем для отладки
+        error_log('QLC: Immediately checked ' . count($links) . ' links, found ' . count($broken_links) . ' broken after save');
+
+        return $broken_links;
+    }
+
+    // Новый AJAX метод для получения битых ссылок после сохранения
+    public function ajax_get_broken_links() {
+        check_ajax_referer('qlc_nonce', 'nonce');
+
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+
+        if (!$post_id) {
+            wp_send_json_error('No post ID');
+        }
+
+        $broken_links = get_post_meta($post_id, '_qlc_broken_links', true);
+
+        wp_send_json_success(array(
+            'broken_links' => is_array($broken_links) ? $broken_links : array(),
+            'broken_count' => is_array($broken_links) ? count($broken_links) : 0
+        ));
+    }
+
+    // Добавляем метод сохранения битых ссылок
+    public function ajax_save_broken_links() {
+        check_ajax_referer('qlc_nonce', 'nonce');
+
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        $broken_links = isset($_POST['broken_links']) ? $_POST['broken_links'] : array();
+
+        if (!$post_id) {
+            wp_send_json_error('No post ID');
+        }
+
+        // Сохраняем битые ссылки
+        update_post_meta($post_id, '_qlc_broken_links', $broken_links);
+
+        wp_send_json_success('Broken links saved');
     }
 
     private function extract_links($content) {
