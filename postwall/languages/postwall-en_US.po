@@ -48,3 +48,27 @@ msgstr "Site URL is required"
 #: includes/class-ajax-handler.php:129
 msgid "Invalid site URL format"
 msgstr "Invalid site URL format"
+
+#: build/frontend.js:58
+msgid "Failed to load post data"
+msgstr "Failed to load post data"
+
+#: build/frontend.js:63
+msgid "Error loading data"
+msgstr "Error loading data"
+
+#. translators: 1: Date, 2: Number of posts, 3: "post" or "posts"
+#: build/frontend.js:181
+msgid "%1$s: %2$d %3$s"
+msgid_plural "%1$s: %2$d %3$s"
+msgstr[0] "%1$s: %2$d %3$s"
+msgstr[1] "%1$s: %2$d %3$s"
+msgstr[2] "%1$s: %2$d %3$s"
+
+#: build/index.js:50
+msgid "Post wall"
+msgstr "Post wall"
+
+#: build/index.js:59
+msgid "Site URL"
+msgstr "Site URL"

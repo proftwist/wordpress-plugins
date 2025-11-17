@@ -48,3 +48,27 @@ msgstr ""
 #: includes/class-ajax-handler.php:129
 msgid "Invalid site URL format"
 msgstr ""
+
+#: build/frontend.js:58
+msgid "Failed to load post data"
+msgstr "Не удалось загрузить данные постов"
+
+#: build/frontend.js:63
+msgid "Error loading data"
+msgstr "Ошибка при загрузке данных"
+
+#. translators: 1: Date, 2: Number of posts, 3: "post" or "posts"
+#: build/frontend.js:181
+msgid "%1$s: %2$d %3$s"
+msgid_plural "%1$s: %2$d %3$s"
+msgstr[0] "%1$s: %2$d %3$s"
+msgstr[1] "%1$s: %2$d %3$s"
+msgstr[2] "%1$s: %2$d %3$s"
+
+#: build/index.js:50
+msgid "Post wall"
+msgstr "Кафельная стенка постов"
+
+#: build/index.js:59
+msgid "Site URL"
+msgstr "Адрес сайта"

@@ -47,7 +47,7 @@
                 el(
                     'div',
                     { className: 'postwall-placeholder' },
-                    __('Кафельная стенка постов', 'postwall')
+                    __('Post wall', 'postwall')
                 ),
                 el(
                     InspectorControls,
@@ -56,7 +56,7 @@
                         PanelBody,
                         { title: __('Настройки Post Wall', 'postwall'), initialOpen: true },
                         el(TextControl, {
-                            label: __('Адрес сайта', 'postwall'),
+                            label: __('Site URL', 'postwall'),
                             value: siteUrl,
                             onChange: function (value) {
                                 setAttributes({ siteUrl: value });

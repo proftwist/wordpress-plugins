@@ -55,12 +55,12 @@
                         this.postData = response.data;
                         this.generateCalendar();
                     } else {
-                        this.showError('Не удалось загрузить данные постов');
+                        this.showError(wp.i18n.__('Failed to load post data', 'postwall'));
                     }
                 },
                 error: (xhr, status, error) => {
                     console.error('AJAX error:', error);
-                    this.showError('Ошибка при загрузке данных');
+                    this.showError(wp.i18n.__('Error loading data', 'postwall'));
                 }
             });
         }
@@ -176,9 +176,14 @@
              // Add tooltip with post count
              const postCount = this.postData ?
                  (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
-             const formattedDate = cellDate.toLocaleDateString();
-             const postText = postCount === 1 ? wp.i18n.__('post', 'postwall') : wp.i18n.__('posts', 'postwall');
-             dayCell.title = `${formattedDate}: ${postCount} ${postText}`;
+             const dateStr = cellDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+             dayCell.title = wp.i18n.sprintf(
+                 /* translators: 1: Date, 2: Number of posts, 3: "post" or "posts" */
+                 wp.i18n._n('%1$s: %2$d %3$s', '%1$s: %2$d %3$s', postCount, 'postwall'),
+                 dateStr,
+                 postCount,
+                 postCount === 1 ? wp.i18n.__('post', 'postwall') : wp.i18n.__('posts', 'postwall')
+             );
 
              monthGrid.appendChild(dayCell);
          }
