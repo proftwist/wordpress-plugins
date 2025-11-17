@@ -30,6 +30,7 @@ class AdminPanelTrash {
         add_action('wp_ajax_apt_restore_from_backup', array($this, 'ajax_restore_from_backup'));
         add_action('wp_ajax_apt_create_function', array($this, 'ajax_create_function'));
         add_action('wp_ajax_apt_view_backup', array($this, 'ajax_view_backup'));
+        add_action('wp_ajax_apt_clean_prefix_items', array($this, 'ajax_clean_prefix_items'));
     }
 
     /**
@@ -237,9 +238,23 @@ class AdminPanelTrash {
     }
 
     /**
-     * Проверка, отключен ли элемент (обновленная)
+     * Очистка ID элемента от префикса wp-admin-bar-
+     */
+    private function clean_item_id($item_id) {
+        // Удаляем префикс wp-admin-bar- если он есть
+        if (strpos($item_id, 'wp-admin-bar-') === 0) {
+            $item_id = substr($item_id, 13); // 13 = strlen('wp-admin-bar-')
+        }
+        return $item_id;
+    }
+
+    /**
+     * Проверка, отключен ли элемент (исправленная)
      */
     private function is_item_disabled($item_id) {
+        // Очищаем ID для поиска
+        $cleaned_item_id = $this->clean_item_id($item_id);
+
         // Сначала проверяем файл, потом опции как резерв
         $disabled_items_from_file = $this->get_disabled_items_from_file();
         $disabled_items_from_options = get_option($this->option_name, array());
@@ -250,7 +265,7 @@ class AdminPanelTrash {
             $disabled_items_from_options
         ));
 
-        return in_array($item_id, $all_disabled_items);
+        return in_array($cleaned_item_id, $all_disabled_items);
     }
 
     /**
@@ -287,7 +302,52 @@ class AdminPanelTrash {
     }
 
     /**
-     * Детальная отладочная информация о файле
+     * Детектор источника элементов с отладкой
+     */
+    private function debug_item_sources() {
+        $sources = [];
+
+        // Источник 1: Файл functions.php
+        $file_items = $this->get_disabled_items_from_file();
+        $sources['file'] = [
+            'items' => $file_items,
+            'count' => count($file_items)
+        ];
+
+        // Источник 2: Опции WordPress
+        $option_items = get_option($this->option_name, []);
+        $sources['options'] = [
+            'items' => $option_items,
+            'count' => count($option_items)
+        ];
+
+        // Источник 3: Backup
+        $backup_items = get_option($this->option_name . '_backup', []);
+        $sources['backup'] = [
+            'items' => $backup_items,
+            'count' => count($backup_items)
+        ];
+
+        // Находим элементы с префиксом wp-admin-bar-
+        $items_with_prefix = [];
+        foreach ($file_items as $item) {
+            if (strpos($item, 'wp-admin-bar-') !== false) {
+                $items_with_prefix[] = $item;
+            }
+        }
+        foreach ($option_items as $item) {
+            if (strpos($item, 'wp-admin-bar-') !== false) {
+                $items_with_prefix[] = $item;
+            }
+        }
+
+        $sources['items_with_prefix'] = array_unique($items_with_prefix);
+
+        return $sources;
+    }
+
+    /**
+     * Детальная отладочная информация о файле с источниками элементов
      */
     private function get_file_debug_info() {
         $file_path = $this->get_functions_file_path();
@@ -301,7 +361,9 @@ class AdminPanelTrash {
             'disabled_items' => array(),
             'file_size' => 0,
             'file_lines' => 0,
-            'detection_debug' => array()
+            'detection_debug' => array(),
+            'id_cleaning_examples' => array(),
+            'item_sources' => array()
         );
 
         if ($info['exists'] && $info['readable']) {
@@ -320,6 +382,16 @@ class AdminPanelTrash {
             // Дополнительные проверки
             $info['has_remove_menu'] = strpos($content, '$wp_admin_bar->remove_menu') !== false;
             $info['has_wp_before_admin_bar_render'] = strpos($content, 'wp_before_admin_bar_render') !== false;
+
+            // Примеры очистки ID для отладки
+            $test_ids = ['wp-admin-bar-my-account', 'wp-admin-bar-comments', 'my-account', 'comments'];
+            $info['id_cleaning_examples'] = [];
+            foreach ($test_ids as $test_id) {
+                $info['id_cleaning_examples'][$test_id] = $this->clean_item_id($test_id);
+            }
+
+            // Источники элементов
+            $info['item_sources'] = $this->debug_item_sources();
         }
 
         return $info;
@@ -354,6 +426,45 @@ class AdminPanelTrash {
         }
 
         return true;
+    }
+
+    /**
+     * Принудительная очистка всех элементов с префиксом
+     */
+    public function ajax_clean_prefix_items() {
+        $this->check_ajax_permissions();
+
+        // Получаем текущие элементы из файла
+        $current_items = $this->get_disabled_items_from_file();
+
+        // Находим элементы с префиксом
+        $items_with_prefix = [];
+        $cleaned_items = [];
+
+        foreach ($current_items as $item) {
+            if (strpos($item, 'wp-admin-bar-') !== false) {
+                $items_with_prefix[] = $item;
+                $cleaned_items[] = $this->clean_item_id($item);
+            } else {
+                $cleaned_items[] = $item;
+            }
+        }
+
+        // Убираем дубликаты после очистки
+        $cleaned_items = array_unique($cleaned_items);
+        sort($cleaned_items);
+
+        // Обновляем файл с очищенными элементами
+        if ($this->update_disabled_items_in_file($cleaned_items)) {
+            wp_send_json_success(array(
+                'message' => __('Элементы с префиксом очищены', 'admin-panel-trash'),
+                'removed_prefix_items' => $items_with_prefix,
+                'cleaned_items' => $cleaned_items,
+                'removed_count' => count($items_with_prefix)
+            ));
+        } else {
+            wp_send_json_error(__('Ошибка при очистке элементов', 'admin-panel-trash'));
+        }
     }
 
     /**
@@ -446,15 +557,18 @@ class AdminPanelTrash {
     }
 
     /**
-     * Отключение элемента (сохраняем существующие)
+     * Отключение элемента (исправленное)
      */
     private function disable_item($item_id) {
+        // Очищаем ID от префикса
+        $cleaned_item_id = $this->clean_item_id($item_id);
+
         // Получаем текущие отключенные элементы ИЗ ФАЙЛА
         $disabled_items = $this->get_disabled_items_from_file();
 
-        // Добавляем новый элемент если его еще нет
-        if (!in_array($item_id, $disabled_items)) {
-            $disabled_items[] = $item_id;
+        // Добавляем очищенный элемент если его еще нет
+        if (!in_array($cleaned_item_id, $disabled_items)) {
+            $disabled_items[] = $cleaned_item_id;
             sort($disabled_items);
 
             // Обновляем файл
@@ -465,14 +579,17 @@ class AdminPanelTrash {
     }
 
     /**
-     * Включение элемента (сохраняем остальные)
+     * Включение элемента (исправленное)
      */
     private function enable_item($item_id) {
+        // Очищаем ID от префикса для поиска
+        $cleaned_item_id = $this->clean_item_id($item_id);
+
         // Получаем текущие отключенные элементы ИЗ ФАЙЛА
         $disabled_items = $this->get_disabled_items_from_file();
 
-        // Удаляем элемент из массива
-        $disabled_items = array_values(array_diff($disabled_items, array($item_id)));
+        // Удаляем очищенный элемент из массива
+        $disabled_items = array_values(array_diff($disabled_items, array($cleaned_item_id)));
 
         // Обновляем файл
         return $this->update_disabled_items_in_file($disabled_items);
@@ -645,7 +762,7 @@ class AdminPanelTrash {
     }
 
     /**
-     * Обновление отключенных элементов в файле (БЕЗ потери существующих)
+     * Обновление отключенных элементов в файле (финальное исправление)
      */
     private function update_disabled_items_in_file($new_disabled_items) {
         $file_path = $this->get_functions_file_path();
@@ -656,12 +773,15 @@ class AdminPanelTrash {
 
         $content = file_get_contents($file_path);
 
-        // Получаем ТЕКУЩИЕ элементы из файла
+        // Получаем ТЕКУЩИЕ элементы из файла и ОЧИЩАЕМ их
         $current_disabled_items = $this->get_disabled_items_from_file_content($content);
+        $cleaned_current_items = array_map([$this, 'clean_item_id'], $current_disabled_items);
 
-        // Объединяем старые и новые элементы (убираем дубли)
-        $all_disabled_items = array_unique(array_merge($current_disabled_items, $new_disabled_items));
+        // Очищаем новые элементы от префикса
+        $cleaned_new_items = array_map([$this, 'clean_item_id'], $new_disabled_items);
 
+        // Объединяем ОЧИЩЕННЫЕ старые и новые элементы
+        $all_disabled_items = array_unique(array_merge($cleaned_current_items, $cleaned_new_items));
         sort($all_disabled_items);
 
         // Полностью перезаписываем функцию
@@ -670,7 +790,7 @@ class AdminPanelTrash {
         $result = file_put_contents($file_path, $content) !== false;
 
         if ($result) {
-            // Обновляем опции
+            // Обновляем опции (сохраняем очищенные ID)
             update_option($this->option_name, $all_disabled_items);
         }
 
@@ -863,9 +983,25 @@ class AdminPanelTrash {
         $debug_info = $this->get_file_debug_info();
         $backup_items = get_option($this->option_name . '_backup', array());
         $backup_count = count($backup_items);
+
+        // Проверяем есть ли элементы с префиксом
+        $has_prefix_items = !empty($debug_info['item_sources']['items_with_prefix']);
         ?>
         <div class="wrap">
             <h1><?php _e('Admin Panel Trash', 'admin-panel-trash'); ?></h1>
+
+            <?php if ($has_prefix_items): ?>
+            <div class="notice notice-warning">
+                <p>
+                    <strong>⚠️ Найдены элементы с префиксом wp-admin-bar-</strong>
+                    - Это может вызывать дублирование. Рекомендуется очистить.
+                    <button type="button" id="apt-clean-prefix" class="button button-primary" style="margin-left: 10px;">
+                        Очистить элементы с префиксом
+                    </button>
+                    <span id="apt-clean-prefix-result" style="margin-left: 10px;"></span>
+                </p>
+            </div>
+            <?php endif; ?>
 
             <?php if (!$debug_info['function_found']): ?>
             <div class="notice notice-info">
@@ -957,6 +1093,10 @@ class AdminPanelTrash {
             .backup-item { background: #fff8e1; padding: 5px; margin: 2px; border-radius: 3px; }
             .pattern-match { color: green; }
             .pattern-no-match { color: red; }
+            .source-file { color: #0073aa; }
+            .source-options { color: #46b450; }
+            .source-backup { color: #ffb900; }
+            .item-with-prefix { color: #dc3232; font-weight: bold; }
         </style>
         <?php
     }

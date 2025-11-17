@@ -1,113 +1,59 @@
-Проблема в том, что регулярные выражения не находят функцию. Давайте упростим подход и сделаем его более надежным.
+Проблема в том, что где-то в логике остался неочищенный ID `wp-admin-bar-comments`. Давайте найдем и исправим это.
 
-## 1. Упростим поиск функции
+## 1. Добавим отладку для отслеживания источника элементов
 
 ```php
 /**
- * Упрощенный поиск функции в файле
+ * Детектор источника элементов с отладкой
  */
-private function find_function_in_content($content) {
-    // Пробуем несколько простых шаблонов
-    $patterns = [
-        // Простой поиск по имени функции
-        '/function\s+remove_items_from_admin_bar\s*\([^)]*\)\s*\{[^}]+\}/s',
-        // Поиск с любыми пробелами
-        '/function\s*remove_items_from_admin_bar\s*\(\s*\)\s*\{[^}]+\}/s',
-        // Поиск по remove_menu вызовам
-        '/\{[^}]*\$wp_admin_bar->remove_menu[^}]*\}/s'
+private function debug_item_sources() {
+    $sources = [];
+
+    // Источник 1: Файл functions.php
+    $file_items = $this->get_disabled_items_from_file();
+    $sources['file'] = [
+        'items' => $file_items,
+        'count' => count($file_items)
     ];
 
-    foreach ($patterns as $pattern) {
-        if (preg_match($pattern, $content, $matches)) {
-            return $matches[0];
+    // Источник 2: Опции WordPress
+    $option_items = get_option($this->option_name, []);
+    $sources['options'] = [
+        'items' => $option_items,
+        'count' => count($option_items)
+    ];
+
+    // Источник 3: Backup
+    $backup_items = get_option($this->option_name . '_backup', []);
+    $sources['backup'] = [
+        'items' => $backup_items,
+        'count' => count($backup_items)
+    ];
+
+    // Находим элементы с префиксом wp-admin-bar-
+    $items_with_prefix = [];
+    foreach ($file_items as $item) {
+        if (strpos($item, 'wp-admin-bar-') !== false) {
+            $items_with_prefix[] = $item;
+        }
+    }
+    foreach ($option_items as $item) {
+        if (strpos($item, 'wp-admin-bar-') !== false) {
+            $items_with_prefix[] = $item;
         }
     }
 
-    return null;
-}
+    $sources['items_with_prefix'] = array_unique($items_with_prefix);
 
-/**
- * Получение отключенных элементов из содержимого файла (упрощенное)
- */
-private function get_disabled_items_from_file_content($content) {
-    $disabled_items = array();
-
-    // Сначала ищем функцию
-    $function_code = $this->find_function_in_content($content);
-
-    if ($function_code) {
-        // Ищем все remove_menu вызовы в найденной функции
-        if (preg_match_all('/\$wp_admin_bar->remove_menu\(\s*[\'\"]([^\'\"]+)[\'\"]\s*\)\s*;/', $function_code, $matches)) {
-            $disabled_items = $matches[1];
-        }
-    }
-
-    return $disabled_items;
-}
-
-/**
- * Получение ВСЕХ отключенных элементов ИЗ ФАЙЛА
- */
-private function get_disabled_items_from_file() {
-    $file_path = $this->get_functions_file_path();
-
-    if (!file_exists($file_path) || !is_readable($file_path)) {
-        return array();
-    }
-
-    $content = file_get_contents($file_path);
-    $disabled_items = $this->get_disabled_items_from_file_content($content);
-
-    // Синхронизируем с опциями
-    $current_options = get_option($this->option_name, array());
-    if ($disabled_items != $current_options) {
-        update_option($this->option_name, $disabled_items);
-    }
-
-    return $disabled_items;
+    return $sources;
 }
 ```
 
-## 2. Добавим метод для принудительного поиска функции
+## 2. Обновим отладочную информацию
 
 ```php
 /**
- * Детектор функции с отладкой
- */
-private function detect_function_with_debug($content) {
-    $debug_info = [
-        'function_found' => false,
-        'method' => 'none',
-        'function_code' => '',
-        'patterns_tried' => []
-    ];
-
-    $patterns = [
-        'exact_function' => '/function\s+remove_items_from_admin_bar\s*\([^)]*\)\s*\{[^}]+\}/s',
-        'flexible_function' => '/function\s*remove_items_from_admin_bar\s*\(\s*\)\s*\{[^}]+\}/s',
-        'remove_menu_calls' => '/\{[^}]*\$wp_admin_bar->remove_menu[^}]*\}/s',
-        'any_function_with_remove' => '/function[^{]+\{[^}]*\$wp_admin_bar->remove_menu[^}]*\}/s'
-    ];
-
-    foreach ($patterns as $name => $pattern) {
-        $debug_info['patterns_tried'][$name] = (bool) preg_match($pattern, $content);
-        if (preg_match($pattern, $content, $matches)) {
-            $debug_info['function_found'] = true;
-            $debug_info['method'] = $name;
-            $debug_info['function_code'] = $matches[0];
-            break;
-        }
-    }
-
-    return $debug_info;
-}
-```
-
-## 3. Обновим отладочную информацию
-
-```php
-/**
- * Детальная отладочная информация о файле
+ * Детальная отладочная информация о файле с источниками элементов
  */
 private function get_file_debug_info() {
     $file_path = $this->get_functions_file_path();
@@ -121,7 +67,9 @@ private function get_file_debug_info() {
         'disabled_items' => array(),
         'file_size' => 0,
         'file_lines' => 0,
-        'detection_debug' => array()
+        'detection_debug' => array(),
+        'id_cleaning_examples' => array(),
+        'item_sources' => array()
     );
 
     if ($info['exists'] && $info['readable']) {
@@ -140,60 +88,71 @@ private function get_file_debug_info() {
         // Дополнительные проверки
         $info['has_remove_menu'] = strpos($content, '$wp_admin_bar->remove_menu') !== false;
         $info['has_wp_before_admin_bar_render'] = strpos($content, 'wp_before_admin_bar_render') !== false;
+
+        // Примеры очистки ID для отладки
+        $test_ids = ['wp-admin-bar-my-account', 'wp-admin-bar-comments', 'my-account', 'comments'];
+        $info['id_cleaning_examples'] = [];
+        foreach ($test_ids as $test_id) {
+            $info['id_cleaning_examples'][$test_id] = $this->clean_item_id($test_id);
+        }
+
+        // Источники элементов
+        $info['item_sources'] = $this->debug_item_sources();
     }
 
     return $info;
 }
 ```
 
-## 4. Добавим инструмент для создания функции с нуля
+## 3. Добавим метод для принудительной очистки всех элементов
 
 ```php
 /**
- * Создание функции с нуля
+ * Принудительная очистка всех элементов с префиксом
  */
-public function ajax_create_function() {
+public function ajax_clean_prefix_items() {
     $this->check_ajax_permissions();
 
-    $file_path = $this->get_functions_file_path();
+    // Получаем текущие элементы из файла
+    $current_items = $this->get_disabled_items_from_file();
 
-    if (!file_exists($file_path) || !is_writable($file_path)) {
-        wp_send_json_error(__('Файл недоступен для записи', 'admin-panel-trash'));
+    // Находим элементы с префиксом
+    $items_with_prefix = [];
+    $cleaned_items = [];
+
+    foreach ($current_items as $item) {
+        if (strpos($item, 'wp-admin-bar-') !== false) {
+            $items_with_prefix[] = $item;
+            $cleaned_items[] = $this->clean_item_id($item);
+        } else {
+            $cleaned_items[] = $item;
+        }
     }
 
-    $content = file_get_contents($file_path);
+    // Убираем дубликаты после очистки
+    $cleaned_items = array_unique($cleaned_items);
+    sort($cleaned_items);
 
-    // Получаем текущие элементы из опций (если есть)
-    $disabled_items = get_option($this->option_name, array());
-
-    // Проверяем, есть ли уже функция
-    $function_exists = $this->find_function_in_content($content);
-
-    if ($function_exists) {
-        wp_send_json_error(__('Функция уже существует в файле', 'admin-panel-trash'));
-    }
-
-    // Добавляем функцию
-    $new_content = $this->add_new_function($content, $disabled_items);
-
-    if (file_put_contents($file_path, $new_content) !== false) {
+    // Обновляем файл с очищенными элементами
+    if ($this->update_disabled_items_in_file($cleaned_items)) {
         wp_send_json_success(array(
-            'message' => __('Функция успешно создана', 'admin-panel-trash'),
-            'items_count' => count($disabled_items),
-            'items' => $disabled_items
+            'message' => __('Элементы с префиксом очищены', 'admin-panel-trash'),
+            'removed_prefix_items' => $items_with_prefix,
+            'cleaned_items' => $cleaned_items,
+            'removed_count' => count($items_with_prefix)
         ));
     } else {
-        wp_send_json_error(__('Ошибка при создании функции', 'admin-panel-trash'));
+        wp_send_json_error(__('Ошибка при очистке элементов', 'admin-panel-trash'));
     }
 }
 ```
 
 Добавьте хук в конструктор:
 ```php
-add_action('wp_ajax_apt_create_function', array($this, 'ajax_create_function'));
+add_action('wp_ajax_apt_clean_prefix_items', array($this, 'ajax_clean_prefix_items'));
 ```
 
-## 5. Обновим интерфейс
+## 4. Обновим интерфейс
 
 ```php
 /**
@@ -204,9 +163,25 @@ public function admin_page() {
     $debug_info = $this->get_file_debug_info();
     $backup_items = get_option($this->option_name . '_backup', array());
     $backup_count = count($backup_items);
+
+    // Проверяем есть ли элементы с префиксом
+    $has_prefix_items = !empty($debug_info['item_sources']['items_with_prefix']);
     ?>
     <div class="wrap">
         <h1><?php _e('Admin Panel Trash', 'admin-panel-trash'); ?></h1>
+
+        <?php if ($has_prefix_items): ?>
+        <div class="notice notice-warning">
+            <p>
+                <strong>⚠️ Найдены элементы с префиксом wp-admin-bar-</strong>
+                - Это может вызывать дублирование. Рекомендуется очистить.
+                <button type="button" id="apt-clean-prefix" class="button button-primary" style="margin-left: 10px;">
+                    Очистить элементы с префиксом
+                </button>
+                <span id="apt-clean-prefix-result" style="margin-left: 10px;"></span>
+            </p>
+        </div>
+        <?php endif; ?>
 
         <?php if (!$debug_info['function_found']): ?>
         <div class="notice notice-info">
@@ -260,122 +235,128 @@ public function admin_page() {
         .backup-item { background: #fff8e1; padding: 5px; margin: 2px; border-radius: 3px; }
         .pattern-match { color: green; }
         .pattern-no-match { color: red; }
+        .source-file { color: #0073aa; }
+        .source-options { color: #46b450; }
+        .source-backup { color: #ffb900; }
+        .item-with-prefix { color: #dc3232; font-weight: bold; }
     </style>
     <?php
 }
 ```
 
-## 6. Обновим JavaScript
+## 5. Добавим JavaScript для очистки префиксов
 
 ```javascript
-// Создание функции
-$('#apt-create-function').on('click', function() {
+// Очистка элементов с префиксом
+$('#apt-clean-prefix').on('click', function() {
+    if (!confirm('Очистить все элементы с префиксом wp-admin-bar-? Это исправит возможное дублирование.')) {
+        return;
+    }
+
     var $button = $(this);
-    $button.prop('disabled', true).text('Создание...');
+    var $result = $('#apt-clean-prefix-result');
+    $button.prop('disabled', true).text('Очистка...');
+    $result.html('⏳ Очистка...');
 
     $.ajax({
         url: apt_ajax.url,
         type: 'POST',
         data: {
-            action: 'apt_create_function',
+            action: 'apt_clean_prefix_items',
             nonce: apt_ajax.nonce
         },
         success: function(response) {
             if (response.success) {
-                showMessage('✅ ' + response.data.message + ' Добавлено ' + response.data.items_count + ' элементов.', 'success');
+                $result.html('✅ ' + response.data.message + ' Очищено ' + response.data.removed_count + ' элементов.');
                 setTimeout(function() {
                     location.reload();
                 }, 2000);
             } else {
-                showMessage('❌ ' + response.data, 'error');
-                $button.prop('disabled', false).text('Создать функцию');
+                $result.html('❌ ' + response.data);
+                $button.prop('disabled', false).text('Очистить элементы с префиксом');
             }
         },
         error: function() {
-            showMessage('❌ Ошибка при создании функции', 'error');
-            $button.prop('disabled', false).text('Создать функцию');
+            $result.html('❌ Ошибка при очистке');
+            $button.prop('disabled', false).text('Очистить элементы с префиксом');
         }
     });
 });
+```
 
-// Обновим функцию checkFileAccess для детальной отладки
-function checkFileAccess() {
-    $('#apt-check-access').prop('disabled', true).text(apt_localize.checking);
-    $('#apt-access-result').html('<p>' + apt_localize.checking + '</p>');
+## 6. Обновим отладочную информацию в JavaScript
 
-    $.ajax({
-        url: apt_ajax.url,
-        type: 'POST',
-        data: {
-            action: 'apt_check_file_access',
-            nonce: apt_ajax.nonce
-        },
-        success: function(response) {
-            if (response.success) {
-                var data = response.data;
-                var debug = data.debug_info;
-                var html = '<div class="notice notice-' + (data.writable ? 'success' : 'error') + '">';
-                html += '<p><strong>' + apt_localize.file_path + '</strong> ' + data.path + '</p>';
-                html += '<p><strong>' + apt_localize.read_access + '</strong> ' +
-                    (data.readable ? apt_localize.yes : apt_localize.no) + '</p>';
-                html += '<p><strong>' + apt_localize.write_access + '</strong> ' +
-                    (data.writable ? apt_localize.yes : apt_localize.no) + '</p>';
+```javascript
+// В функции checkFileAccess добавьте отображение источников элементов
+if (debug.item_sources) {
+    html += '<p><strong>Источники элементов:</strong></p>';
+    html += '<ul>';
+    html += '<li class="source-file">Файл: ' + debug.item_sources.file.count + ' элементов</li>';
+    html += '<li class="source-options">Опции: ' + debug.item_sources.options.count + ' элементов</li>';
+    html += '<li class="source-backup">Backup: ' + debug.item_sources.backup.count + ' элементов</li>';
+    html += '</ul>';
 
-                // Детальная отладочная информация
-                html += '<details style="margin-top: 10px;">';
-                html += '<summary style="cursor: pointer;"><strong>Детальная отладка:</strong></summary>';
-                html += '<div style="margin-left: 10px; margin-top: 5px; font-size: 12px;">';
-                html += '<p><strong>Функция найдена:</strong> ' + (debug.function_found ? '✅ Да' : '❌ Нет') + '</p>';
-                html += '<p><strong>Отключенных элементов:</strong> ' + debug.disabled_items.length + '</p>';
-                html += '<p><strong>Элементы:</strong> ' + (debug.disabled_items.join(', ') || 'нет') + '</p>';
-                html += '<p><strong>Размер файла:</strong> ' + debug.file_size + ' байт</p>';
-                html += '<p><strong>Строк в файле:</strong> ' + debug.file_lines + '</p>';
-                html += '<p><strong>Содержит remove_menu:</strong> ' + (debug.has_remove_menu ? '✅ Да' : '❌ Нет') + '</p>';
-                html += '<p><strong>Содержит wp_before_admin_bar_render:</strong> ' + (debug.has_wp_before_admin_bar_render ? '✅ Да' : '❌ Нет') + '</p>';
+    if (debug.item_sources.items_with_prefix && debug.item_sources.items_with_prefix.length > 0) {
+        html += '<p class="item-with-prefix"><strong>Элементы с префиксом wp-admin-bar-:</strong> ' +
+            debug.item_sources.items_with_prefix.join(', ') + '</p>';
+    }
 
-                if (debug.detection_debug && debug.detection_debug.patterns_tried) {
-                    html += '<p><strong>Паттерны поиска:</strong></p>';
-                    html += '<ul>';
-                    for (var pattern in debug.detection_debug.patterns_tried) {
-                        var matched = debug.detection_debug.patterns_tried[pattern];
-                        html += '<li class="' + (matched ? 'pattern-match' : 'pattern-no-match') + '">';
-                        html += pattern + ': ' + (matched ? '✅' : '❌');
-                        html += '</li>';
-                    }
-                    html += '</ul>';
-                }
-
-                if (debug.function_content) {
-                    html += '<p><strong>Найденная функция:</strong></p>';
-                    html += '<pre style="background: #f1f1f1; padding: 10px; border: 1px solid #ddd; overflow: auto; max-height: 200px; font-size: 10px;">' + debug.function_content + '</pre>';
-                }
-
-                html += '</div>';
-                html += '</details>';
-                html += '</div>';
-
-                $('#apt-access-result').html(html);
-            } else {
-                $('#apt-access-result').html('<div class="notice notice-error"><p>' +
-                    apt_localize.error + ': ' + response.data + '</p></div>');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Access check error:', error);
-            $('#apt-access-result').html('<div class="notice notice-error"><p>' +
-                apt_localize.request_error + ': ' + error + '</p></div>');
-        },
-        complete: function() {
-            $('#apt-check-access').prop('disabled', false).text(apt_localize.check_access);
-        }
-    });
+    // Детальная информация по источникам
+    html += '<details>';
+    html += '<summary style="cursor: pointer; margin-top: 5px;">Детали источников</summary>';
+    html += '<div style="margin-left: 10px;">';
+    html += '<p><strong>Файл:</strong> ' + (debug.item_sources.file.items.join(', ') || 'нет') + '</p>';
+    html += '<p><strong>Опции:</strong> ' + (debug.item_sources.options.items.join(', ') || 'нет') + '</p>';
+    html += '<p><strong>Backup:</strong> ' + (debug.item_sources.backup.items.join(', ') || 'нет') + '</p>';
+    html += '</div>';
+    html += '</details>';
 }
 ```
 
-## 7. Что делать сейчас
+## 7. Исправляем основной метод обновления файла
 
-1. **Нажмите "Проверить доступ"** - посмотрите в детальной отладке какие паттерны сработали
-2. **Если функция не найдена** - нажмите "Создать функцию"
-3. **После создания функции** - попробуйте отключить элемент
+```php
+/**
+ * Обновление отключенных элементов в файле (финальное исправление)
+ */
+private function update_disabled_items_in_file($new_disabled_items) {
+    $file_path = $this->get_functions_file_path();
 
-Этот подход сначала создаст функцию, а потом будет её корректно находить и модифицировать.
+    if (!file_exists($file_path) || !is_writable($file_path)) {
+        return false;
+    }
+
+    $content = file_get_contents($file_path);
+
+    // Получаем ТЕКУЩИЕ элементы из файла и ОЧИЩАЕМ их
+    $current_disabled_items = $this->get_disabled_items_from_file_content($content);
+    $cleaned_current_items = array_map([$this, 'clean_item_id'], $current_disabled_items);
+
+    // Очищаем новые элементы от префикса
+    $cleaned_new_items = array_map([$this, 'clean_item_id'], $new_disabled_items);
+
+    // Объединяем ОЧИЩЕННЫЕ старые и новые элементы
+    $all_disabled_items = array_unique(array_merge($cleaned_current_items, $cleaned_new_items));
+    sort($all_disabled_items);
+
+    // Полностью перезаписываем функцию
+    $content = $this->replace_or_add_function($content, $all_disabled_items);
+
+    $result = file_put_contents($file_path, $content) !== false;
+
+    if ($result) {
+        // Обновляем опции (сохраняем очищенные ID)
+        update_option($this->option_name, $all_disabled_items);
+    }
+
+    return $result;
+}
+```
+
+## 8. Что делать сейчас
+
+1. **Нажмите "Проверить доступ"** - посмотрите в "Источники элементов" откуда берется `wp-admin-bar-comments`
+2. **Если есть элементы с префиксом** - нажмите "Очистить элементы с префиксом"
+3. **После очистки** - проверьте функцию в файле - лишние элементы должны исчезнуть
+
+Это исправит проблему с дублированием префикса `wp-admin-bar-`.
