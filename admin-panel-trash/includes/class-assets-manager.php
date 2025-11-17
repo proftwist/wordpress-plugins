@@ -27,29 +27,35 @@ class AdminPanelTrash_Assets_Manager {
     }
 
     /**
-     * Подключение скриптов и стилей в админке
+     * Подключение скриптов и стилей в административной панели
+     *
+     * Регистрирует и подключает JavaScript и CSS файлы плагина только на странице настроек.
+     * Настраивает AJAX локализацию и переводы для клиентской стороны.
+     *
+     * @param string $hook Идентификатор текущей страницы админ-панели
      */
     public function enqueue_admin_scripts($hook) {
-        // Подключаем только на странице настроек плагина
+        // Подключаем ресурсы только на странице настроек плагина
         if ('settings_page_admin-panel-trash' !== $hook) {
             return;
         }
 
+        // Подключаем основной JavaScript файл
         wp_enqueue_script(
             'admin-panel-trash-admin-js',
             ADMIN_PANEL_TRASH_PLUGIN_URL . 'assets/admin.js',
             array('jquery'),
-            ADMIN_PANEL_TRASH_PLUGIN_VERSION,
+            '2.0.0',
             true
         );
 
-        // Локализация для AJAX
+        // Настройки для AJAX запросов
         wp_localize_script('admin-panel-trash-admin-js', 'apt_ajax', array(
             'url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('admin_panel_trash_nonce')
         ));
 
-        // Локализация текстов
+        // Переводы для JavaScript
         wp_localize_script('admin-panel-trash-admin-js', 'apt_localize', array(
             'checking' => __('Проверка...', 'admin-panel-trash'),
             'file_path' => __('Путь к файлу:', 'admin-panel-trash'),
@@ -75,11 +81,12 @@ class AdminPanelTrash_Assets_Manager {
             'error_disabling_item' => __('Ошибка при отключении элемента', 'admin-panel-trash')
         ));
 
+        // Подключаем таблицу стилей
         wp_enqueue_style(
             'admin-panel-trash-admin-css',
             ADMIN_PANEL_TRASH_PLUGIN_URL . 'assets/css/admin.css',
             array(),
-            ADMIN_PANEL_TRASH_PLUGIN_VERSION
+            '2.0.0'
         );
     }
 }

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Admin Panel Trash
  * Description: Управление элементами верхней панели WordPress
- * Version: 1.0.0
+ * Version: 2.0.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: admin-panel-trash
@@ -17,7 +17,7 @@ defined('ABSPATH') || exit;
 // Определение констант
 define('ADMIN_PANEL_TRASH_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('ADMIN_PANEL_TRASH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('ADMIN_PANEL_TRASH_PLUGIN_VERSION', '1.0.0');
+define('ADMIN_PANEL_TRASH_PLUGIN_VERSION', '2.0.0');
 
 /**
  * Основной класс плагина Admin Panel Trash
@@ -38,7 +38,7 @@ class AdminPanelTrash {
         add_action('plugins_loaded', array($this, 'load_textdomain'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
 
-        // Инициализируем обработчики AJAX для всех пользователей (авторизованных)
+        // Регистрируем AJAX обработчики для авторизованных пользователей
         add_action('wp_ajax_apt_check_file_access', array($this, 'ajax_check_file_access'));
         add_action('wp_ajax_apt_toggle_item', array($this, 'ajax_toggle_item'));
         add_action('wp_ajax_apt_get_items', array($this, 'ajax_get_items'));
@@ -46,14 +46,24 @@ class AdminPanelTrash {
         add_action('wp_ajax_apt_cleanup_function', array($this, 'ajax_cleanup_function'));
     }
 
+    /**
+     * Инициализация плагина
+     *
+     * Подключает необходимые файлы и инициализирует менеджер ресурсов.
+     */
     public function init() {
-        // Подключение файлов
+        // Подключаем файл менеджера ресурсов
         require_once ADMIN_PANEL_TRASH_PLUGIN_PATH . 'includes/class-assets-manager.php';
 
-        // Инициализация обработчиков
+        // Инициализируем менеджер ресурсов
         AdminPanelTrash_Assets_Manager::get_instance();
     }
 
+    /**
+     * Загрузка текстового домена для интернационализации
+     *
+     * Подключает файлы переводов из папки languages плагина.
+     */
     public function load_textdomain() {
         load_plugin_textdomain(
             'admin-panel-trash',
@@ -62,6 +72,11 @@ class AdminPanelTrash {
         );
     }
 
+    /**
+     * Добавление страницы настроек в меню админ-панели
+     *
+     * Регистрирует страницу плагина в разделе "Настройки" административной панели.
+     */
     public function add_admin_menu() {
         add_options_page(
             __('Admin Panel Trash', 'admin-panel-trash'),
@@ -128,12 +143,18 @@ class AdminPanelTrash {
     }
 
     /**
-     * AJAX: Проверка доступа к файлу
+     * AJAX: Проверка доступа к файлу functions.php
+     *
+     * Проверяет права доступа к файлу functions.php активной темы
+     * и возвращает информацию о доступности файла.
      */
     public function ajax_check_file_access() {
+        // Проверяем nonce для безопасности
         check_ajax_referer('admin_panel_trash_nonce', 'nonce');
 
         $file_path = get_stylesheet_directory() . '/functions.php';
+
+        // Проверяем права доступа к файлу
         $response = array(
             'file_path' => $file_path,
             'readable' => is_readable($file_path),
@@ -144,43 +165,48 @@ class AdminPanelTrash {
     }
 
     /**
-     * AJAX: Переключение состояния элемента
+     * AJAX: Переключение состояния элемента админ-панели
+     *
+     * Обрабатывает запросы на включение/отключение элементов верхней панели администратора.
+     * Сохраняет настройки в базу данных и обновляет файл functions.php темы.
      */
     public function ajax_toggle_item() {
+        // Проверяем nonce для безопасности
         check_ajax_referer('admin_panel_trash_nonce', 'nonce');
 
+        // Получаем и валидируем входные данные
         $item_id = sanitize_text_field($_POST['item_id'] ?? '');
         $enable = $_POST['enable'] === 'true';
 
+        // Проверяем корректность ID элемента
         if (empty($item_id)) {
             wp_send_json_error(__('Invalid item ID', 'admin-panel-trash'));
         }
 
-        // Получаем текущие настройки
+        // Получаем текущие настройки из базы данных
         $settings = get_option('admin_panel_trash_settings', array());
 
         // Очищаем ID от префикса для хранения
         $cleaned_id = $this->clean_item_id($item_id);
 
-        error_log('Admin Panel Trash: Toggling item - ID: ' . $item_id . ', Cleaned: ' . $cleaned_id . ', Enable: ' . ($enable ? 'true' : 'false'));
-
+        // Обновляем настройки в зависимости от действия
         if ($enable) {
             // Включаем элемент - удаляем из списка отключенных
             $settings = array_diff($settings, array($cleaned_id));
-            error_log('Admin Panel Trash: Enabling item, new settings: ' . implode(', ', $settings));
         } else {
             // Отключаем элемент - добавляем в список отключенных
-            if (!in_array($cleaned_id, $settings)) {
+            if (!in_array($cleaned_id, $settings, true)) {
                 $settings[] = $cleaned_id;
-                error_log('Admin Panel Trash: Disabling item, new settings: ' . implode(', ', $settings));
             }
         }
 
+        // Сохраняем обновленные настройки
         update_option('admin_panel_trash_settings', $settings);
 
-        // Обновляем файл functions.php
+        // Обновляем файл functions.php активной темы
         $update_result = $this->update_functions_file($settings);
 
+        // Возвращаем результат операции
         if ($update_result) {
             wp_send_json_success(array(
                 'message' => $enable ? __('Item enabled', 'admin-panel-trash') : __('Item disabled', 'admin-panel-trash')
@@ -191,7 +217,9 @@ class AdminPanelTrash {
     }
 
     /**
-     * AJAX: Получение списка элементов
+     * AJAX: Получение списка элементов админ-панели
+     *
+     * Возвращает массив всех элементов админ-панели с их статусом включения/отключения.
      */
     public function ajax_get_items() {
         check_ajax_referer('admin_panel_trash_nonce', 'nonce');
@@ -201,7 +229,9 @@ class AdminPanelTrash {
     }
 
     /**
-     * AJAX: Получение кода функции
+     * AJAX: Получение сгенерированного кода функции
+     *
+     * Возвращает PHP код функции для отключения выбранных элементов админ-панели.
      */
     public function ajax_get_function_code() {
         check_ajax_referer('admin_panel_trash_nonce', 'nonce');
@@ -211,7 +241,9 @@ class AdminPanelTrash {
     }
 
     /**
-     * AJAX: Очистка функции
+     * AJAX: Очистка функции из файла functions.php
+     *
+     * Удаляет функцию плагина из файла functions.php и очищает настройки.
      */
     public function ajax_cleanup_function() {
         check_ajax_referer('admin_panel_trash_nonce', 'nonce');
@@ -223,7 +255,12 @@ class AdminPanelTrash {
     }
 
     /**
-     * Получение элементов админ-бара для отображения
+     * Получение элементов админ-бара для отображения в интерфейсе
+     *
+     * Собирает полный список элементов админ-панели, включая их статус
+     * и информацию для отображения в административном интерфейсе.
+     *
+     * @return array Массив элементов с информацией для отображения
      */
     private function get_admin_bar_items_for_display() {
         $items = array();
@@ -252,7 +289,7 @@ class AdminPanelTrash {
             $items[] = array(
                 'id' => $item['id'],
                 'cleaned_id' => $cleaned_id,
-                'display_id' => $display_id, // ID для отображения (без префикса)
+                'display_id' => $cleaned_id, // ID для отображения (без префикса)
                 'name' => $item['title'],
                 'title' => $item['title'],
                 'enabled' => !$is_disabled,
@@ -287,7 +324,12 @@ class AdminPanelTrash {
     }
 
     /**
-     * Получение всех элементов админ-панели
+     * Получение всех элементов админ-панели WordPress
+     *
+     * Собирает полный список элементов верхней панели администратора,
+     * включая стандартные элементы и динамически добавленные плагинами.
+     *
+     * @return array Массив элементов админ-панели с их свойствами
      */
     private function get_all_admin_bar_items() {
         $items = array();
@@ -368,7 +410,13 @@ class AdminPanelTrash {
     }
 
     /**
-     * Очистка ID элемента от префикса
+     * Очистка ID элемента от префикса wp-admin-bar-
+     *
+     * Удаляет стандартный префикс WordPress из ID элементов админ-панели
+     * для более удобного хранения и отображения.
+     *
+     * @param string $item_id Полный ID элемента с префиксом
+     * @return string Очищенный ID без префикса
      */
     private function clean_item_id($item_id) {
         if (strpos($item_id, 'wp-admin-bar-') === 0) {
@@ -378,11 +426,17 @@ class AdminPanelTrash {
     }
 
     /**
-     * Получение отключенных элементов из файла functions.php
+     * Получение списка отключенных элементов из файла functions.php активной темы
+     *
+     * Анализирует содержимое файла functions.php для поиска ранее отключенных элементов
+     * админ-панели и возвращает их список.
+     *
+     * @return array Массив ID отключенных элементов
      */
     private function get_disabled_items_from_file() {
         $file_path = get_stylesheet_directory() . '/functions.php';
 
+        // Проверяем доступность файла
         if (!file_exists($file_path) || !is_readable($file_path)) {
             return array();
         }
@@ -390,67 +444,73 @@ class AdminPanelTrash {
         $content = file_get_contents($file_path);
         $disabled_items = array();
 
-        // Ищем функцию remove_item_from_admin_bar (ваш оригинальный вариант)
+        // Ищем функцию remove_item_from_admin_bar с любым содержимым
         if (preg_match('/function\s+remove_item_from_admin_bar\s*\([^)]*\)\s*\{([^}]+)\}/s', $content, $function_match)) {
             $function_body = $function_match[1];
 
-            // Ищем все вызовы remove_menu - берем ID как есть, без изменений
+            // Извлекаем все ID элементов из вызовов remove_menu
             if (preg_match_all('/\$wp_admin_bar->remove_menu\(\s*[\'\"]([^\'\"]+)[\'\"]\s*\)\s*;/', $function_body, $matches)) {
                 $disabled_items = $matches[1];
-                error_log('Admin Panel Trash: Found items in file: ' . implode(', ', $disabled_items));
             }
         }
 
-        return $disabled_items; // Возвращаем как есть, без очистки префикса
+        return $disabled_items;
     }
 
     /**
-     * Обновление файла functions.php
+     * Обновление файла functions.php активной темы
+     *
+     * Добавляет или обновляет функцию remove_item_from_admin_bar в файле functions.php
+     * для отключения указанных элементов админ-панели.
+     *
+     * @param array $disabled_items Массив ID элементов для отключения
+     * @return bool True при успешном обновлении, false в случае ошибки
      */
     private function update_functions_file($disabled_items) {
         $file_path = get_stylesheet_directory() . '/functions.php';
 
+        // Проверяем права на запись
         if (!is_writable($file_path) && !is_writable(dirname($file_path))) {
-            error_log('Admin Panel Trash: File not writable: ' . $file_path);
             return false;
         }
 
+        // Читаем существующий файл или создаем новый
         $content = file_exists($file_path) ? file_get_contents($file_path) : "<?php\n";
 
-        // Удаляем закрывающий тег PHP если он есть в конце
+        // Удаляем закрывающий тег PHP если присутствует
         $content = preg_replace('/\?>\s*$/', '', $content);
 
-        // Удаляем нашу функцию
+        // Удаляем существующие функции плагина
         $content = preg_replace('/\/\*\s*Admin Panel Trash Start\s*\*\/.*?\/\*\s*Admin Panel Trash End\s*\*\//s', '', $content);
         $content = preg_replace('/function\s+remove_item_from_admin_bar\s*\([^)]*\)\s*\{[^}]+\}\s*add_action\s*\(\s*[\'"]wp_before_admin_bar_render[\'"]\s*,\s*[\'"]remove_item_from_admin_bar[\'"]\s*\)\s*;/s', '', $content);
-        $content = preg_replace('/function\s+remove_item_from_admin_bar\s*\([^}]*\}\s*/s', '', $content);
 
-        // Удаляем лишние пустые строки
+        // Очищаем лишние пустые строки
         $content = preg_replace('/\n\s*\n\s*\n/', "\n\n", $content);
         $content = trim($content);
 
+        // Добавляем функцию если есть отключенные элементы
         if (!empty($disabled_items)) {
-            // Генерируем код функции
             $function_code = $this->generate_function_code($disabled_items);
             $content .= "\n\n" . $function_code . "\n";
         }
 
-        // Всегда добавляем закрывающий тег в конец
+        // Добавляем закрывающий тег PHP
         $content .= "\n?>";
 
+        // Записываем файл
         $result = file_put_contents($file_path, $content);
 
-        if ($result === false) {
-            error_log('Admin Panel Trash: Failed to write to file: ' . $file_path);
-            return false;
-        }
-
-        error_log('Admin Panel Trash: Successfully updated file with ' . count($disabled_items) . ' items');
-        return true;
+        return $result !== false;
     }
 
     /**
-     * Генерация кода функции
+     * Генерация PHP кода функции для отключения элементов админ-панели
+     *
+     * Создает функцию remove_item_from_admin_bar с вызовами remove_menu()
+     * для каждого отключенного элемента.
+     *
+     * @param array|null $disabled_items Массив ID элементов для отключения
+     * @return string Сгенерированный PHP код
      */
     private function generate_function_code($disabled_items = null) {
         if ($disabled_items === null) {
@@ -463,8 +523,6 @@ class AdminPanelTrash {
         $code .= "    if (!is_admin_bar_showing()) return;\n\n";
 
         foreach ($disabled_items as $item) {
-            // НЕ добавляем префикс wp-admin-bar- если его нет в исходном элементе
-            // Сохраняем ID как есть (как в вашем исходном файле)
             $code .= "    \$wp_admin_bar->remove_menu('{$item}');\n";
         }
 

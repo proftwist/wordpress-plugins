@@ -1,5 +1,5 @@
 jQuery(document).ready(function($) {
-    console.log('Admin Panel Trash loaded');
+    // Инициализация плагина Admin Panel Trash
 
     // Загрузка элементов при открытии страницы
     loadAdminBarItems();
@@ -43,7 +43,7 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Access check error:', error);
+                // Обработка ошибки проверки доступа
                 $('#apt-access-result').html('<div class="notice notice-error"><p>' +
                     apt_localize.request_error + ': ' + error + '</p></div>');
             },
@@ -78,7 +78,7 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function(xhr, status, error) {
-                console.error('AJAX error:', status, error);
+                // Обработка AJAX ошибки при загрузке элементов
                 var errorMsg = xhr.responseJSON && xhr.responseJSON.data ? xhr.responseJSON.data : error;
                 $('#apt-items-list').html('<tr><td colspan="4" class="apt-error">' +
                     apt_localize.request_error + ': ' + errorMsg + '</td></tr>');
@@ -150,7 +150,7 @@ jQuery(document).ready(function($) {
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Toggle error:', error);
+                    // Обработка ошибки переключения элемента
                     showMessage('❌ ' + apt_localize.request_error + ': ' + error, 'error');
                     $button.prop('disabled', false).text(originalText);
                 }
