@@ -1,17 +1,17 @@
 /**
- * Post Wall Frontend JavaScript
+ * Frontend JavaScript для Post Wall
  *
- * Handles the interactive post wall display on the frontend.
+ * Обрабатывает интерактивное отображение кафельной стенки постов на фронтенде.
  *
  * @package PostWall
- * @since 1.0.0
+ * @since 2.0.0
  */
 
 (function($) {
     'use strict';
 
     /**
-     * PostWall class for managing the calendar visualization
+     * Класс PostWall для управления визуализацией календаря
      */
     class PostWall {
         constructor(containerElement) {
@@ -29,10 +29,9 @@
         }
 
         /**
-         * Initialize the post wall
+         * Инициализация кафельной стенки постов
          */
         init() {
-            console.log('PostWall init called');
             if (this.siteUrl) {
                 this.fetchPostData();
             } else {
@@ -42,7 +41,7 @@
         }
 
         /**
-         * Attach click handlers to day cells
+         * Прикрепить обработчики кликов к ячейкам дней
          */
         attachClickHandlers() {
             // Используем делегирование событий для контейнера
@@ -59,8 +58,8 @@
         }
 
         /**
-         * Navigate to the date archive page for the given date
-         * @param {string} dateString - Date in YYYY-MM-DD format
+         * Перейти на страницу архива даты для заданной даты
+         * @param {string} dateString - Дата в формате YYYY-MM-DD
          */
         navigateToDateArchive(dateString) {
             // Формируем URL для архивной страницы даты на сайте из блока
@@ -71,9 +70,9 @@
         }
 
         /**
-         * Generate URL for date archive page
-         * @param {string} dateString - Date in YYYY-MM-DD format
-         * @return {string} Archive URL
+         * Сгенерировать URL для страницы архива даты
+         * @param {string} dateString - Дата в формате YYYY-MM-DD
+         * @return {string} URL архива
          */
         generateDateArchiveUrl(dateString) {
             // Разбираем дату
@@ -86,10 +85,9 @@
         }
 
         /**
-         * Fetch post data via AJAX
+         * Получить данные о постах через AJAX
          */
         fetchPostData() {
-            console.log('Fetching post data for', this.siteUrl);
 
             $.ajax({
                 url: postwallSettings.ajaxUrl,
@@ -100,7 +98,6 @@
                     site_url: this.siteUrl
                 },
                 success: (response) => {
-                    console.log('AJAX success:', response);
                     if (response.success && response.data) {
                         this.postData = response.data;
                         this.generateCalendar();
@@ -109,15 +106,14 @@
                     }
                 },
                 error: (xhr, status, error) => {
-                    console.error('AJAX error:', error);
                     this.showError(this.translate('Error loading data'));
                 }
             });
         }
 
         /**
-         * Show error message
-         * @param {string} message Error message to display
+         * Показать сообщение об ошибке
+         * @param {string} message Сообщение об ошибке для отображения
          */
         showError(message) {
             if (this.loadingElement) {
@@ -131,23 +127,20 @@
         }
 
         /**
-         * Generate the calendar grid by months
+         * Генерировать сетку календаря по месяцам
          */
         generateCalendar() {
-            console.log('generateCalendar called');
-            // Remove loading indicator
+            // Убрать индикатор загрузки
             if (this.loadingElement) {
                 this.loadingElement.remove();
-                console.log('Loading element removed');
             }
 
             // Создаем или обновляем заголовок
             this.createOrUpdateTitle();
 
-            // Create the heatmap wrapper
+            // Создать обёртку для тепловой карты
             const wrapper = document.createElement('div');
             wrapper.className = 'heatmap-wrapper';
-            console.log('Wrapper created');
 
             // Create months container
             const monthsContainer = document.createElement('div');
@@ -161,8 +154,7 @@
                 this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
             ];
 
-            // Generate 12 months from current back to 12 months ago
-            console.log('Generating months...');
+            // Сгенерировать 12 месяцев от текущего назад до 12 месяцев назад
             for (let i = 11; i >= 0; i--) {
                 const monthDate = new Date(now);
                 monthDate.setMonth(now.getMonth() - i);
@@ -172,16 +164,14 @@
 
                 const monthDiv = this.createMonth(monthDate);
                 monthsContainer.appendChild(monthDiv);
-                console.log(`Month ${i} added:`, monthDate.toLocaleDateString());
             }
 
             wrapper.appendChild(monthsContainer);
             this.container.appendChild(wrapper);
-            console.log('Calendar appended to container');
         }
 
         /**
-         * Create or update the title element
+         * Создать или обновить элемент заголовка
          */
         createOrUpdateTitle() {
             let titleElement = this.container.querySelector('.postwall-title');
@@ -196,12 +186,11 @@
             }
 
             titleElement.textContent = translatedTitle;
-            console.log('Final title:', translatedTitle);
         }
 
         /**
-         * Generate title with domain
-         * @return {string} Localized title with domain
+         * Сгенерировать заголовок с доменом
+         * @return {string} Локализованный заголовок с доменом
          */
         generateTitleWithDomain() {
             if (!this.domain) {
@@ -217,12 +206,11 @@
         }
 
         /**
-         * Create a month grid
-         * @param {Date} monthDate - The date representing the month to create
-         * @return {HTMLElement} The month container element
+         * Создать сетку месяца
+         * @param {Date} monthDate - Дата, представляющая месяц для создания
+         * @return {HTMLElement} Элемент контейнера месяца
          */
         createMonth(monthDate) {
-           console.log('createMonth called for', monthDate);
            const monthDiv = document.createElement('div');
            monthDiv.className = 'month';
 
@@ -243,9 +231,8 @@
            // ВАЖНО: Это правильное количество пустых клеток ДО первого дня
            const emptyCellsBefore = (firstDayOfWeek + 6) % 7;
 
-           // Get number of days in month
+           // Получить количество дней в месяце
            const daysInMonth = new Date(year, month + 1, 0).getDate();
-           console.log(`Month ${this.getMonthName(month)} ${year}, days: ${daysInMonth}, starts on: ${firstDayOfWeek} (${this.getDayName(firstDayOfWeek)}), empty cells before: ${emptyCellsBefore}`);
 
            // Create cells
            // Empty cells before first day - ЛЕВЫЙ "РВАНЫЙ" КРАЙ
@@ -287,21 +274,20 @@
 
            monthDiv.appendChild(monthGrid);
 
-           // Add month label
+           // Добавить метку месяца
            const monthLabel = document.createElement('div');
            monthLabel.className = 'month-label';
            monthLabel.textContent = this.getMonthName(month);
            monthDiv.appendChild(monthLabel);
-           console.log('Month created:', this.getMonthName(month), 'Total cells:', monthGrid.children.length);
 
            return monthDiv;
        }
 
         /**
-         * Format tooltip text with proper localization
-         * @param {string} date Formatted date
-         * @param {number} postCount Number of posts
-         * @return {string} Localized tooltip text
+         * Форматировать текст подсказки с правильной локализацией
+         * @param {string} date Отформатированная дата
+         * @param {number} postCount Количество постов
+         * @return {string} Локализованный текст подсказки
          */
         formatTooltip(date, postCount) {
             // Получаем переведенное слово "posts" в правильной форме
@@ -310,33 +296,33 @@
         }
 
         /**
-         * Get localized posts text with proper plural forms
-         * @param {number} count Number of posts
-         * @return {string} Localized posts text
+         * Получить локализованный текст постов с правильными формами множественного числа
+         * @param {number} count Количество постов
+         * @return {string} Локализованный текст постов
          */
         getPostsText(count) {
-           // Для русского языка - особые правила множественного числа
-           if (this.getLocale().startsWith('ru')) {
-               const lastDigit = count % 10;
-               const lastTwoDigits = count % 100;
+            // Для русского языка - особые правила множественного числа
+            if (this.getLocale().startsWith('ru')) {
+                const lastDigit = count % 10;
+                const lastTwoDigits = count % 100;
 
-               if (lastDigit === 1 && lastTwoDigits !== 11) {
-                   return 'пост';
-               } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
-                   return 'поста';
-               } else {
-                   return 'постов';
-               }
-           }
+                if (lastDigit === 1 && lastTwoDigits !== 11) {
+                    return 'пост';
+                } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+                    return 'поста';
+                } else {
+                    return 'постов';
+                }
+            }
 
-           // Для английского и других языков
-           return this.translate('posts');
-       }
+            // Для английского и других языков
+            return this.translate('posts');
+        }
 
         /**
-         * Format date according to WordPress date format settings
-         * @param {Date} date - Date to format
-         * @return {string} Formatted date string
+         * Форматировать дату согласно настройкам формата даты WordPress
+         * @param {Date} date - Дата для форматирования
+         * @return {string} Отформатированная строка даты
          */
         formatDateAccordingToWordPress(date) {
             // Если WordPress передал формат даты, используем его
@@ -349,10 +335,10 @@
         }
 
         /**
-         * Format date using WordPress date format
-         * @param {Date} date - Date to format
-         * @param {string} format - WordPress date format string
-         * @return {string} Formatted date
+         * Форматировать дату используя формат даты WordPress
+         * @param {Date} date - Дата для форматирования
+         * @param {string} format - Строка формата даты WordPress
+         * @return {string} Отформатированная дата
          */
         formatDateWithWordPressFormat(date, format) {
             const replacements = {
@@ -375,9 +361,9 @@
         }
 
         /**
-         * Get localized date format as fallback
-         * @param {Date} date - Date to format
-         * @return {string} Formatted date
+         * Получить локализованный формат даты как запасной вариант
+         * @param {Date} date - Дата для форматирования
+         * @return {string} Отформатированная дата
          */
         getLocalizedDateFormat(date) {
             const locale = this.getLocale();
@@ -399,34 +385,34 @@
         }
 
         /**
-         * Get current locale
-         * @return {string} Current locale
+         * Получить текущую локаль
+         * @return {string} Текущая локаль
          */
         getLocale() {
             return postwallSettings.locale || 'en_US';
         }
 
         /**
-         * Get activity level for a date based on real post data
+         * Получить уровень активности для даты на основе реальных данных о постах
          *
-         * @param {Date} date The date to check
-         * @return {number} Activity level (0-4)
+         * @param {Date} date Дата для проверки
+         * @return {number} Уровень активности (0-4)
          */
         getActivityLevel(date) {
-            // If we have real data, use it
+            // Если у нас есть реальные данные, используем их
             if (this.postData) {
-                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const dateKey = date.toISOString().split('T')[0]; // Формат YYYY-MM-DD
                 const postCount = this.postData[dateKey] || 0;
 
-                // Determine activity level based on post count
-                if (postCount === 0) return 0; // No posts
-                if (postCount === 1) return 1; // 1 post
-                if (postCount === 2) return 2; // 2 posts
-                if (postCount <= 4) return 3; // 3-4 posts
-                return 4; // 5+ posts
+                // Определяем уровень активности на основе количества постов
+                if (postCount === 0) return 0; // Нет постов
+                if (postCount === 1) return 1; // 1 пост
+                if (postCount === 2) return 2; // 2 поста
+                if (postCount <= 4) return 3; // 3-4 поста
+                return 4; // 5+ постов
             }
 
-            // Fallback to random for demo when no data available
+            // Запасной вариант с случайными данными для демонстрации, когда нет данных
             const random = Math.random();
             if (random < 0.3) return 0;
             if (random < 0.5) return 1;
@@ -436,9 +422,9 @@
         }
 
         /**
-         * Get localized month name
-         * @param {number} monthIndex - Month index (0-11)
-         * @return {string} Month name
+         * Получить локализованное название месяца
+         * @param {number} monthIndex - Индекс месяца (0-11)
+         * @return {string} Название месяца
          */
         getMonthName(monthIndex) {
             const monthNames = [
@@ -451,9 +437,9 @@
         }
 
         /**
-         * Get day name for debugging
-         * @param {number} dayOfWeek - Day of week (0-6)
-         * @return {string} Day name
+         * Получить название дня для отладки
+         * @param {number} dayOfWeek - День недели (0-6)
+         * @return {string} Название дня
          */
         getDayName(dayOfWeek) {
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -461,17 +447,17 @@
         }
 
         /**
-         * Translation helper with fallback
-         * @param {string} text Text to translate
-         * @return {string} Translated text
+         * Помощник перевода с запасным вариантом
+         * @param {string} text Текст для перевода
+         * @return {string} Переведенный текст
          */
         translate(text) {
-            // Try to use wp.i18n if available
+            // Пробуем использовать wp.i18n если доступно
             if (typeof wp !== 'undefined' && wp.i18n && typeof wp.i18n.__ === 'function') {
                 return wp.i18n.__(text, 'postwall');
             }
 
-            // Fallback: manual translation based on locale
+            // Запасной вариант: ручной перевод на основе локали
             if (this.getLocale().startsWith('ru')) {
                 const russianTranslations = {
                     'Posts from the site for the last 12 months': 'Посты с сайта за последние 12 месяцев',
@@ -486,13 +472,13 @@
                 return russianTranslations[text] || text;
             }
 
-            // Default to English
+            // По умолчанию английский
             return text;
         }
     }
 
     /**
-     * Initialize PostWall instances when DOM is ready
+     * Инициализировать экземпляры PostWall при готовности DOM
      */
     $(document).ready(function() {
         $('.postwall-container').each(function() {

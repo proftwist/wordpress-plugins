@@ -1,11 +1,11 @@
 <?php
 /**
- * Post Wall API handler for Post Wall plugin
+ * API обработчик для плагина Post Wall
  *
- * Handles WordPress REST API requests to get post data.
+ * Обрабатывает запросы к WordPress REST API для получения данных о постах.
  *
  * @package PostWall
- * @since 1.0.0
+ * @since 2.0.0
  */
 
 // Защита от прямого доступа
@@ -16,37 +16,37 @@ if (!defined('ABSPATH')) {
 if (!class_exists('PostWall_API')) {
 
     /**
-     * Class for handling WordPress REST API requests
+     * Класс для обработки запросов к WordPress REST API
      *
-     * This class handles all WordPress REST API interactions for the Post Wall plugin,
-     * including data retrieval, caching, and error handling.
+     * Этот класс обрабатывает все взаимодействия с WordPress REST API для плагина Post Wall,
+     * включая получение данных, кеширование и обработку ошибок.
      *
      * @package PostWall
-     * @since 1.0.0
+     * @since 2.0.0
      */
     class PostWall_API {
 
         /**
-         * Cache key prefix for transients
+         * Префикс ключа кэша для временных данных
          *
          * @var string
-         * @since 1.0.0
+         * @since 2.0.0
          */
         private static $cache_key_prefix = 'postwall_data_';
 
         /**
-         * Cache expiration time in seconds (1 hour)
+         * Время жизни кэша в секундах (1 час)
          *
          * @var int
-         * @since 1.0.0
+         * @since 2.0.0
          */
         private static $cache_expiration = 3600;
 
         /**
-         * Get headers for API requests
+         * Получить заголовки для API запросов
          *
-         * @return array Array of headers for API requests
-         * @since 1.0.0
+         * @return array Массив заголовков для API запросов
+         * @since 2.0.0
          */
         private static function get_api_headers() {
             return array(
@@ -56,22 +56,22 @@ if (!class_exists('PostWall_API')) {
         }
 
         /**
-         * Handle API errors
+         * Обработать ошибки API
          *
-         * @param string $error_message Error message
-         * @return WP_Error WordPress error object
-         * @since 1.0.0
+         * @param string $error_message Сообщение об ошибке
+         * @return WP_Error Объект ошибки WordPress
+         * @since 2.0.0
          */
         private static function handle_api_error($error_message) {
             return new WP_Error('postwall_api_error', 'Ошибка API: ' . $error_message);
         }
 
         /**
-         * Get posts from a WordPress site via REST API
+         * Получить посты с WordPress сайта через REST API
          *
-         * @param string $site_url The site URL to fetch posts from
-         * @return array|WP_Error Array of posts or WP_Error on failure
-         * @since 1.0.0
+         * @param string $site_url URL сайта для получения постов
+         * @return array|WP_Error Массив постов или WP_Error при ошибке
+         * @since 2.0.0
          */
         public static function get_posts_from_site($site_url) {
             // Проверяем кэш если функция доступна
@@ -138,11 +138,11 @@ if (!class_exists('PostWall_API')) {
         }
 
         /**
-         * Get post statistics by day for the last 12 months
+         * Получить статистику постов по дням за последние 12 месяцев
          *
-         * @param string $site_url The site URL to get statistics for
-         * @return array|WP_Error Array of post statistics or WP_Error on failure
-         * @since 1.0.0
+         * @param string $site_url URL сайта для получения статистики
+         * @return array|WP_Error Массив статистики постов или WP_Error при ошибке
+         * @since 2.0.0
          */
         public static function get_post_stats($site_url) {
             // Проверяем кэш если функция доступна
@@ -205,11 +205,11 @@ if (!class_exists('PostWall_API')) {
         }
 
         /**
-         * Check if a site has WordPress REST API available
+         * Проверить, доступен ли WordPress REST API на сайте
          *
-         * @param string $site_url The site URL to check
-         * @return bool True if API is available, false otherwise
-         * @since 1.0.0
+         * @param string $site_url URL сайта для проверки
+         * @return bool True если API доступен, false в противном случае
+         * @since 2.0.0
          */
         public static function check_api_availability($site_url) {
             // Проверяем кэш если функция доступна
@@ -251,10 +251,10 @@ if (!class_exists('PostWall_API')) {
         }
 
         /**
-         * Clear cache for a site
+         * Очистить кэш для сайта
          *
-         * @param string $site_url The site URL to clear cache for
-         * @since 1.0.0
+         * @param string $site_url URL сайта для очистки кэша
+         * @since 2.0.0
          */
         public static function clear_cache($site_url) {
             // Удаляем кэш если функция доступна

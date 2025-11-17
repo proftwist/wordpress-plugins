@@ -1,4 +1,11 @@
 <?php
+/**
+ * Регистрация Gutenberg-блока Post Wall
+ *
+ * @package PostWall
+ * @since 2.0.0
+ */
+
 // Защита от прямого доступа
 if (!defined('ABSPATH')) {
     exit;
@@ -9,6 +16,8 @@ if (!defined('ABSPATH')) {
  *
  * Регистрирует динамический блок в редакторе Gutenberg с указанием
  * необходимых скриптов, стилей и обработчика рендеринга на сервере.
+ *
+ * @since 2.0.0
  */
 function postwall_register_block() {
     // Регистрируем блок через WordPress API с полными параметрами
@@ -31,6 +40,7 @@ function postwall_register_block() {
  *
  * @param string $url URL сайта
  * @return string Доменное имя
+ * @since 2.0.0
  */
 function postwall_extract_domain($url) {
     if (empty($url)) {
@@ -58,6 +68,7 @@ function postwall_extract_domain($url) {
  * @param array $attributes Атрибуты блока (включая siteUrl)
  * @param string $content Внутреннее содержимое блока (не используется в динамических блоках)
  * @return string HTML-разметка контейнера диаграммы или сообщение об ошибке
+ * @since 2.0.0
  */
 function postwall_render_block($attributes, $content) {
     // Валидация входных данных
@@ -100,6 +111,7 @@ function postwall_render_block($attributes, $content) {
  * @param string $base_title Базовый заголовок
  * @param string $domain Домен сайта
  * @return string Заголовок с доменом
+ * @since 2.0.0
  */
 function generate_title_with_domain($base_title, $domain) {
     if (empty($domain)) {

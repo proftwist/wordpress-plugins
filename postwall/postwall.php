@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Post Wall
  * Description: Displays post wall charts as Gutenberg blocks or shortcodes
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: postwall
@@ -17,7 +17,7 @@ defined('ABSPATH') || exit;
 // Определение констант для удобства работы с путями
 define('POSTWALL_PLUGIN_PATH', plugin_dir_path(__FILE__)); // Абсолютный путь к папке плагина
 define('POSTWALL_PLUGIN_URL', plugin_dir_url(__FILE__));   // URL к папке плагина
-define('POSTWALL_PLUGIN_VERSION', '1.0.0');                // Версия плагина
+define('POSTWALL_PLUGIN_VERSION', '2.0.0');                // Версия плагина
 
 // Подключение вспомогательных файлов
 require_once POSTWALL_PLUGIN_PATH . 'includes/class-assets-manager.php';       // Менеджер ресурсов
@@ -31,7 +31,7 @@ require_once POSTWALL_PLUGIN_PATH . 'includes/block-registration.php';         /
  * Отвечает за инициализацию плагина и регистрацию основных компонентов.
  *
  * @package PostWall
- * @since 1.0.0
+ * @since 2.0.0
  */
 class PostWall {
 
@@ -39,7 +39,7 @@ class PostWall {
      * Экземпляр класса PostWall
      *
      * @var PostWall
-     * @since 1.0.0
+     * @since 2.0.0
      */
     private static $instance = null;
 
@@ -47,7 +47,7 @@ class PostWall {
      * Получение экземпляра класса PostWall
      *
      * @return PostWall
-     * @since 1.0.0
+     * @since 2.0.0
      */
     public static function get_instance() {
         if (null === self::$instance) {
@@ -61,7 +61,7 @@ class PostWall {
      *
      * Регистрирует основные хуки WordPress при инициализации плагина.
      *
-     * @since 1.0.0
+     * @since 2.0.0
      */
     private function __construct() {
         // Регистрация основных хуков WordPress
@@ -74,7 +74,7 @@ class PostWall {
      *
      * Регистрирует хуки для подключения ресурсов.
      *
-     * @since 1.0.0
+     * @since 2.0.0
      */
     public function init() {
         // Регистрация блока и подключение ресурсов
@@ -90,7 +90,7 @@ class PostWall {
      * - CSS: стили для блока в редакторе с зависимостью wp-edit-blocks
      * Использует filemtime для версионирования файлов (кеширование).
      *
-     * @since 1.0.0
+     * @since 2.0.0
      */
     public function enqueue_block_editor_assets() {
         // Пути к файлам сборки
@@ -126,7 +126,7 @@ class PostWall {
      * - CSS: стили для диаграммы на сайте
      * Передает настройки плагина в JavaScript через wp_localize_script.
      *
-     * @since 1.0.0
+     * @since 2.0.0
      */
     public function enqueue_frontend_assets() {
         // Пути к файлам сборки для фронтенда
@@ -167,7 +167,7 @@ class PostWall {
     /**
      * Загрузка текстового домена
      *
-     * @since 1.0.0
+     * @since 2.0.0
      */
     public function load_textdomain() {
         load_plugin_textdomain(
