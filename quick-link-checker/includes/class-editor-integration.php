@@ -1,16 +1,36 @@
 <?php
+/**
+ * Класс интеграции с редактором WordPress
+ *
+ * Отвечает за добавление мета-боксов, стилей и скриптов в админку
+ */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
+/**
+ * Класс интеграции с редактором постов
+ */
 class QLC_Editor_Integration {
 
+    /**
+     * Конструктор класса
+     *
+     * Регистрирует все необходимые хуки для интеграции с редактором
+     */
     public function __construct() {
+        // Добавление мета-бокса со списком битых ссылок
         add_action('add_meta_boxes', array($this, 'add_meta_box'));
+
+        // Добавление стилей в шапку админки
         add_action('admin_head', array($this, 'add_editor_styles'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts')); // Новый хук
-        add_action('admin_notices', array($this, 'debug_info')); // Добавляем отладку
+
+        // Подключение скриптов
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+
+        // Отображение отладочной информации
+        add_action('admin_notices', array($this, 'debug_info'));
     }
 
     public function add_meta_box() {

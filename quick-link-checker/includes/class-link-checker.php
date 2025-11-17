@@ -1,75 +1,120 @@
 <?php
+/**
+ * Класс для проверки ссылок в контенте постов
+ *
+ * Отвечает за обнаружение и валидацию битых ссылок в постах WordPress
+ */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
+/**
+ * Основной класс проверки ссылок
+ */
 class QLC_Link_Checker {
 
-    private $checked_urls = array(); // Кэш проверенных URL
+    /**
+     * Кэш проверенных URL для оптимизации производительности
+     *
+     * @var array
+     */
+    private $checked_urls = array();
 
+    /**
+     * Конструктор класса
+     *
+     * Регистрирует все необходимые AJAX хуки
+     */
     public function __construct() {
+        // Хуки для проверки ссылок
         add_action('save_post', array($this, 'check_post_links'), 10, 3);
+
+        // AJAX хуки для асинхронной проверки
         add_action('wp_ajax_qlc_check_links', array($this, 'ajax_check_links'));
         add_action('wp_ajax_qlc_get_broken_links', array($this, 'ajax_get_broken_links'));
         add_action('wp_ajax_qlc_save_broken_links', array($this, 'ajax_save_broken_links'));
-        add_action('wp_ajax_qlc_check_changed_links', array($this, 'ajax_check_changed_links')); // Новая умная проверка
+        add_action('wp_ajax_qlc_check_changed_links', array($this, 'ajax_check_changed_links'));
     }
 
-    // Проверка при сохранении - БЕЗ ЛИМИТОВ
+    /**
+     * Проверка ссылок при сохранении поста
+     *
+     * Выполняет полную проверку всех ссылок в посте
+     *
+     * @param int $post_id ID поста
+     * @param WP_Post $post Объект поста
+     * @param bool $update Флаг обновления
+     * @return void
+     */
     public function check_post_links($post_id, $post, $update) {
+        // Проверяем, включена ли проверка ссылок
         if (!get_option('qlc_enabled', '1')) {
             return;
         }
 
+        // Проверяем права пользователя
         if (!current_user_can('edit_post', $post_id) || wp_is_post_revision($post_id)) {
             return;
         }
 
+        // Проверяем статус поста
         if (!in_array($post->post_status, array('publish', 'draft', 'pending'))) {
             return;
         }
 
-        // Запускаем проверку ВСЕХ ссылок
+        // Запускаем полную проверку всех ссылок
         $this->check_all_links($post_id);
     }
 
-    // Проверка ВСЕХ ссылок без ограничений
+    /**
+     * Полная проверка всех ссылок в посте
+     *
+     * Извлекает все ссылки из контента поста и проверяет их доступность
+     *
+     * @param int $post_id ID поста для проверки
+     * @return array Массив битых ссылок
+     */
     public function check_all_links($post_id) {
         $post = get_post($post_id);
         if (!$post) {
-            return;
+            return array();
         }
 
+        // Извлекаем все ссылки из контента поста
         $links = $this->extract_links($post->post_content);
         $broken_links = array();
 
-        // ПРОВЕРЯЕМ ВСЕ ССЫЛКИ БЕЗ ЛИМИТОВ
+        // Проверяем каждую ссылку
         foreach ($links as $link) {
-            // Используем кэш чтобы не проверять один URL дважды
+            // Используем кэширование для оптимизации - не проверяем один URL дважды
             $url_hash = md5($link['url']);
             if (!isset($this->checked_urls[$url_hash])) {
                 $this->checked_urls[$url_hash] = $this->check_link($link['url']);
             }
 
+            // Если ссылка недоступна, добавляем в список битых
             if (!$this->checked_urls[$url_hash]) {
                 $broken_links[] = $link;
             }
 
-            // Минимальная задержка чтобы не перегружать сервер
+            // Небольшая задержка для предотвращения перегрузки сервера
             usleep(50000); // 0.05 секунды
         }
 
-        // Сохраняем результат в мета-поле
+        // Сохраняем результаты проверки в мета-поле поста
         update_post_meta($post_id, '_qlc_broken_links', $broken_links);
-
-        error_log('QLC: Checked ALL ' . count($links) . ' links for post ' . $post_id .
-                 ', found ' . count($broken_links) . ' broken');
 
         return $broken_links;
     }
 
-    // AJAX проверка - тоже БЕЗ ЛИМИТОВ
+    /**
+     * AJAX обработчик для полной проверки ссылок
+     *
+     * Проверяет все ссылки в переданном контенте без ограничений
+     *
+     * @return void
+     */
     public function ajax_check_links() {
         check_ajax_referer('qlc_nonce', 'nonce');
 
@@ -81,7 +126,7 @@ class QLC_Link_Checker {
         $links = $this->extract_links($content);
         $broken_links = array();
 
-        // ПРОВЕРЯЕМ ВСЕ ССЫЛКИ БЕЗ ОГРАНИЧЕНИЙ
+        // Проверяем каждую ссылку
         foreach ($links as $link) {
             $url_hash = md5($link['url']);
             if (!isset($this->checked_urls[$url_hash])) {
@@ -92,7 +137,7 @@ class QLC_Link_Checker {
                 $broken_links[] = $link;
             }
 
-            usleep(50000); // 0.05 секунды
+            usleep(50000); // Небольшая задержка между проверками
         }
 
         wp_send_json_success(array(
@@ -104,7 +149,13 @@ class QLC_Link_Checker {
     }
 
 
-    // Новый AJAX метод для получения битых ссылок после сохранения
+    /**
+     * AJAX обработчик для получения битых ссылок поста
+     *
+     * Возвращает сохраненные битые ссылки для указанного поста
+     *
+     * @return void
+     */
     public function ajax_get_broken_links() {
         check_ajax_referer('qlc_nonce', 'nonce');
 
@@ -126,7 +177,13 @@ class QLC_Link_Checker {
         ));
     }
 
-    // Добавляем метод сохранения битых ссылок
+    /**
+     * AJAX обработчик для сохранения битых ссылок
+     *
+     * Сохраняет массив битых ссылок в мета-поле поста
+     *
+     * @return void
+     */
     public function ajax_save_broken_links() {
         check_ajax_referer('qlc_nonce', 'nonce');
 
@@ -147,7 +204,13 @@ class QLC_Link_Checker {
         wp_send_json_success('Broken links saved');
     }
 
-    // НОВЫЙ метод: проверяем только изменившиеся ссылки
+    /**
+     * AJAX обработчик для умной проверки изменившихся ссылок
+     *
+     * Проверяет только новые или измененные ссылки, используя кэширование
+     *
+     * @return void
+     */
     public function ajax_check_changed_links() {
         check_ajax_referer('qlc_nonce', 'nonce');
 
@@ -209,7 +272,15 @@ class QLC_Link_Checker {
         ));
     }
 
-    // Определяем какие ссылки нужно проверить
+    /**
+     * Определяет какие ссылки нужно проверить
+     *
+     * Выбирает только новые или измененные ссылки для проверки
+     *
+     * @param array $current_links_data Текущие данные ссылок
+     * @param array $stored_broken_links Сохраненные битые ссылки
+     * @return array Массив ссылок для проверки
+     */
     private function get_links_to_check($current_links_data, $stored_broken_links) {
         $links_to_check = array();
         $stored_urls = array();
@@ -234,7 +305,16 @@ class QLC_Link_Checker {
         return $links_to_check;
     }
 
-    // Объединяем битые ссылки
+    /**
+     * Объединяет битые ссылки
+     *
+     * Комбинирует старые и новые битые ссылки, убирая дубликаты
+     *
+     * @param array $stored_broken_links Сохраненные битые ссылки
+     * @param array $new_broken_links Новые битые ссылки
+     * @param array $current_links_data Текущие данные ссылок
+     * @return array Объединенный массив битых ссылок
+     */
     private function merge_broken_links($stored_broken_links, $new_broken_links, $current_links_data) {
         $all_broken_links = array();
         $current_urls = array();
@@ -271,6 +351,14 @@ class QLC_Link_Checker {
         return $unique_links;
     }
 
+    /**
+     * Извлекает ссылки из HTML контента
+     *
+     * Использует регулярные выражения для поиска всех <a> тегов в контенте
+     *
+     * @param string $content HTML контент для анализа
+     * @return array Массив найденных ссылок с их атрибутами
+     */
     private function extract_links($content) {
         $links = array();
 
@@ -278,7 +366,7 @@ class QLC_Link_Checker {
             return $links;
         }
 
-        // Регулярное выражение для поиска ссылок
+        // Регулярное выражение для поиска всех HTML ссылок
         $pattern = '/<a[^>]+href=(["\'])(.*?)\1[^>]*>/i';
         preg_match_all($pattern, $content, $matches, PREG_SET_ORDER);
 
@@ -286,7 +374,7 @@ class QLC_Link_Checker {
             $full_tag = $match[0];
             $url = $match[2];
 
-            // Пропускаем пустые ссылки
+            // Пропускаем ссылки без URL
             if (empty($url)) {
                 continue;
             }
@@ -301,10 +389,24 @@ class QLC_Link_Checker {
         return $links;
     }
 
+    /**
+     * Проверяет, является ли ссылка якорной
+     *
+     * @param string $url URL для проверки
+     * @return bool True если ссылка якорная
+     */
     private function is_anchor_link($url) {
         return strpos($url, '#') === 0 || (strpos($url, '#') !== false && strpos($url, 'http') === false);
     }
 
+    /**
+     * Проверяет доступность ссылки
+     *
+     * Определяет тип ссылки и вызывает соответствующий метод проверки
+     *
+     * @param string $url URL для проверки
+     * @return bool True если ссылка доступна
+     */
     private function check_link($url) {
         // Проверка якорных ссылок
         if ($this->is_anchor_link($url)) {
@@ -315,12 +417,27 @@ class QLC_Link_Checker {
         return $this->check_external_link($url);
     }
 
+    /**
+     * Проверяет якорную ссылку
+     *
+     * Для якорных ссылок всегда возвращает true, так как проверить их сложно
+     * без полного рендеринга страницы
+     *
+     * @param string $url URL якорной ссылки
+     * @return bool Всегда true для якорных ссылок
+     */
     private function check_anchor_link($url) {
-        // Для якорных ссылок всегда возвращаем true, так как проверить их сложно
-        // без полного рендеринга страницы
         return true;
     }
 
+    /**
+     * Проверяет внешнюю HTTP ссылку
+     *
+     * Выполняет HTTP запрос к URL и проверяет код ответа
+     *
+     * @param string $url URL для проверки
+     * @return bool True если ссылка доступна (коды 2xx, 3xx)
+     */
     private function check_external_link($url) {
         // Пропускаем mailto:, tel: и другие не-HTTP ссылки
         if (preg_match('/^(mailto:|tel:|javascript:|#)/i', $url)) {
@@ -337,6 +454,7 @@ class QLC_Link_Checker {
             return false;
         }
 
+        // Настройки контекста для HTTP запроса
         $context = stream_context_create(array(
             'http' => array(
                 'timeout' => 10,
@@ -344,6 +462,7 @@ class QLC_Link_Checker {
             )
         ));
 
+        // Получаем заголовки ответа
         $headers = @get_headers($url, 1, $context);
 
         if (!$headers) {
@@ -353,7 +472,7 @@ class QLC_Link_Checker {
         $status_line = $headers[0];
         $http_code = (int) substr($status_line, 9, 3);
 
-        // Считаем успешными коды 2xx и 3xx
+        // Считаем успешными коды 2xx (OK) и 3xx (Redirect)
         return ($http_code >= 200 && $http_code < 400);
     }
 }

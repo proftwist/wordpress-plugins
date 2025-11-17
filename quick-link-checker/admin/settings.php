@@ -1,13 +1,29 @@
 <?php
+/**
+ * Класс управления настройками плагина
+ *
+ * Отвечает за создание страницы настроек в админке WordPress
+ */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
+/**
+ * Класс настроек плагина Quick Link Checker
+ */
 class QLC_Settings {
 
+    /**
+     * Конструктор класса
+     *
+     * Регистрирует хуки для создания страницы настроек
+     */
     public function __construct() {
+        // Добавление пункта меню в админку
         add_action('admin_menu', array($this, 'add_admin_menu'));
+
+        // Регистрация настроек
         add_action('admin_init', array($this, 'register_settings'));
     }
 

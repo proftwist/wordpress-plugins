@@ -62,8 +62,6 @@
 
             this.currentLinksHash = linksHash;
 
-            console.log('QLC: Smart check - checking changed links...');
-
             $.ajax({
                 url: qlc_ajax.ajax_url,
                 type: 'POST',
@@ -77,19 +75,12 @@
                     if (response.success) {
                         this.currentBrokenLinks = response.data.broken_links;
 
-                        if (response.data.links_unchanged) {
-                            console.log('QLC: Links unchanged, using cache');
-                        } else {
-                            console.log('QLC: Smart check found', response.data.broken_count,
-                                      'broken links (checked', response.data.checked_count, 'links)');
-                        }
-
                         this.highlightBrokenLinks(this.currentBrokenLinks);
                         this.updateBrokenLinksCount();
                     }
                 },
                 error: (xhr, status, error) => {
-                    console.error('QLC: Smart check error:', error);
+                    // Обработка ошибки тихо, без логирования
                 }
             });
         },
@@ -259,12 +250,11 @@
                     if (editor) {
                         content = editor.getEditedPostContent();
                         if (content) {
-                            console.log('QLC: Got content from Gutenberg editor');
                             return content;
                         }
                     }
                 } catch (e) {
-                    console.log('QLC: Gutenberg editor not available');
+                    // Gutenberg недоступен
                 }
             }
 
@@ -272,7 +262,6 @@
             if (typeof tinymce !== 'undefined' && tinymce.get('content')) {
                 content = tinymce.get('content').getContent();
                 if (content) {
-                    console.log('QLC: Got content from TinyMCE editor');
                     return content;
                 }
             }
@@ -282,7 +271,6 @@
             if ($contentTextarea.length > 0) {
                 content = $contentTextarea.val();
                 if (content) {
-                    console.log('QLC: Got content from textarea');
                     return content;
                 }
             }
@@ -292,7 +280,6 @@
             if ($blockEditor.length > 0) {
                 content = $blockEditor.val();
                 if (content) {
-                    console.log('QLC: Got content from block editor textarea');
                     return content;
                 }
             }
@@ -303,7 +290,6 @@
                 const val = $textarea.val();
                 if (val && val.length > 100 && val.indexOf('<') !== -1) {
                     content = val;
-                    console.log('QLC: Got content from generic textarea');
                     return false; // break loop
                 }
             });
