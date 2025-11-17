@@ -364,8 +364,8 @@
             html += '</div>';
 
             // Создаем строки для каждой недели
-            // Создаем 7 строк для дней недели, начиная с дня недели 1 января
-            var allDaysOfWeek = [
+            // Создаем 7 строк для дней недели в фиксированном порядке от понедельника к воскресенью
+            var daysOfWeek = [
                 __('Mon', 'github-commit-chart'),
                 __('Tue', 'github-commit-chart'),
                 __('Wed', 'github-commit-chart'),
@@ -375,14 +375,7 @@
                 __('Sun', 'github-commit-chart')
             ];
 
-            var startDayOfWeek = startDate.getDay();
-            var daysOfWeek = [];
-
-            // Начинаем с дня недели 1 января и идем по кругу
-            for (var i = 0; i < 7; i++) {
-                daysOfWeek.push(allDaysOfWeek[(startDayOfWeek + i) % 7]);
-            }
-            // Перестраиваем индексацию, чтобы dayIndex соответствовал правильному дню
+            // Создаем строки для каждого дня недели от понедельника к воскресенью
             for (var dayIndex = 0; dayIndex < 7; dayIndex++) {
                 html += '<div class="heatmap-row">';
 
@@ -401,9 +394,23 @@
                 }
 
                 for (var week = 0; week < weeksToShow; week++) {
-                    // Вычисляем дату для текущей ячейки с учетом правильного смещения
-                    var cellDate = new Date(startDate);
-                    cellDate.setDate(startDate.getDate() + (week * 7) + dayIndex);
+                    // Вычисляем дату для текущей ячейки
+                    // dayIndex соответствует дню недели в фиксированном порядке от понедельника (0) к воскресенью (6)
+                    // Нам нужно найти дату для дня week * 7 + dayIndex относительно 1 января
+                    var jan1DayOfWeek = startDate.getDay(); // 0 - воскресенье, 1 - понедельник, ..., 6 - суббота
+                    // Преобразуем в систему, где 0 - понедельник, 1 - вторник, ..., 6 - воскресенье
+                    var jan1DayOfWeekAdjusted = (jan1DayOfWeek + 6) % 7;
+                    // Вычисляем смещение относительно 1 января для текущего дня недели и недели
+                    // Нам нужно найти день, который является dayIndex-ым днем недели в week-ой неделе года
+                    // Сначала найдем дату понедельника week-ой недели
+                    // Смещение от 1 января до понедельника первой недели
+                    var daysToFirstMonday = (7 - jan1DayOfWeekAdjusted) % 7;
+                    // Дата понедельника week-ой недели
+                    var mondayDate = new Date(startDate);
+                    mondayDate.setDate(startDate.getDate() + daysToFirstMonday + (week * 7));
+                    // Дата для текущего дня недели
+                    var cellDate = new Date(mondayDate);
+                    cellDate.setDate(mondayDate.getDate() + dayIndex);
                     var dateStr = cellDate.toISOString().split('T')[0];
                     var commits = commitData[dateStr] || 0;
 
