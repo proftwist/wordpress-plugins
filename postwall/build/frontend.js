@@ -20,6 +20,11 @@
             this.containerId = this.container.dataset.containerId;
             this.loadingElement = this.container.querySelector('.postwall-loading');
 
+            // Получаем данные из data-атрибутов
+            this.baseTitle = this.container.dataset.baseTitle || 'Posts from the site for the last 12 months';
+            this.loadingText = this.container.dataset.loadingText || 'Loading post wall...';
+            this.domain = this.container.dataset.domain || '';
+
             this.init();
         }
 
@@ -27,7 +32,7 @@
          * Initialize the post wall
          */
         init() {
-            console.log('PostWall init called');
+            console.log('PostWall init called - UPDATED VERSION');
             if (this.siteUrl) {
                 this.fetchPostData();
             } else {
@@ -55,12 +60,12 @@
                         this.postData = response.data;
                         this.generateCalendar();
                     } else {
-                        this.showError(wp.i18n.__('Failed to load post data', 'postwall'));
+                        this.showError(this.translate('Failed to load post data'));
                     }
                 },
                 error: (xhr, status, error) => {
                     console.error('AJAX error:', error);
-                    this.showError(wp.i18n.__('Error loading data', 'postwall'));
+                    this.showError(this.translate('Error loading data'));
                 }
             });
         }
@@ -84,12 +89,15 @@
          * Generate the calendar grid by months
          */
         generateCalendar() {
-            console.log('generateCalendar called');
+            console.log('generateCalendar called - UPDATED VERSION');
             // Remove loading indicator
             if (this.loadingElement) {
                 this.loadingElement.remove();
                 console.log('Loading element removed');
             }
+
+            // Создаем или обновляем заголовок
+            this.createOrUpdateTitle();
 
             // Create the heatmap wrapper
             const wrapper = document.createElement('div');
@@ -101,12 +109,6 @@
             monthsContainer.className = 'months';
 
             const now = new Date();
-            const monthNames = [
-                wp.i18n.__('Jan', 'postwall'), wp.i18n.__('Feb', 'postwall'), wp.i18n.__('Mar', 'postwall'),
-                wp.i18n.__('Apr', 'postwall'), wp.i18n.__('May', 'postwall'), wp.i18n.__('Jun', 'postwall'),
-                wp.i18n.__('Jul', 'postwall'), wp.i18n.__('Aug', 'postwall'), wp.i18n.__('Sep', 'postwall'),
-                wp.i18n.__('Oct', 'postwall'), wp.i18n.__('Nov', 'postwall'), wp.i18n.__('Dec', 'postwall')
-            ];
 
             // Generate 12 months from current back to 12 months ago
             console.log('Generating months...');
@@ -114,9 +116,12 @@
                 const monthDate = new Date(now);
                 monthDate.setMonth(now.getMonth() - i);
 
+                // Устанавливаем дату на первый день месяца для правильного расчета
+                monthDate.setDate(1);
+
                 const monthDiv = this.createMonth(monthDate);
                 monthsContainer.appendChild(monthDiv);
-                console.log(`Month ${i} added`);
+                console.log(`Month ${i} added:`, monthDate.toLocaleDateString());
             }
 
             wrapper.appendChild(monthsContainer);
@@ -125,12 +130,45 @@
         }
 
         /**
-         * Create a month grid
-         * @param {Date} monthDate - The date representing the month to create
-         * @return {HTMLElement} The month container element
+         * Create or update the title element
+         */
+        createOrUpdateTitle() {
+            let titleElement = this.container.querySelector('.postwall-title');
+
+            // Создаем локализованный заголовок с доменом
+            const translatedTitle = this.generateTitleWithDomain();
+
+            if (!titleElement) {
+                titleElement = document.createElement('h3');
+                titleElement.className = 'postwall-title';
+                this.container.insertBefore(titleElement, this.container.firstChild);
+            }
+
+            titleElement.textContent = translatedTitle;
+            console.log('Final title:', translatedTitle);
+        }
+
+        /**
+         * Generate title with domain
+         * @return {string} Localized title with domain
+         */
+        generateTitleWithDomain() {
+            if (!this.domain) {
+                return this.translate(this.baseTitle);
+            }
+
+            // Простой способ - создаем заголовок в зависимости от языка
+            if (this.getLocale().startsWith('ru')) {
+                return 'Посты сайта ' + this.domain + ' за последние 12 месяцев';
+            } else {
+                return 'Posts from the site ' + this.domain + ' for the last 12 months';
+            }
+        }
+
+        /**
+         * Create GitHub-style month with weeks as columns, days as rows
          */
         createMonth(monthDate) {
-            console.log('createMonth called for', monthDate);
             const monthDiv = document.createElement('div');
             monthDiv.className = 'month';
 
@@ -140,64 +178,176 @@
             const year = monthDate.getFullYear();
             const month = monthDate.getMonth();
 
-            // Get first day of month and what day of week it falls on
+            // Первый день месяца
             const firstDay = new Date(year, month, 1);
-            const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            // Последний день месяца
+            const lastDay = new Date(year, month + 1, 0);
 
-            // Adjust for Monday first (0 = Monday, 6 = Sunday)
-            const adjustedFirstDay = (firstDayOfWeek + 6) % 7;
+            // Находим понедельник недели, в которой начинается месяц
+            const startDate = new Date(firstDay);
+            const dayOfWeek = (firstDay.getDay() + 6) % 7; // Понедельник = 0
+            startDate.setDate(firstDay.getDate() - dayOfWeek);
 
-            // Get number of days in month
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            console.log(`Month ${month + 1}, days: ${daysInMonth}, first day offset: ${adjustedFirstDay}`);
+            // Находим воскресенье недели, в которой заканчивается месяц
+            const endDate = new Date(lastDay);
+            const lastDayOfWeek = (lastDay.getDay() + 6) % 7;
+            endDate.setDate(lastDay.getDate() + (6 - lastDayOfWeek));
 
-            // Create cells
-            // Empty cells before first day
-            for (let i = 0; i < adjustedFirstDay; i++) {
-                const emptyCell = document.createElement('span');
-                emptyCell.className = 'day empty';
-                monthGrid.appendChild(emptyCell);
+            // Создаем ячейки для всех дней от startDate до endDate
+            const currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                const dayCell = document.createElement('span');
+
+                // Проверяем, принадлежит ли день текущему месяцу
+                const isCurrentMonth = currentDate.getMonth() === month;
+
+                if (isCurrentMonth) {
+                    // День текущего месяца - рассчитываем активность
+                    const activityLevel = this.getActivityLevel(currentDate);
+                    const postCount = this.postData ?
+                        (this.postData[currentDate.toISOString().split('T')[0]] || 0) : 0;
+
+                    dayCell.className = `day lvl-${activityLevel}`;
+
+                    // Добавляем тултип
+                    const formattedDate = this.formatDateAccordingToWordPress(currentDate);
+                    dayCell.title = this.formatTooltip(formattedDate, postCount);
+                } else {
+                    // День соседнего месяца - пустая ячейка
+                    dayCell.className = 'day empty';
+                }
+
+                monthGrid.appendChild(dayCell);
+                currentDate.setDate(currentDate.getDate() + 1);
             }
-
-            // Days of the month
-         for (let day = 1; day <= daysInMonth; day++) {
-             const dayCell = document.createElement('span');
-             const cellDate = new Date(year, month, day);
-
-             // Determine activity level
-             const activityLevel = this.getActivityLevel(cellDate);
-
-             if (activityLevel === 0) {
-                 dayCell.className = 'day empty';
-             } else {
-                 dayCell.className = `day lvl-${activityLevel}`;
-             }
-
-             // Add tooltip with post count - ИСПОЛЬЗУЕМ ЛОКАЛИЗОВАННУЮ ДАТУ
-             const postCount = this.postData ?
-                 (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
-
-             // Форматируем дату согласно настройкам WordPress
-             const formattedDate = this.formatDateAccordingToWordPress(cellDate);
-
-             // Создаем локализованный текст для тултипа
-             const postText = this.getPostsText(postCount);
-             const tooltipText = formattedDate + ': ' + postCount + ' ' + postText;
-             dayCell.title = tooltipText;
-
-             monthGrid.appendChild(dayCell);
-         }
 
             monthDiv.appendChild(monthGrid);
 
-            // Add month label
+            // Добавляем label месяца (уже есть в вашем коде)
             const monthLabel = document.createElement('div');
             monthLabel.className = 'month-label';
             monthLabel.textContent = this.getMonthName(month);
             monthDiv.appendChild(monthLabel);
-            console.log('Month created:', this.getMonthName(month));
 
             return monthDiv;
+        }
+
+        /**
+         * Get day name for debugging
+         * @param {number} dayOfWeek - Day of week (0-6)
+         * @return {string} Day name
+         */
+        getDayName(dayOfWeek) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[dayOfWeek];
+        }
+
+        /**
+         * Format date according to WordPress date format settings
+         * @param {Date} date - Date to format
+         * @return {string} Formatted date string
+         */
+        formatDateAccordingToWordPress(date) {
+            // Получаем локаль из настроек
+            const locale = this.getLocale();
+
+            // Базовые форматы дат для разных локалей
+            const dateFormats = {
+                'ru_RU': {
+                    // Русский формат: DD.MM.YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}.${month}.${year}`;
+                    }
+                },
+                'en_US': {
+                    // Американский формат: MM/DD/YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${month}/${day}/${year}`;
+                    }
+                },
+                'en_GB': {
+                    // Британский формат: DD/MM/YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}/${month}/${year}`;
+                    }
+                },
+                'de_DE': {
+                    // Немецкий формат: DD.MM.YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}.${month}.${year}`;
+                    }
+                },
+                'fr_FR': {
+                    // Французский формат: DD/MM/YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}/${month}/${year}`;
+                    }
+                }
+            };
+
+            // Используем формат для текущей локали или fallback
+            const localeFormat = dateFormats[locale] || dateFormats['en_US'];
+            return localeFormat.format(date);
+        }
+
+        /**
+         * Format tooltip text with proper localization
+         * @param {string} date Formatted date
+         * @param {number} postCount Number of posts
+         * @return {string} Localized tooltip text
+         */
+        formatTooltip(date, postCount) {
+            // Получаем переведенное слово "posts" в правильной форме
+            const postsText = this.getPostsText(postCount);
+            return `${date}: ${postCount} ${postsText}`;
+        }
+
+        /**
+         * Get localized posts text with proper plural forms
+         * @param {number} count Number of posts
+         * @return {string} Localized posts text
+         */
+        getPostsText(count) {
+            // Для русского языка - особые правила множественного числа
+            if (this.getLocale().startsWith('ru')) {
+                const lastDigit = count % 10;
+                const lastTwoDigits = count % 100;
+
+                if (lastDigit === 1 && lastTwoDigits !== 11) {
+                    return 'пост';
+                } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+                    return 'поста';
+                } else {
+                    return 'постов';
+                }
+            }
+
+            // Для английского и других языков
+            return this.translate('posts');
+        }
+
+        /**
+         * Get current locale
+         * @return {string} Current locale
+         */
+        getLocale() {
+            return postwallSettings.locale || 'en_US';
         }
 
         /**
@@ -230,107 +380,48 @@
         }
 
         /**
-         * Get month name in Russian
+         * Get localized month name
          * @param {number} monthIndex - Month index (0-11)
          * @return {string} Month name
          */
         getMonthName(monthIndex) {
             const monthNames = [
-                wp.i18n.__('Jan', 'postwall'), wp.i18n.__('Feb', 'postwall'), wp.i18n.__('Mar', 'postwall'),
-                wp.i18n.__('Apr', 'postwall'), wp.i18n.__('May', 'postwall'), wp.i18n.__('Jun', 'postwall'),
-                wp.i18n.__('Jul', 'postwall'), wp.i18n.__('Aug', 'postwall'), wp.i18n.__('Sep', 'postwall'),
-                wp.i18n.__('Oct', 'postwall'), wp.i18n.__('Nov', 'postwall'), wp.i18n.__('Dec', 'postwall')
+                this.translate('Jan'), this.translate('Feb'), this.translate('Mar'),
+                this.translate('Apr'), this.translate('May'), this.translate('Jun'),
+                this.translate('Jul'), this.translate('Aug'), this.translate('Sep'),
+                this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
             ];
             return monthNames[monthIndex];
         }
-        
-        /**
-         * Get localized posts text with proper plural forms
-         * @param {number} count Number of posts
-         * @return {string} Localized posts text
-         */
-        getPostsText(count) {
-            // Для русского языка - особые правила множественного числа
-            if (postwallSettings.locale && postwallSettings.locale.startsWith('ru')) {
-                const lastDigit = count % 10;
-                const lastTwoDigits = count % 100;
 
-                if (lastDigit === 1 && lastTwoDigits !== 11) {
-                    return 'пост';
-                } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
-                    return 'поста';
-                } else {
-                    return 'постов';
-                }
-            }
-            
-            // Для английского и других языков - простые правила
-            return count === 1 ? wp.i18n.__('post', 'postwall') : wp.i18n.__('posts', 'postwall');
-        }
-        
         /**
-         * Format date according to WordPress date format settings
-         * @param {Date} date - Date to format
-         * @return {string} Formatted date string
+         * Translation helper with fallback
+         * @param {string} text Text to translate
+         * @return {string} Translated text
          */
-        formatDateAccordingToWordPress(date) {
-            // Если WordPress передал формат даты, используем его
-            if (postwallSettings.dateFormat) {
-                return this.formatDateWithWordPressFormat(date, postwallSettings.dateFormat);
+        translate(text) {
+            // Try to use wp.i18n if available
+            if (typeof wp !== 'undefined' && wp.i18n && typeof wp.i18n.__ === 'function') {
+                return wp.i18n.__(text, 'postwall');
             }
 
-            // Иначе используем локализованный формат по умолчанию
-            return this.getLocalizedDateFormat(date);
-        }
-
-        /**
-         * Format date using WordPress date format
-         * @param {Date} date - Date to format
-         * @param {string} format - WordPress date format string
-         * @return {string} Formatted date
-         */
-        formatDateWithWordPressFormat(date, format) {
-            const replacements = {
-                'd': () => date.getDate().toString().padStart(2, '0'),
-                'j': () => date.getDate(),
-                'm': () => (date.getMonth() + 1).toString().padStart(2, '0'),
-                'n': () => (date.getMonth() + 1),
-                'Y': () => date.getFullYear(),
-                'y': () => date.getFullYear().toString().slice(-2),
-                'F': () => this.getMonthName(date.getMonth()),
-                'M': () => this.getMonthName(date.getMonth()).slice(0, 3)
-            };
-
-            let result = format;
-            for (const [key, formatter] of Object.entries(replacements)) {
-                result = result.replace(new RegExp(key, 'g'), formatter());
+            // Fallback: manual translation based on locale
+            if (this.getLocale().startsWith('ru')) {
+                const russianTranslations = {
+                    'Posts from the site for the last 12 months': 'Посты с сайта за последние 12 месяцев',
+                    'Loading post wall...': 'Загрузка кафельной стенки...',
+                    'Failed to load post data': 'Не удалось загрузить данные постов',
+                    'Error loading data': 'Ошибка при загрузке данных',
+                    'posts': 'постов',
+                    'Jan': 'янв', 'Feb': 'фев', 'Mar': 'мар', 'Apr': 'апр',
+                    'May': 'май', 'Jun': 'июн', 'Jul': 'июл', 'Aug': 'авг',
+                    'Sep': 'сен', 'Oct': 'окт', 'Nov': 'ноя', 'Dec': 'дек'
+                };
+                return russianTranslations[text] || text;
             }
 
-            return result;
-        }
-
-        /**
-         * Get localized date format as fallback
-         * @param {Date} date - Date to format
-         * @return {string} Formatted date
-         */
-        getLocalizedDateFormat(date) {
-            const locale = postwallSettings.locale || 'en_US';
-
-            const formats = {
-                'ru_RU': () => {
-                    const day = date.getDate().toString().padStart(2, '0');
-                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                    return `${day}.${month}.${date.getFullYear()}`;
-                },
-                'en_US': () => {
-                    const day = date.getDate().toString().padStart(2, '0');
-                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                    return `${month}/${day}/${date.getFullYear()}`;
-                }
-            };
-
-            return (formats[locale] || formats['en_US'])();
+            // Default to English
+            return text;
         }
     }
 

@@ -130,36 +130,37 @@ class PostWall {
      */
     public function enqueue_frontend_assets() {
         // Пути к файлам сборки для фронтенда
-        $frontend_js = POSTWALL_PLUGIN_PATH . 'build/frontend.js';     // JavaScript для интерактивной диаграммы
-        $style_css = POSTWALL_PLUGIN_PATH . 'build/style-index.css';   // CSS стили для диаграммы
+        $frontend_js = POSTWALL_PLUGIN_PATH . 'build/frontend.js';
+        $style_css = POSTWALL_PLUGIN_PATH . 'build/style-index.css';
+
+        // Принудительно обновляем версию при изменении файла
+        $frontend_version = file_exists($frontend_js) ? filemtime($frontend_js) : time();
 
         // Подключение JavaScript для фронтенда
         wp_enqueue_script(
-            'postwall-frontend',     // Уникальный идентификатор скрипта
-            POSTWALL_PLUGIN_URL . 'build/frontend.js', // URL к файлу
-            array('wp-element', 'wp-i18n'),                 // Зависимость React для работы с компонентами
-            file_exists($frontend_js) ? filemtime($frontend_js) : time(), // Версия файла
-            true                                 // Загружать в футере
+            'postwall-frontend',
+            POSTWALL_PLUGIN_URL . 'build/frontend.js',
+            array('jquery', 'wp-i18n'),
+            $frontend_version, // Используем время изменения файла как версию
+            true
         );
 
         // Установка переводов для фронтенд скрипта
         wp_set_script_translations('postwall-frontend', 'postwall', POSTWALL_PLUGIN_PATH . 'languages');
 
         // Передача настроек плагина в JavaScript
-        // Создает глобальный объект postwallSettings доступный в JS
         wp_localize_script('postwall-frontend', 'postwallSettings', array(
-            'ajaxUrl' => admin_url('admin-ajax.php'),    // URL для AJAX запросов
-            'nonce' => wp_create_nonce('postwall_get_data'), // Токен безопасности для AJAX
-            'locale' => get_locale(), // Передаем локаль для фронтенда
-            'dateFormat' => get_option('date_format', 'F j, Y') // Получаем формат даты из настроек WordPress
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('postwall_get_data'),
+            'locale' => get_locale()
         ));
 
         // Подключение CSS стилей для фронтенда
         wp_enqueue_style(
-            'postwall-frontend',     // Уникальный идентификатор стилей
-            POSTWALL_PLUGIN_URL . 'build/style-index.css', // URL к файлу стилей
-            array(),                             // Без зависимостей
-            file_exists($style_css) ? filemtime($style_css) : time() // Версия файла
+            'postwall-frontend',
+            POSTWALL_PLUGIN_URL . 'build/style-index.css',
+            array(),
+            file_exists($style_css) ? filemtime($style_css) : time()
         );
     }
 

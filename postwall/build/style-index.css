@@ -52,7 +52,7 @@
     gap: var(--month-gap);
     flex-wrap: nowrap;
     width: 100%;
-    overflow: hidden;
+    overflow-x: auto;
 }
 
 /* Один месяц */
@@ -65,16 +65,16 @@
 /* Сетка месяца — ровно 7 строк × N колонок */
 .month-grid {
     display: grid;
-    grid-template-rows: repeat(7, var(--size));
-    grid-auto-flow: column;
-    grid-auto-columns: var(--size);
-    gap: var(--gap);
+    grid-template-rows: repeat(7, 12px); /* 7 строк = дни недели (Пн-Вс) */
+    grid-auto-flow: column; /* Недели идут как колонки */
+    grid-auto-columns: 12px;
+    gap: 2px;
 }
 
 /* Клетка */
 .day {
-    width: var(--size);
-    height: var(--size);
+    width: 12px;
+    height: 12px;
     border-radius: 2px;
 }
 
@@ -92,10 +92,6 @@
     color: #555;
 }
 
-/* Чтобы сетка помещалась без горизонтального скролла */
-.months {
-    overflow: hidden;
-}
 
 /* Responsive design */
 @media (max-width: 900px) {

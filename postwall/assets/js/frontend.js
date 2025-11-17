@@ -122,9 +122,12 @@
                 const monthDate = new Date(now);
                 monthDate.setMonth(now.getMonth() - i);
 
+                // Устанавливаем дату на первый день месяца для правильного расчета
+                monthDate.setDate(1);
+
                 const monthDiv = this.createMonth(monthDate);
                 monthsContainer.appendChild(monthDiv);
-                console.log(`Month ${i} added`);
+                console.log(`Month ${i} added:`, monthDate.toLocaleDateString());
             }
 
             wrapper.appendChild(monthsContainer);
@@ -174,74 +177,78 @@
          * @return {HTMLElement} The month container element
          */
         createMonth(monthDate) {
-            console.log('createMonth called for', monthDate);
-            const monthDiv = document.createElement('div');
-            monthDiv.className = 'month';
+           console.log('createMonth called for', monthDate);
+           const monthDiv = document.createElement('div');
+           monthDiv.className = 'month';
 
-            const monthGrid = document.createElement('div');
-            monthGrid.className = 'month-grid';
+           const monthGrid = document.createElement('div');
+           monthGrid.className = 'month-grid';
 
-            const year = monthDate.getFullYear();
-            const month = monthDate.getMonth();
+           const year = monthDate.getFullYear();
+           const month = monthDate.getMonth();
 
-            // Get first day of month and what day of week it falls on
-            const firstDay = new Date(year, month, 1);
-            const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+           // Устанавливаем дату на первый день месяца для правильного расчета
+           monthDate.setDate(1);
 
-            // Adjust for Monday first (0 = Monday, 6 = Sunday)
-            const adjustedFirstDay = (firstDayOfWeek + 6) % 7;
+           // Get first day of month and what day of week it falls on
+           const firstDay = new Date(year, month, 1);
+           const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
-            // Get number of days in month
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            console.log(`Month ${month + 1}, days: ${daysInMonth}, first day offset: ${adjustedFirstDay}`);
+           // Adjust for Monday first (0 = Monday, 6 = Sunday)
+           // ВАЖНО: Это правильное количество пустых клеток ДО первого дня
+           const emptyCellsBefore = (firstDayOfWeek + 6) % 7;
 
-            // Create cells
-            // Empty cells before first day
-            for (let i = 0; i < adjustedFirstDay; i++) {
-                const emptyCell = document.createElement('span');
-                emptyCell.className = 'day empty';
-                monthGrid.appendChild(emptyCell);
-            }
+           // Get number of days in month
+           const daysInMonth = new Date(year, month + 1, 0).getDate();
+           console.log(`Month ${this.getMonthName(month)} ${year}, days: ${daysInMonth}, starts on: ${firstDayOfWeek} (${this.getDayName(firstDayOfWeek)}), empty cells before: ${emptyCellsBefore}`);
 
-            // Days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayCell = document.createElement('span');
-                const cellDate = new Date(year, month, day);
+           // Create cells
+           // Empty cells before first day - ЛЕВЫЙ "РВАНЫЙ" КРАЙ
+           for (let i = 0; i < emptyCellsBefore; i++) {
+               const emptyCell = document.createElement('span');
+               emptyCell.className = 'day empty';
+               monthGrid.appendChild(emptyCell);
+           }
 
-                // Determine activity level
-                const activityLevel = this.getActivityLevel(cellDate);
+           // Days of the month
+           for (let day = 1; day <= daysInMonth; day++) {
+               const dayCell = document.createElement('span');
+               const cellDate = new Date(year, month, day);
 
-                if (activityLevel === 0) {
-                    dayCell.className = 'day empty';
-                } else {
-                    dayCell.className = `day lvl-${activityLevel}`;
-                }
+               // Determine activity level
+               const activityLevel = this.getActivityLevel(cellDate);
 
-                // Add tooltip with post count - ИСПОЛЬЗУЕМ ЛОКАЛИЗОВАННУЮ ДАТУ
-                const postCount = this.postData ?
-                    (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
+               if (activityLevel === 0) {
+                   dayCell.className = 'day empty';
+               } else {
+                   dayCell.className = `day lvl-${activityLevel}`;
+               }
 
-                // Форматируем дату согласно настройкам WordPress
-                const formattedDate = this.formatDateAccordingToWordPress(cellDate);
+               // Add tooltip with post count
+               const postCount = this.postData ?
+                   (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
 
-                // Создаем локализованный текст для тултипа
-                const tooltipText = this.formatTooltip(formattedDate, postCount);
-                dayCell.title = tooltipText;
+               // Форматируем дату согласно настройкам WordPress
+               const formattedDate = this.formatDateAccordingToWordPress(cellDate);
 
-                monthGrid.appendChild(dayCell);
-            }
+               // Создаем локализованный текст для тултипа
+               const tooltipText = this.formatTooltip(formattedDate, postCount);
+               dayCell.title = tooltipText;
 
-            monthDiv.appendChild(monthGrid);
+               monthGrid.appendChild(dayCell);
+           }
 
-            // Add month label
-            const monthLabel = document.createElement('div');
-            monthLabel.className = 'month-label';
-            monthLabel.textContent = this.getMonthName(month);
-            monthDiv.appendChild(monthLabel);
-            console.log('Month created:', this.getMonthName(month));
+           monthDiv.appendChild(monthGrid);
 
-            return monthDiv;
-        }
+           // Add month label
+           const monthLabel = document.createElement('div');
+           monthLabel.className = 'month-label';
+           monthLabel.textContent = this.getMonthName(month);
+           monthDiv.appendChild(monthLabel);
+           console.log('Month created:', this.getMonthName(month), 'Total cells:', monthGrid.children.length);
+
+           return monthDiv;
+       }
         
         /**
          * Format tooltip text with proper localization
@@ -261,21 +268,23 @@
          * @return {string} Localized posts text
          */
         getPostsText(count) {
-            // Для русского языка - особые правила множественного числа
-            if (this.getLocale().startsWith('ru')) {
-                if (count === 1) {
-                    return 'пост';
-                } else if (count >= 2 && count <= 4) {
-                    return 'поста';
-                } else {
-                    return 'постов';
-                }
-            }
-            
-            // Для английского и других языков - простые правила
-            const postsText = this.translate('posts');
-            return postsText;
-        }
+           // Для русского языка - особые правила множественного числа
+           if (this.getLocale().startsWith('ru')) {
+               const lastDigit = count % 10;
+               const lastTwoDigits = count % 100;
+
+               if (lastDigit === 1 && lastTwoDigits !== 11) {
+                   return 'пост';
+               } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+                   return 'поста';
+               } else {
+                   return 'постов';
+               }
+           }
+
+           // Для английского и других языков
+           return this.translate('posts');
+       }
         
         /**
          * Format date according to WordPress date format settings
@@ -392,6 +401,16 @@
                 this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
             ];
             return monthNames[monthIndex];
+        }
+
+        /**
+         * Get day name for debugging
+         * @param {number} dayOfWeek - Day of week (0-6)
+         * @return {string} Day name
+         */
+        getDayName(dayOfWeek) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[dayOfWeek];
         }
 
         /**
