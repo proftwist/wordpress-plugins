@@ -27,9 +27,6 @@ class QLC_Link_Checker {
      * Регистрирует все необходимые AJAX хуки
      */
     public function __construct() {
-        // Хуки для проверки ссылок
-        add_action('save_post', array($this, 'check_post_links'), 10, 3);
-
         // AJAX хуки для асинхронной проверки
         add_action('wp_ajax_qlc_check_links', array($this, 'ajax_check_links'));
         add_action('wp_ajax_qlc_get_broken_links', array($this, 'ajax_get_broken_links'));
@@ -433,7 +430,8 @@ class QLC_Link_Checker {
     /**
      * Проверяет внешнюю HTTP ссылку
      *
-     * Выполняет HTTP запрос к URL и проверяет код ответа
+     * Выполняет HTTP запрос к URL и проверяет код ответа.
+     * Обрабатывает различные случаи: редиректы, блокировки, таймауты
      *
      * @param string $url URL для проверки
      * @return bool True если ссылка доступна (коды 2xx, 3xx)
@@ -454,11 +452,18 @@ class QLC_Link_Checker {
             return false;
         }
 
-        // Настройки контекста для HTTP запроса
+        // Настройки контекста для HTTP запроса с улучшенным User-Agent
         $context = stream_context_create(array(
             'http' => array(
                 'timeout' => 10,
-                'user_agent' => 'Quick Link Checker WordPress Plugin'
+                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'follow_location' => 1,
+                'max_redirects' => 5,
+                'ignore_errors' => true
+            ),
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false
             )
         ));
 
@@ -470,9 +475,17 @@ class QLC_Link_Checker {
         }
 
         $status_line = $headers[0];
-        $http_code = (int) substr($status_line, 9, 3);
+
+        // Извлекаем HTTP код более надежно
+        if (preg_match('/HTTP\/\d+\.\d+\s+(\d+)/i', $status_line, $matches)) {
+            $http_code = (int) $matches[1];
+        } else {
+            // Fallback для случаев когда регулярное выражение не срабатывает
+            $http_code = (int) substr($status_line, 9, 3);
+        }
 
         // Считаем успешными коды 2xx (OK) и 3xx (Redirect)
-        return ($http_code >= 200 && $http_code < 400);
+        // Также принимаем 999 как успешный (частый код от LinkedIn)
+        return ($http_code >= 200 && $http_code < 400) || $http_code === 999;
     }
 }

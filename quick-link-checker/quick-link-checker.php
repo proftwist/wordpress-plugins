@@ -61,6 +61,9 @@ class QuickLinkChecker {
 
         // Проверка ссылок после сохранения поста
         add_action('wp_after_insert_post', array($this, 'after_post_save'), 10, 4);
+
+        // Убираем автоматическую проверку при сохранении поста чтобы не конфликтовать с фоновой
+        remove_action('save_post', array($this, 'check_post_links'), 10);
     }
 
     /**
