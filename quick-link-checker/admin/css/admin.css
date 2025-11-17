@@ -1,17 +1,14 @@
 .qlc-broken-link {
     border: 2px solid #dc3232 !important;
     background-color: #ffeaea !important;
-    padding: 2px 4px !important;
-    border-radius: 3px !important;
-    position: relative !important;
+    padding: 1px 3px !important;
+    border-radius: 2px !important;
 }
 
 .qlc-broken-link::after {
-    content: " 🔗 BROKEN";
-    color: #dc3232;
-    font-weight: bold;
+    content: " ❌";
     font-size: 10px;
-    margin-left: 5px;
+    margin-left: 3px;
 }
 
 #qlc-broken-links-container {

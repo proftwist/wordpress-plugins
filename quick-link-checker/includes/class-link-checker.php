@@ -6,34 +6,36 @@ if (!defined('ABSPATH')) {
 
 class QLC_Link_Checker {
 
+    private $checked_urls = array(); // Кэш проверенных URL
+
     public function __construct() {
         add_action('save_post', array($this, 'check_post_links'), 10, 3);
         add_action('wp_ajax_qlc_check_links', array($this, 'ajax_check_links'));
-        add_action('wp_ajax_qlc_get_broken_links', array($this, 'ajax_get_broken_links')); // Новый AJAX
+        add_action('wp_ajax_qlc_get_broken_links', array($this, 'ajax_get_broken_links'));
         add_action('wp_ajax_qlc_save_broken_links', array($this, 'ajax_save_broken_links'));
+        add_action('wp_ajax_qlc_check_changed_links', array($this, 'ajax_check_changed_links')); // Новая умная проверка
     }
 
+    // Проверка при сохранении - БЕЗ ЛИМИТОВ
     public function check_post_links($post_id, $post, $update) {
-        // Проверяем, включена ли проверка
         if (!get_option('qlc_enabled', '1')) {
             return;
         }
 
-        // Проверяем права и тип поста
         if (!current_user_can('edit_post', $post_id) || wp_is_post_revision($post_id)) {
             return;
         }
 
-        // Проверяем только опубликованные посты и черновики
         if (!in_array($post->post_status, array('publish', 'draft', 'pending'))) {
             return;
         }
 
-        // Выполняем проверку
-        $this->async_check_links($post_id);
+        // Запускаем проверку ВСЕХ ссылок
+        $this->check_all_links($post_id);
     }
 
-    private function async_check_links($post_id) {
+    // Проверка ВСЕХ ссылок без ограничений
+    public function check_all_links($post_id) {
         $post = get_post($post_id);
         if (!$post) {
             return;
@@ -42,21 +44,32 @@ class QLC_Link_Checker {
         $links = $this->extract_links($post->post_content);
         $broken_links = array();
 
+        // ПРОВЕРЯЕМ ВСЕ ССЫЛКИ БЕЗ ЛИМИТОВ
         foreach ($links as $link) {
-            if (!$this->check_link($link['url'])) {
+            // Используем кэш чтобы не проверять один URL дважды
+            $url_hash = md5($link['url']);
+            if (!isset($this->checked_urls[$url_hash])) {
+                $this->checked_urls[$url_hash] = $this->check_link($link['url']);
+            }
+
+            if (!$this->checked_urls[$url_hash]) {
                 $broken_links[] = $link;
             }
-            // Добавляем небольшую задержку чтобы не перегружать сервер
-            usleep(100000); // 0.1 секунда
+
+            // Минимальная задержка чтобы не перегружать сервер
+            usleep(50000); // 0.05 секунды
         }
 
         // Сохраняем результат в мета-поле
         update_post_meta($post_id, '_qlc_broken_links', $broken_links);
 
-        // Логируем для отладки
-        error_log('QLC: Checked ' . count($links) . ' links, found ' . count($broken_links) . ' broken');
+        error_log('QLC: Checked ALL ' . count($links) . ' links for post ' . $post_id .
+                 ', found ' . count($broken_links) . ' broken');
+
+        return $broken_links;
     }
 
+    // AJAX проверка - тоже БЕЗ ЛИМИТОВ
     public function ajax_check_links() {
         check_ajax_referer('qlc_nonce', 'nonce');
 
@@ -68,45 +81,28 @@ class QLC_Link_Checker {
         $links = $this->extract_links($content);
         $broken_links = array();
 
+        // ПРОВЕРЯЕМ ВСЕ ССЫЛКИ БЕЗ ОГРАНИЧЕНИЙ
         foreach ($links as $link) {
-            if (!$this->check_link($link['url'])) {
+            $url_hash = md5($link['url']);
+            if (!isset($this->checked_urls[$url_hash])) {
+                $this->checked_urls[$url_hash] = $this->check_link($link['url']);
+            }
+
+            if (!$this->checked_urls[$url_hash]) {
                 $broken_links[] = $link;
             }
-            usleep(50000); // 0.05 секунда
+
+            usleep(50000); // 0.05 секунды
         }
 
         wp_send_json_success(array(
             'broken_links' => $broken_links,
             'total_checked' => count($links),
-            'broken_count' => count($broken_links)
+            'broken_count' => count($broken_links),
+            'message' => 'Checked all ' . count($links) . ' links completely'
         ));
     }
 
-    // Новый метод для немедленной проверки после сохранения
-    public function check_post_links_immediately($post_id) {
-        $post = get_post($post_id);
-        if (!$post) {
-            return;
-        }
-
-        $links = $this->extract_links($post->post_content);
-        $broken_links = array();
-
-        foreach ($links as $link) {
-            if (!$this->check_link($link['url'])) {
-                $broken_links[] = $link;
-            }
-            usleep(100000); // 0.1 секунда
-        }
-
-        // Сохраняем результат в мета-поле
-        update_post_meta($post_id, '_qlc_broken_links', $broken_links);
-
-        // Логируем для отладки
-        error_log('QLC: Immediately checked ' . count($links) . ' links, found ' . count($broken_links) . ' broken after save');
-
-        return $broken_links;
-    }
 
     // Новый AJAX метод для получения битых ссылок после сохранения
     public function ajax_get_broken_links() {
@@ -149,6 +145,130 @@ class QLC_Link_Checker {
         update_post_meta($post_id, '_qlc_broken_links', $broken_links);
 
         wp_send_json_success('Broken links saved');
+    }
+
+    // НОВЫЙ метод: проверяем только изменившиеся ссылки
+    public function ajax_check_changed_links() {
+        check_ajax_referer('qlc_nonce', 'nonce');
+
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        $current_links_data = isset($_POST['links_data']) ? $_POST['links_data'] : array();
+
+        if (!$post_id) {
+            wp_send_json_error('No post ID');
+        }
+
+        // Получаем сохраненные битые ссылки
+        $stored_broken_links = get_post_meta($post_id, '_qlc_broken_links', true);
+        $stored_links_hash = get_post_meta($post_id, '_qlc_links_hash', true);
+
+        // Создаем хеш текущих ссылок для сравнения
+        $current_links_hash = md5(json_encode($current_links_data));
+
+        // Если хеш не изменился - возвращаем сохраненные данные
+        if ($stored_links_hash === $current_links_hash) {
+            wp_send_json_success(array(
+                'broken_links' => is_array($stored_broken_links) ? $stored_broken_links : array(),
+                'broken_count' => is_array($stored_broken_links) ? count($stored_broken_links) : 0,
+                'links_unchanged' => true,
+                'message' => 'Links unchanged - using cached data'
+            ));
+        }
+
+        // Если ссылки изменились - проверяем только новые/измененные
+        $links_to_check = $this->get_links_to_check($current_links_data, $stored_broken_links);
+        $new_broken_links = array();
+
+        foreach ($links_to_check as $link_data) {
+            if (!$this->check_link($link_data['url'])) {
+                $new_broken_links[] = array(
+                    'url' => $link_data['url'],
+                    'full_tag' => $link_data['full_tag']
+                );
+            }
+            usleep(50000); // 0.05 сек
+        }
+
+        // Объединяем с существующими битыми ссылками (которые все еще актуальны)
+        $all_broken_links = $this->merge_broken_links($stored_broken_links, $new_broken_links, $current_links_data);
+
+        // Сохраняем новые данные
+        update_post_meta($post_id, '_qlc_broken_links', $all_broken_links);
+        update_post_meta($post_id, '_qlc_links_hash', $current_links_hash);
+
+        wp_send_json_success(array(
+            'broken_links' => $all_broken_links,
+            'broken_count' => count($all_broken_links),
+            'checked_count' => count($links_to_check),
+            'links_unchanged' => false,
+            'message' => 'Checked ' . count($links_to_check) . ' changed links'
+        ));
+    }
+
+    // Определяем какие ссылки нужно проверить
+    private function get_links_to_check($current_links_data, $stored_broken_links) {
+        $links_to_check = array();
+        $stored_urls = array();
+
+        if (is_array($stored_broken_links)) {
+            foreach ($stored_broken_links as $broken_link) {
+                $stored_urls[] = $broken_link['url'];
+            }
+        }
+
+        foreach ($current_links_data as $link_data) {
+            $url = $link_data['url'];
+
+            // Проверяем только если:
+            // 1. Это новая ссылка (нет в сохраненных битых)
+            // 2. Или это измененная ссылка
+            if (!in_array($url, $stored_urls)) {
+                $links_to_check[] = $link_data;
+            }
+        }
+
+        return $links_to_check;
+    }
+
+    // Объединяем битые ссылки
+    private function merge_broken_links($stored_broken_links, $new_broken_links, $current_links_data) {
+        $all_broken_links = array();
+        $current_urls = array();
+
+        foreach ($current_links_data as $link_data) {
+            $current_urls[] = $link_data['url'];
+        }
+
+        // Добавляем старые битые ссылки, которые все еще присутствуют
+        if (is_array($stored_broken_links)) {
+            foreach ($stored_broken_links as $broken_link) {
+                if (in_array($broken_link['url'], $current_urls)) {
+                    $all_broken_links[] = $broken_link;
+                }
+            }
+        }
+
+        // Добавляем новые битые ссылки
+        foreach ($new_broken_links as $new_broken_link) {
+            $all_broken_links[] = $new_broken_link;
+        }
+
+        // Убираем дубликаты
+        $unique_links = array();
+        $added_urls = array();
+
+        foreach ($all_broken_links as $link) {
+            if (!in_array($link['url'], $added_urls)) {
+                $unique_links[] = $link;
+                $added_urls[] = $link['url'];
+            }
+        }
+
+        return $unique_links;
     }
 
     private function extract_links($content) {

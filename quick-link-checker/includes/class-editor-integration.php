@@ -31,32 +31,38 @@ class QLC_Editor_Integration {
         $broken_links = get_post_meta($post->ID, '_qlc_broken_links', true);
         $enabled = get_option('qlc_enabled', '1');
 
+        // Получаем общее количество ссылок для информации
+        $post_content = $post->post_content;
+        $total_links = 0;
+        if (!empty($post_content)) {
+            preg_match_all('/<a[^>]+href=(["\'])(.*?)\1[^>]*>/i', $post_content, $matches);
+            $total_links = count($matches[0]);
+        }
+
         echo '<div id="qlc-broken-links-container">';
 
         if (!$enabled) {
             echo '<p style="color: #d63638;">' . __('Link checking is disabled in settings.', 'quick-link-checker') . '</p>';
         } else if (empty($broken_links)) {
-            echo '<p>' . __('No broken links found. Click button to check.', 'quick-link-checker') . '</p>';
+            echo '<p>✅ ' . __('No broken links found.', 'quick-link-checker') . '</p>';
+            if ($total_links > 0) {
+                echo '<p><small>Total links in post: ' . $total_links . '</small></p>';
+            }
         } else {
-            echo '<p><strong>' . sprintf(__('Found %d broken links:', 'quick-link-checker'), count($broken_links)) . '</strong></p>';
+            echo '<p><strong>❌ ' . sprintf(__('Found %d broken links:', 'quick-link-checker'), count($broken_links)) . '</strong></p>';
             echo '<ul style="max-height: 200px; overflow-y: auto;">';
             foreach ($broken_links as $link) {
                 echo '<li style="margin-bottom: 5px;"><code style="background: #f1f1f1; padding: 2px 4px; border-radius: 3px; word-break: break-all;">' . esc_html($link['url']) . '</code></li>';
             }
             echo '</ul>';
+            if ($total_links > 0) {
+                echo '<p><small>Checked ' . $total_links . ' links total</small></p>';
+            }
         }
 
         echo '<button type="button" id="qlc-check-now" class="button button-secondary" style="margin-top: 10px;">';
         echo __('Check Links Now', 'quick-link-checker');
         echo '</button>';
-
-        // Отладочная информация
-        echo '<div style="margin-top: 10px; padding: 8px; background: #f0f0f1; border-radius: 4px; font-size: 12px;">';
-        echo '<strong>Debug:</strong> ';
-        echo 'Post ID: ' . $post->ID . ' | ';
-        echo 'Enabled: ' . ($enabled ? 'Yes' : 'No') . ' | ';
-        echo 'Links: ' . (is_array($broken_links) ? count($broken_links) : '0');
-        echo '</div>';
 
         echo '</div>';
     }
@@ -88,9 +94,10 @@ class QLC_Editor_Integration {
             return;
         }
 
-        // Передаем ID поста в JavaScript
+        // Передаем ID поста в JavaScript для проверки при загрузке
         wp_localize_script('qlc-admin-js', 'qlc_post', array(
-            'post_id' => $post->ID
+            'post_id' => $post->ID,
+            'is_new_post' => ($hook === 'post-new.php')
         ));
     }
 

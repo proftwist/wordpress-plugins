@@ -53,11 +53,13 @@ class QuickLinkChecker {
         require_once QLC_PLUGIN_PATH . 'includes/class-link-checker.php';
         require_once QLC_PLUGIN_PATH . 'includes/class-editor-integration.php';
         require_once QLC_PLUGIN_PATH . 'admin/settings.php';
+        require_once QLC_PLUGIN_PATH . 'includes/class-background-checker.php'; // Новый
 
         // Инициализируем компоненты
         new QLC_Link_Checker();
         new QLC_Editor_Integration();
         new QLC_Settings();
+        new QLC_Background_Checker(); // Новый
 
         // Подключаем стили и скрипты
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
@@ -121,16 +123,46 @@ class QuickLinkChecker {
             return;
         }
 
-        // Запускаем проверку с небольшой задержкой
+        // Запускаем ФОНОВУЮ проверку без блокировки
+        $this->schedule_background_check($post_id);
+    }
+
+    public function schedule_background_check($post_id) {
+        // Используем транзиент для отложенной проверки
+        set_transient('qlc_check_scheduled_' . $post_id, true, 60); // 60 секунд
+
+        // Запускаем фоновую задачу
         add_action('shutdown', function() use ($post_id) {
-            $this->do_post_save_check($post_id);
+            $this->start_background_check($post_id);
         });
     }
 
-    public function do_post_save_check($post_id) {
-        require_once QLC_PLUGIN_PATH . 'includes/class-link-checker.php';
-        $checker = new QLC_Link_Checker();
-        $checker->check_post_links_immediately($post_id);
+    public function start_background_check($post_id) {
+        // Проверяем, не выполняется ли уже проверка
+        if (get_transient('qlc_check_running_' . $post_id)) {
+            return;
+        }
+
+        set_transient('qlc_check_running_' . $post_id, true, 30); // Блокировка на 30 сек
+
+        // Запускаем асинхронный запрос
+        $this->make_async_request($post_id);
+    }
+
+    private function make_async_request($post_id) {
+        $url = admin_url('admin-ajax.php');
+        $args = array(
+            'timeout' => 0.01, // Таймаут 10ms - не ждем ответа
+            'blocking' => false, // Не блокируем выполнение
+            'sslverify' => false,
+            'body' => array(
+                'action' => 'qlc_background_check',
+                'post_id' => $post_id,
+                'nonce' => wp_create_nonce('qlc_background_nonce')
+            )
+        );
+
+        wp_remote_post($url, $args);
     }
 }
 
