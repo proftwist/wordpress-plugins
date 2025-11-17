@@ -7,8 +7,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-16T20:28:40+00:00\n"
-"PO-Revision-Date: 2025-11-16T20:28:40+00:00\n"
+"POT-Creation-Date: 2025-11-17T01:22:00+00:00\n"
+"PO-Revision-Date: 2025-11-17T01:22:00+00:00\n"
 "Language: ru_RU\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: postwall\n"
@@ -39,15 +39,15 @@ msgstr "Загрузка кафельной стенки..."
 
 #: includes/class-ajax-handler.php:74
 msgid "Security check failed"
-msgstr ""
+msgstr "Проверка безопасности не пройдена"
 
 #: includes/class-ajax-handler.php:124
 msgid "Site URL is required"
-msgstr ""
+msgstr "Требуется адрес сайта"
 
 #: includes/class-ajax-handler.php:129
 msgid "Invalid site URL format"
-msgstr ""
+msgstr "Неверный формат адреса сайта"
 
 #: build/frontend.js:58
 msgid "Failed to load post data"
@@ -57,13 +57,13 @@ msgstr "Не удалось загрузить данные постов"
 msgid "Error loading data"
 msgstr "Ошибка при загрузке данных"
 
-#. translators: 1: Date, 2: Number of posts, 3: "post" or "posts"
-#: build/frontend.js:181
-msgid "%1$s: %2$d %3$s"
-msgid_plural "%1$s: %2$d %3$s"
-msgstr[0] "%1$s: %2$d %3$s"
-msgstr[1] "%1$s: %2$d %3$s"
-msgstr[2] "%1$s: %2$d %3$s"
+#: build/frontend.js:180
+msgid "post"
+msgstr "пост"
+
+#: build/frontend.js:180
+msgid "posts"
+msgstr "постов"
 
 #: build/index.js:50
 msgid "Post wall"
@@ -72,3 +72,16 @@ msgstr "Кафельная стенка постов"
 #: build/index.js:59
 msgid "Site URL"
 msgstr "Адрес сайта"
+
+# Множественное число для слова "posts"
+msgid "posts"
+msgstr "постов"
+
+# Дополнительные формы для правильного склонения
+msgctxt "singular form for posts"
+msgid "post"
+msgstr "пост"
+
+msgctxt "plural form for 2-4 posts"
+msgid "posts_2_4"
+msgstr "поста"

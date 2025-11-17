@@ -177,13 +177,8 @@
              const postCount = this.postData ?
                  (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
              const dateStr = cellDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-             dayCell.title = wp.i18n.sprintf(
-                 /* translators: 1: Date, 2: Number of posts, 3: "post" or "posts" */
-                 wp.i18n._n('%1$s: %2$d %3$s', '%1$s: %2$d %3$s', postCount, 'postwall'),
-                 dateStr,
-                 postCount,
-                 postCount === 1 ? wp.i18n.__('post', 'postwall') : wp.i18n.__('posts', 'postwall')
-             );
+             const postText = postCount === 1 ? wp.i18n.__('post', 'postwall') : wp.i18n.__('posts', 'postwall');
+             dayCell.title = dateStr + ': ' + postCount + ' ' + postText;
 
              monthGrid.appendChild(dayCell);
          }

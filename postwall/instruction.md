@@ -1,3 +1,8 @@
+Проблема с тултипами в том, что они генерируются динамически в JavaScript и содержат переменные данные (дату и количество постов). Давайте это исправим!
+
+## 1. Обновляем `frontend.js` - локализуем тултипы
+
+```javascript
 /**
  * Post Wall Frontend JavaScript
  *
@@ -19,7 +24,7 @@
             this.siteUrl = this.container.dataset.siteUrl;
             this.containerId = this.container.dataset.containerId;
             this.loadingElement = this.container.querySelector('.postwall-loading');
-            
+
             // Получаем заголовок и текст загрузки из data-атрибутов
             this.title = this.container.dataset.title || 'Posts from the site for the last 12 months';
             this.loadingText = this.container.dataset.loadingText || 'Loading post wall...';
@@ -94,7 +99,7 @@
                 this.loadingElement.remove();
                 console.log('Loading element removed');
             }
-            
+
             // Создаем или обновляем заголовок
             this.createOrUpdateTitle();
 
@@ -130,20 +135,20 @@
             this.container.appendChild(wrapper);
             console.log('Calendar appended to container');
         }
-        
+
         /**
          * Create or update the title element
          */
         createOrUpdateTitle() {
             let titleElement = this.container.querySelector('.postwall-title');
             const translatedTitle = this.translate(this.title);
-            
+
             if (!titleElement) {
                 titleElement = document.createElement('h3');
                 titleElement.className = 'postwall-title';
                 this.container.insertBefore(titleElement, this.container.firstChild);
             }
-            
+
             titleElement.textContent = translatedTitle;
         }
 
@@ -199,10 +204,10 @@
                 // Add tooltip with post count - ЛОКАЛИЗУЕМ ТУТ!
                 const postCount = this.postData ?
                     (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
-                
+
                 // Форматируем дату в локализованном формате
                 const formattedDate = cellDate.toLocaleDateString(this.getLocale());
-                
+
                 // Создаем локализованный текст для тултипа
                 const tooltipText = this.formatTooltip(formattedDate, postCount);
                 dayCell.title = tooltipText;
@@ -221,7 +226,7 @@
 
             return monthDiv;
         }
-        
+
         /**
          * Format tooltip text with proper localization
          * @param {string} date Formatted date
@@ -233,7 +238,7 @@
             const postsText = this.getPostsText(postCount);
             return `${date}: ${postCount} ${postsText}`;
         }
-        
+
         /**
          * Get localized posts text with proper plural forms
          * @param {number} count Number of posts
@@ -250,12 +255,12 @@
                     return 'постов';
                 }
             }
-            
+
             // Для английского и других языков - простые правила
             const postsText = this.translate('posts');
             return postsText;
         }
-        
+
         /**
          * Get current locale
          * @return {string} Current locale
@@ -349,3 +354,70 @@
     });
 
 })(jQuery);
+```
+
+## 2. Обновляем PO файл - добавляем формы для множественного числа
+
+Добавьте в `languages/postwall-ru_RU.po`:
+
+```po
+# Множественное число для слова "posts"
+msgid "posts"
+msgstr "постов"
+
+# Дополнительные формы для правильного склонения
+msgctxt "singular form for posts"
+msgid "post"
+msgstr "пост"
+
+msgctxt "plural form for 2-4 posts"
+msgid "posts_2_4"
+msgstr "поста"
+```
+
+## 3. Альтернативный подход - если сложно с контекстами
+
+Если контексты не работают, можно использовать более простой подход в `getPostsText()`:
+
+```javascript
+getPostsText(count) {
+    // Для русского языка - особые правила множественного числа
+    if (this.getLocale().startsWith('ru')) {
+        const lastDigit = count % 10;
+        const lastTwoDigits = count % 100;
+
+        if (lastDigit === 1 && lastTwoDigits !== 11) {
+            return 'пост';
+        } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+            return 'поста';
+        } else {
+            return 'постов';
+        }
+    }
+
+    // Для английского и других языков
+    return this.translate('posts');
+}
+```
+
+## 4. Обновляем JSON файлы
+
+После добавления переводов в PO файл, перегенерируйте JSON:
+
+```bash
+wp i18n make-json languages/postwall-ru_RU.po languages/ --no-purge --pretty-print
+```
+
+## Основные изменения:
+
+1. **`formatTooltip()`** - новая функция для форматирования тултипов
+2. **`getPostsText()`** - функция для правильного склонения слова "пост" в зависимости от количества
+3. **`getLocale()`** - функция для получения текущей локали
+4. **Правильные правила множественного числа** для русского языка
+
+Теперь тултипы будут показывать:
+- "1 пост" (для 1)
+- "2 поста" (для 2-4)
+- "5 постов" (для 5+)
+
+И всё это будет автоматически переключаться между языками!
