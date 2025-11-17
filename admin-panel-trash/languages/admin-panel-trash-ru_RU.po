@@ -1,121 +1,170 @@
-# Copyright (C) 2024 Your Name
+# Copyright (C) 2024 Владимир Бычко
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
 "Project-Id-Version: Admin Panel Trash 1.0.0\n"
-"Report-Msgid-Bugs-To: Your Name <your.email@example.com>\n"
-"Last-Translator: Владимир <EMAIL@ADDRESS>\n"
-"Language-Team: Russian <gnu@d07.ru>\n"
+"Report-Msgid-Bugs-To: https://bychko.ru\n"
+"POT-Creation-Date: 2024-01-01 12:00+00:00\n"
+"PO-Revision-Date: 2024-01-01 12:00+00:00\n"
+"Last-Translator: Владимир Бычко <your.email@example.com>\n"
+"Language-Team: Russian <your.email@example.com>\n"
+"Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-01-01 12:00:00+00:00\n"
-"PO-Revision-Date: 2025-11-17 12:50+0200\n"
-"Language: ru\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Poedit 3.0\n"
-"X-Poedit-Basepath: ..\n"
-"X-Poedit-KeywordsList: __;_e;esc_html__;esc_html_e\n"
-"X-Poedit-SearchPath-0: .\n"
-"X-Poedit-SearchPath-1: ..\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
+#: admin-panel-trash.php:65
 msgid "Admin Panel Trash"
-msgstr ""
+msgstr "Admin Panel Trash"
 
-msgid "Управление элементами админ-панели WordPress"
-msgstr ""
+#: admin-panel-trash.php:66
+msgid "Управление элементами верхней панели WordPress"
+msgstr "Управление элементами верхней панели WordPress"
 
+#: admin-panel-trash.php:95
+msgid "Внимание: Файл functions.php вашей темы недоступен для записи. Плагин не сможет сохранять изменения."
+msgstr "Внимание: Файл functions.php вашей темы недоступен для записи. Плагин не сможет сохранять изменения."
+
+#: admin-panel-trash.php:102
 msgid "Проверка доступа к файлу"
-msgstr ""
+msgstr "Проверка доступа к файлу"
 
+#: admin-panel-trash.php:103
 msgid "Проверьте, доступен ли файл functions.php текущей темы для записи:"
-msgstr ""
+msgstr "Проверьте, доступен ли файл functions.php текущей темы для записи:"
 
+#: admin-panel-trash.php:105
 msgid "Проверить доступ"
-msgstr ""
+msgstr "Проверить доступ"
 
+#: admin-panel-trash.php:110
 msgid "Элементы админ-панели"
-msgstr ""
+msgstr "Элементы админ-панели"
 
-msgid ""
-"Список всех элементов админ-панели. Вы можете временно отключать ненужные "
-"элементы."
-msgstr ""
+#: admin-panel-trash.php:111
+msgid "Список всех элементов админ-панели. Вы можете временно отключать ненужные элементы."
+msgstr "Список всех элементов админ-панели. Вы можете временно отключать ненужные элементы."
 
-msgid "ID элемента"
-msgstr ""
-
-msgid "Название"
-msgstr ""
-
-msgid "Статус"
-msgstr ""
-
-msgid "Действия"
-msgstr ""
-
-msgid "Загрузка..."
-msgstr ""
-
+#: admin-panel-trash.php:114
 msgid "Обновить список"
-msgstr ""
+msgstr "Обновить список"
 
-msgid "Элемент включен"
-msgstr ""
+#: admin-panel-trash.php:118
+msgid "ID элемента"
+msgstr "ID элемента"
 
-msgid "Элемент отключен"
-msgstr ""
+#: admin-panel-trash.php:119
+msgid "Название"
+msgstr "Название"
 
-msgid "Недостаточно прав"
-msgid "Current code in functions.php"
-msgstr "Текущий код в functions.php"
+#: admin-panel-trash.php:120
+msgid "Статус"
+msgstr "Статус"
 
-msgid "Show/hide function code"
-msgstr "Показать/скрыть код функции"
+#: admin-panel-trash.php:121
+msgid "Действия"
+msgstr "Действия"
 
-msgid "Disable"
-msgstr "Убрать"
+#: admin-panel-trash.php:124
+msgid "Загрузка..."
+msgstr "Загрузка..."
+msgid "Проверка..."
+msgstr "Проверка..."
 
-msgid "Enable"
-msgstr "Вернуть"
+#: includes/class-assets-manager.php:57
+msgid "Путь к файлу:"
+msgstr "Путь к файлу:"
 
-msgid "Enabled"
+#: includes/class-assets-manager.php:58
+msgid "Доступ на чтение:"
+msgstr "Доступ на чтение:"
+
+#: includes/class-assets-manager.php:59
+msgid "Доступ на запись:"
+msgstr "Доступ на запись:"
+
+#: includes/class-assets-manager.php:60
+msgid "Да"
+msgstr "Да"
+
+#: includes/class-assets-manager.php:61
+msgid "Нет"
+msgstr "Нет"
+
+#: includes/class-assets-manager.php:62
+msgid "Ошибка"
+msgstr "Ошибка"
+
+#: includes/class-assets-manager.php:63
+msgid "Ошибка запроса"
+msgstr "Ошибка запроса"
+
+#: includes/class-assets-manager.php:66
+msgid "Ошибка загрузки"
+msgstr "Ошибка загрузки"
+
+#: includes/class-assets-manager.php:67
+msgid "Элементы не найдены"
+msgstr "Элементы не найдены"
+
+#: includes/class-assets-manager.php:68
+msgid "Включен"
 msgstr "Включен"
 
-msgid "Disabled"
+#: includes/class-assets-manager.php:69
+msgid "Отключен"
 msgstr "Отключен"
 
-msgid "Function removal code"
-msgstr "Код функции удаления элементов"
+#: includes/class-assets-manager.php:70
+msgid "Убрать"
+msgstr "Убрать"
 
-msgid "Refresh function code"
-msgstr "Обновить код функции"
+#: includes/class-assets-manager.php:71
+msgid "Вернуть"
+msgstr "Вернуть"
 
+#: includes/class-assets-manager.php:72
+msgid "Обработка..."
+msgstr "Обработка..."
+
+#: includes/class-assets-manager.php:73
+msgid "Элемент включен"
+msgstr "Элемент включен"
+
+#: includes/class-assets-manager.php:74
+msgid "Элемент отключен"
+msgstr "Элемент отключен"
+
+#: includes/class-assets-manager.php:75
+msgid "Неверный ID элемента"
+msgstr "Неверный ID элемента"
+
+#: includes/class-assets-manager.php:76
+msgid "Ошибка при включении элемента"
+msgstr "Ошибка при включении элемента"
+
+#: includes/class-assets-manager.php:77
+msgid "Ошибка при отключении элемента"
+msgstr "Ошибка при отключении элемента"
+
+#: admin-panel-trash.php:149
 msgid "Invalid item ID"
 msgstr "Неверный ID элемента"
 
-msgid "Error enabling item"
-msgstr "Ошибка при включении элемента"
+#: admin-panel-trash.php:172
+msgid "Failed to update functions.php file"
+msgstr "Не удалось обновить файл functions.php"
 
-msgid "Error disabling item"
-msgstr "Ошибка при отключении элемента"
-msgid "Current code in functions.php"
-msgstr "Текущий код в functions.php"
+#: admin-panel-trash.php:186
+msgid "Item enabled"
+msgstr "Элемент включен"
 
-msgid "Show/hide function code"
-msgstr "Показать/скрыть код функции"
+#: admin-panel-trash.php:186
+msgid "Item disabled"
+msgstr "Элемент отключен"
 
-msgid "Refresh function code"
-msgstr "Обновить код функции"
-
-msgid "Invalid item ID"
-msgstr "Неверный ID элемента"
-
-msgid "Error enabling item"
-msgstr "Ошибка при включении элемента"
-
-msgid "Error disabling item"
-msgstr "Ошибка при отключении элемента"
-msgstr ""
+#: admin-panel-trash.php:199
+msgid "Function cleaned up"
+msgstr "Функция очищена"
