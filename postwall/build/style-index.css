@@ -48,8 +48,8 @@
 
 .months {
     display: flex;
-    justify-content: space-between;
-    gap: var(--month-gap);
+    justify-content: center;
+    gap: 15px;
     flex-wrap: nowrap;
     width: 100%;
     overflow-x: auto;
