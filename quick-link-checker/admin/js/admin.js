@@ -49,6 +49,11 @@
         smartCheck: function() {
             if (!this.postId) return;
 
+            // Проверяем, включен ли плагин
+            if (typeof qlc_ajax === 'undefined' || !qlc_ajax.enabled) {
+                return;
+            }
+
             const content = this.getEditorContent();
             if (!content) return;
 
@@ -88,6 +93,11 @@
         // ПОЛНАЯ проверка (по кнопке)
         fullCheck: function(e) {
             if (e) e.preventDefault();
+
+            // Проверяем, включен ли плагин
+            if (typeof qlc_ajax === 'undefined' || !qlc_ajax.enabled) {
+                return;
+            }
 
             const $button = $('#qlc-check-now');
             const $container = $('#qlc-broken-links-container');
@@ -158,6 +168,11 @@
 
         loadStoredBrokenLinks: function() {
             if (!this.postId) return;
+
+            // Проверяем, включен ли плагин
+            if (typeof qlc_ajax === 'undefined' || !qlc_ajax.enabled) {
+                return;
+            }
 
             $.ajax({
                 url: qlc_ajax.ajax_url,

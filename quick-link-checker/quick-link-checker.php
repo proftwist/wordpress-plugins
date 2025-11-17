@@ -3,7 +3,7 @@
  * Plugin Name: Quick Link Checker
  * Plugin URI: http://bychko.ru
  * Description: Проверяет битые ссылки в постах и подсвечивает их в редакторе
- * Version: 2.0.1
+ * Version: 2.0.2
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
  * License: GPL v2 or later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 // Константы плагина
 define('QLC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('QLC_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('QLC_PLUGIN_VERSION', '2.0.1');
+define('QLC_PLUGIN_VERSION', '2.0.2');
 
 /**
  * Основной класс плагина Quick Link Checker
@@ -112,6 +112,11 @@ class QuickLinkChecker {
      * @return void
      */
     public function enqueue_admin_scripts($hook) {
+        // Проверяем, включен ли плагин
+        if (!get_option('qlc_enabled', '1')) {
+            return;
+        }
+
         // Подключаем скрипты только на страницах редактирования постов и настроек плагина
         if (!in_array($hook, array('post.php', 'post-new.php', 'settings_page_quick-link-checker'))) {
             return;
@@ -145,7 +150,8 @@ class QuickLinkChecker {
                 'checking_text' => __('Checking links...', 'quick-link-checker'),
                 'broken_links_found' => __('Broken links found:', 'quick-link-checker'),
                 'no_broken_links' => __('No broken links found', 'quick-link-checker'),
-                'check_now_text' => __('Check Links Now', 'quick-link-checker')
+                'check_now_text' => __('Check Links Now', 'quick-link-checker'),
+                'enabled' => get_option('qlc_enabled', '1')
             ));
 
             // Передача ID текущего поста в JavaScript

@@ -19,7 +19,17 @@ class QLC_Editor_Integration {
      *
      * Регистрирует все необходимые хуки для интеграции с редактором
      */
+    /**
+     * Конструктор класса
+     *
+     * Регистрирует все необходимые хуки для интеграции с редактором
+     */
     public function __construct() {
+        // Проверяем, включен ли плагин
+        if (!get_option('qlc_enabled', '1')) {
+            return;
+        }
+
         // Добавление мета-бокса со списком битых ссылок
         add_action('add_meta_boxes', array($this, 'add_meta_box'));
 
@@ -106,6 +116,11 @@ class QLC_Editor_Integration {
 
     public function enqueue_scripts($hook) {
         if (!in_array($hook, array('post.php', 'post-new.php'))) {
+            return;
+        }
+
+        // Проверяем, включен ли плагин
+        if (!get_option('qlc_enabled', '1')) {
             return;
         }
 
