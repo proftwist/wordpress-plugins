@@ -76,3 +76,51 @@ msgstr "Post wall"
 #: build/index.js:59
 msgid "Site URL"
 msgstr "Site URL"
+
+#: build/frontend.js:105
+msgid "Jan"
+msgstr "Jan"
+
+#: build/frontend.js:105
+msgid "Feb"
+msgstr "Feb"
+
+#: build/frontend.js:105
+msgid "Mar"
+msgstr "Mar"
+
+#: build/frontend.js:106
+msgid "Apr"
+msgstr "Apr"
+
+#: build/frontend.js:106
+msgid "May"
+msgstr "May"
+
+#: build/frontend.js:106
+msgid "Jun"
+msgstr "Jun"
+
+#: build/frontend.js:107
+msgid "Jul"
+msgstr "Jul"
+
+#: build/frontend.js:107
+msgid "Aug"
+msgstr "Aug"
+
+#: build/frontend.js:107
+msgid "Sep"
+msgstr "Sep"
+
+#: build/frontend.js:108
+msgid "Oct"
+msgstr "Oct"
+
+#: build/frontend.js:108
+msgid "Nov"
+msgstr "Nov"
+
+#: build/frontend.js:108
+msgid "Dec"
+msgstr "Dec"

@@ -1,354 +1,246 @@
-Проблема в том, что мы используем неправильный подход с плейсхолдером. Давайте исправим это самым простым способом!
+Проблема в том, что у вас много JSON файлов с разными хешами и некоторые из них не содержат переводы месяцев. Давайте починим это!
 
-## 1. Упрощаем `block-registration.php`
-
-```php
-<?php
-// Защита от прямого доступа
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-/**
- * Регистрация Gutenberg-блока Post Wall
- *
- * Регистрирует динамический блок в редакторе Gutenberg с указанием
- * необходимых скриптов, стилей и обработчика рендеринга на сервере.
- */
-function postwall_register_block() {
-    // Регистрируем блок через WordPress API с полными параметрами
-    register_block_type('postwall/post-wall', array(
-        'editor_script' => 'postwall-block',         // JavaScript для редактора блоков
-        'editor_style' => 'postwall-block-editor',   // CSS стили для редактора
-        'style' => 'postwall-frontend',              // CSS стили для фронтенда
-        'render_callback' => 'postwall_render_block', // Функция серверного рендеринга
-        'attributes' => array(                                   // Определение атрибутов блока
-            'siteUrl' => array(
-                'type' => 'string',    // Тип данных атрибута
-                'default' => ''        // Значение по умолчанию (пустая строка)
-            )
-        )
-    ));
-}
-
-/**
- * Извлекает домен из URL
- *
- * @param string $url URL сайта
- * @return string Доменное имя
- */
-function postwall_extract_domain($url) {
-    if (empty($url)) {
-        return '';
-    }
-
-    // Удаляем протокол (http://, https://)
-    $domain = preg_replace('#^https?://#', '', $url);
-
-    // Удаляем путь после домена
-    $domain = preg_replace('#/.*$#', '', $domain);
-
-    // Удаляем www. если есть
-    $domain = preg_replace('#^www\.#', '', $domain);
-
-    return $domain;
-}
-
-/**
- * Функция серверного рендеринга блока Post Wall
- *
- * Вызывается WordPress при выводе блока на странице. Генерирует HTML-разметку
- * контейнера для диаграммы и передает необходимые данные через data-атрибуты.
- *
- * @param array $attributes Атрибуты блока (включая siteUrl)
- * @param string $content Внутреннее содержимое блока (не используется в динамических блоках)
- * @return string HTML-разметка контейнера диаграммы или сообщение об ошибке
- */
-function postwall_render_block($attributes, $content) {
-    // Валидация входных данных
-    if (!is_array($attributes)) {
-        $attributes = array();
-    }
-
-    // Получаем URL сайта из атрибутов блока
-    $site_url = !empty($attributes['siteUrl']) ?
-                       sanitize_text_field($attributes['siteUrl']) :
-                       '';
-
-    // Извлекаем домен для заголовка
-    $domain = postwall_extract_domain($site_url);
-
-    // Генерируем уникальный ID для контейнера (чтобы избежать конфликтов на странице)
-    $unique_id = uniqid('postwall-');
-
-    // Формируем data-атрибуты для передачи данных в JavaScript
-    // Безопасно экранируем значения функцией esc_attr
-    $data_attributes = 'data-site-url="' . esc_attr($site_url) . '" data-container-id="' . esc_attr($unique_id) . '"';
-
-    // Передаем отдельно домен и базовые тексты
-    $base_title = __('Posts from the site for the last 12 months', 'postwall');
-    $loading_text = __('Loading post wall...', 'postwall');
-
-    // Возвращаем HTML контейнер для диаграммы с data-атрибутами
-    return '<div class="postwall-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '
-                data-base-title="' . esc_attr($base_title) . '"
-                data-loading-text="' . esc_attr($loading_text) . '"
-                data-domain="' . esc_attr($domain) . '">
-                <h3 class="postwall-title">' . esc_html($this->generate_title_with_domain($base_title, $domain)) . '</h3>
-                <div class="postwall-loading">' . esc_html($loading_text) . '</div>
-            </div>';
-}
-
-/**
- * Генерирует заголовок с доменом
- *
- * @param string $base_title Базовый заголовок
- * @param string $domain Домен сайта
- * @return string Заголовок с доменом
- */
-function generate_title_with_domain($base_title, $domain) {
-    if (empty($domain)) {
-        return $base_title;
-    }
-
-    // Для русского языка
-    if (get_locale() === 'ru_RU') {
-        return 'Посты сайта ' . $domain . ' за последние 12 месяцев';
-    }
-
-    // Для английского и других языков
-    return 'Posts from the site ' . $domain . ' for the last 12 months';
-}
-
-// Регистрируем блок при инициализации
-add_action('init', 'postwall_register_block');
-```
-
-## 2. Упрощаем `frontend.js`
-
-```javascript
-/**
- * Post Wall Frontend JavaScript
- *
- * Handles the interactive post wall display on the frontend.
- *
- * @package PostWall
- * @since 1.0.0
- */
-
-(function($) {
-    'use strict';
-
-    /**
-     * PostWall class for managing the calendar visualization
-     */
-    class PostWall {
-        constructor(containerElement) {
-            this.container = containerElement;
-            this.siteUrl = this.container.dataset.siteUrl;
-            this.containerId = this.container.dataset.containerId;
-            this.loadingElement = this.container.querySelector('.postwall-loading');
-
-            // Получаем данные из data-атрибутов
-            this.baseTitle = this.container.dataset.baseTitle || 'Posts from the site for the last 12 months';
-            this.loadingText = this.container.dataset.loadingText || 'Loading post wall...';
-            this.domain = this.container.dataset.domain || '';
-
-            this.init();
-        }
-
-        /**
-         * Initialize the post wall
-         */
-        init() {
-            console.log('PostWall init called');
-            if (this.siteUrl) {
-                this.fetchPostData();
-            } else {
-                this.generateCalendar();
-            }
-        }
-
-        /**
-         * Fetch post data via AJAX
-         */
-        fetchPostData() {
-            console.log('Fetching post data for', this.siteUrl);
-
-            $.ajax({
-                url: postwallSettings.ajaxUrl,
-                method: 'POST',
-                data: {
-                    action: 'postwall_get_post_data',
-                    nonce: postwallSettings.nonce,
-                    site_url: this.siteUrl
-                },
-                success: (response) => {
-                    console.log('AJAX success:', response);
-                    if (response.success && response.data) {
-                        this.postData = response.data;
-                        this.generateCalendar();
-                    } else {
-                        this.showError(this.translate('Failed to load post data'));
-                    }
-                },
-                error: (xhr, status, error) => {
-                    console.error('AJAX error:', error);
-                    this.showError(this.translate('Error loading data'));
-                }
-            });
-        }
-
-        /**
-         * Show error message
-         * @param {string} message Error message to display
-         */
-        showError(message) {
-            if (this.loadingElement) {
-                this.loadingElement.textContent = message;
-            } else {
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'postwall-error';
-                errorDiv.textContent = message;
-                this.container.appendChild(errorDiv);
-            }
-        }
-
-        /**
-         * Generate the calendar grid by months
-         */
-        generateCalendar() {
-            console.log('generateCalendar called');
-            // Remove loading indicator
-            if (this.loadingElement) {
-                this.loadingElement.remove();
-                console.log('Loading element removed');
-            }
-
-            // Создаем или обновляем заголовок
-            this.createOrUpdateTitle();
-
-            // Create the heatmap wrapper
-            const wrapper = document.createElement('div');
-            wrapper.className = 'heatmap-wrapper';
-            console.log('Wrapper created');
-
-            // Create months container
-            const monthsContainer = document.createElement('div');
-            monthsContainer.className = 'months';
-
-            const now = new Date();
-            const monthNames = [
-                this.translate('Jan'), this.translate('Feb'), this.translate('Mar'),
-                this.translate('Apr'), this.translate('May'), this.translate('Jun'),
-                this.translate('Jul'), this.translate('Aug'), this.translate('Sep'),
-                this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
-            ];
-
-            // Generate 12 months from current back to 12 months ago
-            console.log('Generating months...');
-            for (let i = 11; i >= 0; i--) {
-                const monthDate = new Date(now);
-                monthDate.setMonth(now.getMonth() - i);
-
-                const monthDiv = this.createMonth(monthDate);
-                monthsContainer.appendChild(monthDiv);
-                console.log(`Month ${i} added`);
-            }
-
-            wrapper.appendChild(monthsContainer);
-            this.container.appendChild(wrapper);
-            console.log('Calendar appended to container');
-        }
-
-        /**
-         * Create or update the title element
-         */
-        createOrUpdateTitle() {
-            let titleElement = this.container.querySelector('.postwall-title');
-
-            // Создаем локализованный заголовок с доменом
-            const translatedTitle = this.generateTitleWithDomain();
-
-            if (!titleElement) {
-                titleElement = document.createElement('h3');
-                titleElement.className = 'postwall-title';
-                this.container.insertBefore(titleElement, this.container.firstChild);
-            }
-
-            titleElement.textContent = translatedTitle;
-            console.log('Final title:', translatedTitle);
-        }
-
-        /**
-         * Generate title with domain
-         * @return {string} Localized title with domain
-         */
-        generateTitleWithDomain() {
-            if (!this.domain) {
-                return this.translate(this.baseTitle);
-            }
-
-            // Простой способ - создаем заголовок в зависимости от языка
-            if (this.getLocale().startsWith('ru')) {
-                return 'Посты сайта ' + this.domain + ' за последние 12 месяцев';
-            } else {
-                return 'Posts from the site ' + this.domain + ' for the last 12 months';
-            }
-        }
-
-        // ... остальные методы без изменений ...
-        // (formatTooltip, getPostsText, getLocale, getActivityLevel, getMonthName, translate)
-
-    }
-
-    /**
-     * Initialize PostWall instances when DOM is ready
-     */
-    $(document).ready(function() {
-        $('.postwall-container').each(function() {
-            new PostWall(this);
-        });
-    });
-
-})(jQuery);
-```
-
-## 3. Удаляем старые переводы из PO файла
-
-Удалите из `languages/postwall-ru_RU.po` строку с плейсхолдером:
-
-```po
-# УДАЛИТЬ эту строку:
-# msgid "Posts from the site %s for the last 12 months"
-# msgstr "Посты сайта %s за последние 12 месяцев"
-```
-
-Оставьте только базовый заголовок:
-
-```po
-# ОСТАВИТЬ эту строку:
-msgid "Posts from the site for the last 12 months"
-msgstr "Посты сайта за последние 12 месяцев"
-```
-
-## 4. Перегенерируем JSON файлы
+## 1. Сначала почистим папку languages от лишних файлов
 
 ```bash
-# Перегенерируем JSON файлы
-wp i18n make-json languages/postwall-ru_RU.po languages/ --no-purge --pretty-print
+# Переходим в папку плагина
+cd /path/to/your/wp-content/plugins/post-wall
+
+# Удаляем все старые JSON файлы (они пересоздадутся)
+rm languages/postwall-*.json
+
+# Оставляем только PO, MO и POT файлы
+ls -la languages/
 ```
 
-## 5. Очищаем кеш
+Должны остаться:
+- `postwall.pot`
+- `postwall-en_US.po`
+- `postwall-en_US.mo`
+- `postwall-ru_RU.po`
+- `postwall-ru_RU.mo`
 
-- Очистите кеш браузера (Ctrl+F5)
-- Если используете кеширующий плагин - очистите кеш WordPress
+## 2. Проверим PO файлы на наличие переводов месяцев
 
-## Что изменилось:
+**В `postwall-ru_RU.po` убедитесь, что есть переводы месяцев:**
 
-1. **Убрали сложные плейсхолдеры** - они ломали систему переводов
-2. **Используем простую логику** - в PHP и JavaScript отдельно обрабатываем домен
-3. **`generateTitleWithDomain()`** - простая функция, которая создает заголовок на нужном языке
-4. **`data-base-title`** - передаем базовый заголовок без домена
+```po
+#: build/frontend.js:105
+msgid "Jan"
+msgstr "Янв"
 
-Теперь в русской локали будет показывать: "**Посты сайта bychko.ru за последние 12 месяцев**", а в английской: "**Posts from the site bychko.ru for the last 12 months**".
+#: build/frontend.js:105
+msgid "Feb"
+msgstr "Фев"
+
+#: build/frontend.js:105
+msgid "Mar"
+msgstr "Мар"
+
+#: build/frontend.js:106
+msgid "Apr"
+msgstr "Апр"
+
+#: build/frontend.js:106
+msgid "May"
+msgstr "Май"
+
+#: build/frontend.js:106
+msgid "Jun"
+msgstr "Июн"
+
+#: build/frontend.js:107
+msgid "Jul"
+msgstr "Июл"
+
+#: build/frontend.js:107
+msgid "Aug"
+msgstr "Авг"
+
+#: build/frontend.js:107
+msgid "Sep"
+msgstr "Сен"
+
+#: build/frontend.js:108
+msgid "Oct"
+msgstr "Окт"
+
+#: build/frontend.js:108
+msgid "Nov"
+msgstr "Ноя"
+
+#: build/frontend.js:108
+msgid "Dec"
+msgstr "Дек"
+```
+
+**В `postwall-en_US.po` убедитесь, что есть английские версии:**
+
+```po
+#: build/frontend.js:105
+msgid "Jan"
+msgstr "Jan"
+
+#: build/frontend.js:105
+msgid "Feb"
+msgstr "Feb"
+
+#: build/frontend.js:105
+msgid "Mar"
+msgstr "Mar"
+
+#: build/frontend.js:106
+msgid "Apr"
+msgstr "Apr"
+
+#: build/frontend.js:106
+msgid "May"
+msgstr "May"
+
+#: build/frontend.js:106
+msgid "Jun"
+msgstr "Jun"
+
+#: build/frontend.js:107
+msgid "Jul"
+msgstr "Jul"
+
+#: build/frontend.js:107
+msgid "Aug"
+msgstr "Aug"
+
+#: build/frontend.js:107
+msgid "Sep"
+msgstr "Sep"
+
+#: build/frontend.js:108
+msgid "Oct"
+msgstr "Oct"
+
+#: build/frontend.js:108
+msgid "Nov"
+msgstr "Nov"
+
+#: build/frontend.js:108
+msgid "Dec"
+msgstr "Dec"
+```
+
+## 3. Перекомпилируем MO файлы
+
+```bash
+# Компилируем MO файлы из PO
+wp i18n make-mo languages/
+```
+
+## 4. Генерируем новые JSON файлы правильной командой
+
+```bash
+# Генерируем JSON файлы для всех PO файлов
+wp i18n make-json languages/ --no-purge --pretty-print
+```
+
+## 5. Проверяем результат
+
+```bash
+# Смотрим что создалось
+ls -la languages/
+```
+
+Должны быть созданы 4 JSON файла:
+- `postwall-en_US-XXXXXXXXXXXX.json` (для index.js)
+- `postwall-en_US-YYYYYYYYYYYY.json` (для frontend.js)
+- `postwall-ru_RU-XXXXXXXXXXXX.json` (для index.js)
+- `postwall-ru_RU-YYYYYYYYYYYY.json` (для frontend.js)
+
+## 6. Проверяем содержимое русского JSON для frontend.js
+
+```bash
+# Находим файл для frontend.js (у него будет другой хеш)
+ls languages/postwall-ru_RU-*.json
+
+# Смотрим содержимое (замените ХХХ на реальный хеш)
+cat languages/postwall-ru_RU-79431f0eb8deb8221f24df5112e15095.json
+```
+
+Должно содержать переводы месяцев:
+```json
+{
+    "translation-revision-date": "2025-11-17T01:30:00+00:00",
+    "generator": "WP-CLI/2.12.0",
+    "source": "build/frontend.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "ru_RU",
+                "plural-forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
+            },
+            "Jan": ["Янв"],
+            "Feb": ["Фев"],
+            "Mar": ["Мар"],
+            "Apr": ["Апр"],
+            "May": ["Май"],
+            "Jun": ["Июн"],
+            "Jul": ["Июл"],
+            "Aug": ["Авг"],
+            "Sep": ["Сен"],
+            "Oct": ["Окт"],
+            "Nov": ["Ноя"],
+            "Dec": ["Дек"],
+            "post": ["пост"],
+            "posts": ["постов"]
+        }
+    }
+}
+```
+
+## 7. Очищаем кеш
+
+```bash
+# Очищаем кеш браузера (Ctrl+F5 или Ctrl+Shift+R)
+# Если используете кеширующий плагин - очистите кеш WordPress
+```
+
+## 8. Если всё равно не работает - принудительно обновляем frontend.js
+
+Добавьте версию к скрипту в `postwall.php`:
+
+```php
+public function enqueue_frontend_assets() {
+    // Пути к файлам сборки для фронтенда
+    $frontend_js = POSTWALL_PLUGIN_PATH . 'build/frontend.js';
+    $style_css = POSTWALL_PLUGIN_PATH . 'build/style-index.css';
+
+    // Принудительно обновляем версию при изменении файла
+    $frontend_version = file_exists($frontend_js) ? filemtime($frontend_js) : time();
+
+    // Подключение JavaScript для фронтенда
+    wp_enqueue_script(
+        'postwall-frontend',
+        POSTWALL_PLUGIN_URL . 'build/frontend.js',
+        array('jquery', 'wp-i18n'),
+        $frontend_version, // Используем время изменения файла как версию
+        true
+    );
+
+    // ... остальной код без изменений
+}
+```
+
+## 9. Проверяем в браузере
+
+Откройте консоль разработчика (F12) и проверьте:
+
+```javascript
+// Должны видеть русские переводы
+console.log(wp.i18n.__('Jan', 'postwall')); // Должно быть "Янв"
+console.log(wp.i18n.__('Feb', 'postwall')); // Должно быть "Фев"
+```
+
+## Резюме проблемы:
+
+У вас было много JSON файлов с разными хешами, и WordPress мог загружать не тот файл, который содержит переводы месяцев. После очистки и перегенерации всё должно заработать!
+
+После выполнения этих шагов месяцы должны снова переводиться на русский язык.

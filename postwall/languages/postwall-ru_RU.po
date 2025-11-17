@@ -89,3 +89,51 @@ msgstr "пост"
 msgctxt "plural form for 2-4 posts"
 msgid "posts_2_4"
 msgstr "поста"
+
+#: build/frontend.js:105
+msgid "Jan"
+msgstr "Янв"
+
+#: build/frontend.js:105
+msgid "Feb"
+msgstr "Фев"
+
+#: build/frontend.js:105
+msgid "Mar"
+msgstr "Мар"
+
+#: build/frontend.js:106
+msgid "Apr"
+msgstr "Апр"
+
+#: build/frontend.js:106
+msgid "May"
+msgstr "Май"
+
+#: build/frontend.js:106
+msgid "Jun"
+msgstr "Июн"
+
+#: build/frontend.js:107
+msgid "Jul"
+msgstr "Июл"
+
+#: build/frontend.js:107
+msgid "Aug"
+msgstr "Авг"
+
+#: build/frontend.js:107
+msgid "Sep"
+msgstr "Сен"
+
+#: build/frontend.js:108
+msgid "Oct"
+msgstr "Окт"
+
+#: build/frontend.js:108
+msgid "Nov"
+msgstr "Ноя"
+
+#: build/frontend.js:108
+msgid "Dec"
+msgstr "Дек"

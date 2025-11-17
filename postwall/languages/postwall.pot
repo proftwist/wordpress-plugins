@@ -76,3 +76,51 @@ msgstr ""
 #: build/index.js:59
 msgid "Site URL"
 msgstr ""
+
+#: build/frontend.js:105
+msgid "Jan"
+msgstr ""
+
+#: build/frontend.js:105
+msgid "Feb"
+msgstr ""
+
+#: build/frontend.js:105
+msgid "Mar"
+msgstr ""
+
+#: build/frontend.js:106
+msgid "Apr"
+msgstr ""
+
+#: build/frontend.js:106
+msgid "May"
+msgstr ""
+
+#: build/frontend.js:106
+msgid "Jun"
+msgstr ""
+
+#: build/frontend.js:107
+msgid "Jul"
+msgstr ""
+
+#: build/frontend.js:107
+msgid "Aug"
+msgstr ""
+
+#: build/frontend.js:107
+msgid "Sep"
+msgstr ""
+
+#: build/frontend.js:108
+msgid "Oct"
+msgstr ""
+
+#: build/frontend.js:108
+msgid "Nov"
+msgstr ""
+
+#: build/frontend.js:108
+msgid "Dec"
+msgstr ""
