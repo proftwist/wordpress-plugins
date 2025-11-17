@@ -16,7 +16,6 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: postwall.php
-#: build/index.js:22
 msgid "Post Wall"
 msgstr "Кафельная стенка постов"
 
@@ -49,79 +48,3 @@ msgstr ""
 #: includes/class-ajax-handler.php:129
 msgid "Invalid site URL format"
 msgstr ""
-
-#: build/index.js:50
-msgid "Кафельная стенка постов"
-msgstr ""
-
-#: build/index.js:57
-msgid "Настройки Post Wall"
-msgstr ""
-
-#: build/index.js:59
-msgid "Адрес сайта"
-msgstr ""
-
-#: build/index.js:64
-msgid "https://example.com"
-msgstr ""
-
-#: build/frontend.js:105
-#: build/frontend.js:232
-msgid "Jan"
-msgstr "янв"
-
-#: build/frontend.js:105
-#: build/frontend.js:232
-msgid "Feb"
-msgstr "фев"
-
-#: build/frontend.js:105
-#: build/frontend.js:232
-msgid "Mar"
-msgstr "мар"
-
-#: build/frontend.js:106
-#: build/frontend.js:233
-msgid "Apr"
-msgstr "апр"
-
-#: build/frontend.js:106
-#: build/frontend.js:233
-msgid "May"
-msgstr "май"
-
-#: build/frontend.js:106
-#: build/frontend.js:233
-msgid "Jun"
-msgstr "июн"
-
-#: build/frontend.js:107
-#: build/frontend.js:234
-msgid "Jul"
-msgstr "июл"
-
-#: build/frontend.js:107
-#: build/frontend.js:234
-msgid "Aug"
-msgstr "авг"
-
-#: build/frontend.js:107
-#: build/frontend.js:234
-msgid "Sep"
-msgstr "сен"
-
-#: build/frontend.js:108
-#: build/frontend.js:235
-msgid "Oct"
-msgstr "окт"
-
-#: build/frontend.js:108
-#: build/frontend.js:235
-msgid "Nov"
-msgstr "ноя"
-
-#: build/frontend.js:108
-#: build/frontend.js:235
-msgid "Dec"
-msgstr "дек"

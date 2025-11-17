@@ -9,14 +9,13 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-17T00:31:43+00:00\n"
+"POT-Creation-Date: 2025-11-17T00:38:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: postwall\n"
 
 #. Plugin Name of the plugin
 #: postwall.php
-#: build/index.js:22
 msgid "Post Wall"
 msgstr ""
 
@@ -48,80 +47,4 @@ msgstr ""
 
 #: includes/class-ajax-handler.php:129
 msgid "Invalid site URL format"
-msgstr ""
-
-#: build/frontend.js:105
-#: build/frontend.js:232
-msgid "Jan"
-msgstr ""
-
-#: build/frontend.js:105
-#: build/frontend.js:232
-msgid "Feb"
-msgstr ""
-
-#: build/frontend.js:105
-#: build/frontend.js:232
-msgid "Mar"
-msgstr ""
-
-#: build/frontend.js:106
-#: build/frontend.js:233
-msgid "Apr"
-msgstr ""
-
-#: build/frontend.js:106
-#: build/frontend.js:233
-msgid "May"
-msgstr ""
-
-#: build/frontend.js:106
-#: build/frontend.js:233
-msgid "Jun"
-msgstr ""
-
-#: build/frontend.js:107
-#: build/frontend.js:234
-msgid "Jul"
-msgstr ""
-
-#: build/frontend.js:107
-#: build/frontend.js:234
-msgid "Aug"
-msgstr ""
-
-#: build/frontend.js:107
-#: build/frontend.js:234
-msgid "Sep"
-msgstr ""
-
-#: build/frontend.js:108
-#: build/frontend.js:235
-msgid "Oct"
-msgstr ""
-
-#: build/frontend.js:108
-#: build/frontend.js:235
-msgid "Nov"
-msgstr ""
-
-#: build/frontend.js:108
-#: build/frontend.js:235
-msgid "Dec"
-msgstr ""
-
-#: build/index.js:50
-msgid "Кафельная стенка постов"
-msgstr ""
-
-#: build/index.js:57
-msgid "Настройки Post Wall"
-msgstr ""
-
-#: build/index.js:59
-msgid "Адрес сайта"
-msgstr ""
-
-#: build/index.js:64
-msgid "https://example.com"
 msgstr ""

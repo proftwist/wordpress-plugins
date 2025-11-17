@@ -176,7 +176,9 @@
              // Add tooltip with post count
              const postCount = this.postData ?
                  (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
-             dayCell.title = `${cellDate.toLocaleDateString()}: ${postCount} постов`;
+             const formattedDate = cellDate.toLocaleDateString();
+             const postText = wp.i18n._n('%d post', '%d posts', postCount, 'postwall');
+             dayCell.title = `${formattedDate}: ${postText.replace('%d', postCount)}`;
 
              monthGrid.appendChild(dayCell);
          }
