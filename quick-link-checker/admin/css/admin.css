@@ -3,12 +3,30 @@
     background-color: #ffeaea !important;
     padding: 1px 3px !important;
     border-radius: 2px !important;
+    position: relative !important;
 }
 
-.qlc-broken-link::after {
-    content: " ❌";
-    font-size: 10px;
-    margin-left: 3px;
+.qlc-broken-link .qlc-dismiss {
+    position: absolute !important;
+    top: -8px !important;
+    right: -8px !important;
+    width: 16px !important;
+    height: 16px !important;
+    background: #dc3232 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    z-index: 1000 !important;
+    display: inline-block !important;
+    text-decoration: none !important;
+    font-weight: bold !important;
+}
+
+.qlc-broken-link .qlc-dismiss:hover {
+    background: #c00 !important;
 }
 
 #qlc-broken-links-container {

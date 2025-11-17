@@ -7,16 +7,19 @@
         currentLinksHash: '',
         lastContentHash: '',
         checkTimeout: null,
-
+        dismissedLinks: [],
+    
         init: function() {
             this.postId = typeof qlc_post !== 'undefined' ? qlc_post.post_id : 0;
+            this.loadDismissedLinks();
             this.bindEvents();
             this.loadStoredBrokenLinks();
         },
 
         bindEvents: function() {
             $(document).on('click', '#qlc-check-now', this.fullCheck.bind(this));
-
+            $(document).on('click', '.qlc-dismiss', this.dismissLink.bind(this));
+        
             // Легковесное отслеживание изменений
             this.bindLightweightTracking();
         },
@@ -193,42 +196,65 @@
         },
 
         highlightBrokenLinks: function(brokenLinks) {
+            // Фильтруем битые ссылки с учетом исключений
+            const filteredLinks = this.filterBrokenLinks(brokenLinks);
+            
+            // Убираем подсветку со всех ссылок
             $('a').removeClass('qlc-broken-link');
-
-            brokenLinks.forEach((link) => {
+            
+            // Удаляем все крестики
+            $('.qlc-dismiss').remove();
+        
+            filteredLinks.forEach((link) => {
                 const escapedUrl = this.escapeUrlForSelector(link.url);
                 const $links = $('a[href="' + escapedUrl + '"]');
                 $links.addClass('qlc-broken-link');
+                
+                // Добавляем крестик для каждой подсвеченной ссылки
+                $links.each(function() {
+                    const $link = $(this);
+                    // Проверяем, что крестик еще не добавлен
+                    if ($link.find('.qlc-dismiss').length === 0) {
+                        $link.append('<span class="qlc-dismiss" title="Dismiss this broken link">×</span>');
+                    }
+                });
             });
         },
 
         updateBrokenLinksCount: function() {
             const $container = $('#qlc-broken-links-container');
             const $countElement = $container.find('strong');
-
+            
+            // Фильтруем битые ссылки с учетом исключений
+            const filteredLinks = this.filterBrokenLinks(this.currentBrokenLinks);
+        
             if ($countElement.length > 0) {
-                $countElement.text('❌ ' + qlc_ajax.broken_links_found + ' ' + this.currentBrokenLinks.length);
+                $countElement.text('❌ ' + qlc_ajax.broken_links_found + ' ' + filteredLinks.length);
             }
         },
 
         updateBrokenLinksList: function(data, $container) {
+            // Фильтруем битые ссылки с учетом исключений
+            const filteredLinks = this.filterBrokenLinks(data.broken_links);
+            const filteredCount = filteredLinks.length;
+            
             let html = '';
-
-            if (data.broken_count === 0) {
+        
+            if (filteredCount === 0) {
                 html = '<p>✅ ' + qlc_ajax.no_broken_links + '</p>';
             } else {
-                html = '<p><strong>❌ ' + qlc_ajax.broken_links_found + '</strong> ' + data.broken_count + '</p>';
+                html = '<p><strong>❌ ' + qlc_ajax.broken_links_found + '</strong> ' + filteredCount + '</p>';
                 html += '<ul style="max-height: 200px; overflow-y: auto;">';
-                data.broken_links.forEach(link => {
+                filteredLinks.forEach(link => {
                     html += '<li style="margin-bottom: 5px;"><code style="background: #f1f1f1; padding: 2px 4px; border-radius: 3px; word-break: break-all;">' + link.url + '</code></li>';
                 });
                 html += '</ul>';
             }
-
+        
             html += '<button type="button" id="qlc-check-now" class="button button-secondary" style="margin-top: 10px;">';
             html += qlc_ajax.check_now_text;
             html += '</button>';
-
+        
             $container.html(html);
         },
 
@@ -310,11 +336,60 @@
             });
 
             return content;
-        }
-    };
-
-    $(document).ready(function() {
-        QLC.init();
-    });
-
-})(jQuery);
+                    },
+            
+                    // Загрузка списка исключений из localStorage
+                    loadDismissedLinks: function() {
+                        try {
+                            const dismissed = localStorage.getItem('qlc_dismissed_links');
+                            if (dismissed) {
+                                this.dismissedLinks = JSON.parse(dismissed);
+                            }
+                        } catch (e) {
+                            this.dismissedLinks = [];
+                        }
+                    },
+            
+                    // Сохранение списка исключений в localStorage
+                    saveDismissedLinks: function() {
+                        try {
+                            localStorage.setItem('qlc_dismissed_links', JSON.stringify(this.dismissedLinks));
+                        } catch (e) {
+                            // Игнорируем ошибки сохранения
+                        }
+                    },
+            
+                    // Обработчик клика на крестике
+                    dismissLink: function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const $link = $(e.target).closest('a');
+                        const url = $link.attr('href');
+                        
+                        if (url) {
+                            // Добавляем URL в список исключений
+                            if (!this.dismissedLinks.includes(url)) {
+                                this.dismissedLinks.push(url);
+                                this.saveDismissedLinks();
+                            }
+                            
+                            // Убираем подсветку с этой ссылки
+                            $link.removeClass('qlc-broken-link');
+                            
+                            // Удаляем крестик
+                            $link.find('.qlc-dismiss').remove();
+                        }
+                    },
+            
+                    // Фильтрация битых ссылок с учетом исключений
+                    filterBrokenLinks: function(brokenLinks) {
+                        return brokenLinks.filter(link => !this.dismissedLinks.includes(link.url));
+                    }
+                };
+            
+                $(document).ready(function() {
+                    QLC.init();
+                });
+            
+            })(jQuery);
