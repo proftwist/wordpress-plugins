@@ -75,6 +75,21 @@ msgstr "Текущий код в functions.php"
 msgid "Show/hide function code"
 msgstr "Показать/скрыть код функции"
 
+msgid "Disable"
+msgstr "Убрать"
+
+msgid "Enable"
+msgstr "Вернуть"
+
+msgid "Enabled"
+msgstr "Включен"
+
+msgid "Disabled"
+msgstr "Отключен"
+
+msgid "Function removal code"
+msgstr "Код функции удаления элементов"
+
 msgid "Refresh function code"
 msgstr "Обновить код функции"
 

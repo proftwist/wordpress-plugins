@@ -1,0 +1,42 @@
+.apt-status-enabled {
+    color: #46b450;
+    font-weight: bold;
+}
+
+.apt-status-disabled {
+    color: #dc3232;
+    font-weight: bold;
+}
+
+.apt-error {
+    color: #dc3232;
+    font-style: italic;
+}
+
+#apt-items-list code {
+    background: #f1f1f1;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+#apt-function-code-block pre {
+    background: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+#apt-function-code-block code {
+    background: none;
+    padding: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.apt-toggle-item:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
