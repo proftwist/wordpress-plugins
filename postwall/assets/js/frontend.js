@@ -38,6 +38,51 @@
             } else {
                 this.generateCalendar();
             }
+            this.attachClickHandlers();
+        }
+
+        /**
+         * Attach click handlers to day cells
+         */
+        attachClickHandlers() {
+            // Используем делегирование событий для контейнера
+            this.container.addEventListener('click', (event) => {
+                const target = event.target;
+
+                // Проверяем, что клик был по квадратику дня с постами
+                if (target.classList.contains('day') && target.hasAttribute('data-date') && !target.classList.contains('empty')) {
+                    event.preventDefault();
+                    const dateString = target.getAttribute('data-date');
+                    this.navigateToDateArchive(dateString);
+                }
+            });
+        }
+
+        /**
+         * Navigate to the date archive page for the given date
+         * @param {string} dateString - Date in YYYY-MM-DD format
+         */
+        navigateToDateArchive(dateString) {
+            // Формируем URL для архивной страницы даты на сайте из блока
+            const archiveUrl = this.generateDateArchiveUrl(dateString);
+
+            // Перенаправляем пользователя
+            window.open(archiveUrl, '_blank');
+        }
+
+        /**
+         * Generate URL for date archive page
+         * @param {string} dateString - Date in YYYY-MM-DD format
+         * @return {string} Archive URL
+         */
+        generateDateArchiveUrl(dateString) {
+            // Разбираем дату
+            const [year, month, day] = dateString.split('-');
+
+            // Формируем URL для архивной страницы даты
+            // Формат: /YYYY/MM/DD/ или /YYYY/MM/ в зависимости от темы
+            // Используем siteUrl из блока
+            return `${this.siteUrl}/${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}/`;
         }
 
         /**
@@ -219,9 +264,11 @@
                const activityLevel = this.getActivityLevel(cellDate);
 
                if (activityLevel === 0) {
-                   dayCell.className = 'day empty';
+                   dayCell.className = 'day lvl-0';
                } else {
                    dayCell.className = `day lvl-${activityLevel}`;
+                   // Добавляем data-date атрибут для квадратиков с постами
+                   dayCell.setAttribute('data-date', cellDate.toISOString().split('T')[0]);
                }
 
                // Add tooltip with post count
@@ -249,7 +296,7 @@
 
            return monthDiv;
        }
-        
+
         /**
          * Format tooltip text with proper localization
          * @param {string} date Formatted date
@@ -261,7 +308,7 @@
             const postsText = this.getPostsText(postCount);
             return `${date}: ${postCount} ${postsText}`;
         }
-        
+
         /**
          * Get localized posts text with proper plural forms
          * @param {number} count Number of posts
@@ -285,7 +332,7 @@
            // Для английского и других языков
            return this.translate('posts');
        }
-        
+
         /**
          * Format date according to WordPress date format settings
          * @param {Date} date - Date to format
@@ -350,7 +397,7 @@
 
             return (formats[locale] || formats['en_US'])();
         }
-        
+
         /**
          * Get current locale
          * @return {string} Current locale

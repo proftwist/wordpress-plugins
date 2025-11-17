@@ -89,6 +89,12 @@
 .lvl-3 { background: var(--lvl3); }
 .lvl-4 { background: var(--lvl4); }
 
+/* Hover effects for days with posts */
+.day[data-date]:hover {
+    cursor: pointer;
+    filter: brightness(1.2);
+}
+
 .month-label {
     margin-top: 8px;
     font-size: 13px;

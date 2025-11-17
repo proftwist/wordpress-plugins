@@ -32,12 +32,57 @@
          * Initialize the post wall
          */
         init() {
-            console.log('PostWall init called - UPDATED VERSION');
+            console.log('PostWall init called');
             if (this.siteUrl) {
                 this.fetchPostData();
             } else {
                 this.generateCalendar();
             }
+            this.attachClickHandlers();
+        }
+
+        /**
+         * Attach click handlers to day cells
+         */
+        attachClickHandlers() {
+            // Используем делегирование событий для контейнера
+            this.container.addEventListener('click', (event) => {
+                const target = event.target;
+
+                // Проверяем, что клик был по квадратику дня с постами
+                if (target.classList.contains('day') && target.hasAttribute('data-date') && !target.classList.contains('empty')) {
+                    event.preventDefault();
+                    const dateString = target.getAttribute('data-date');
+                    this.navigateToDateArchive(dateString);
+                }
+            });
+        }
+
+        /**
+         * Navigate to the date archive page for the given date
+         * @param {string} dateString - Date in YYYY-MM-DD format
+         */
+        navigateToDateArchive(dateString) {
+            // Формируем URL для архивной страницы даты на сайте из блока
+            const archiveUrl = this.generateDateArchiveUrl(dateString);
+
+            // Перенаправляем пользователя
+            window.open(archiveUrl, '_blank');
+        }
+
+        /**
+         * Generate URL for date archive page
+         * @param {string} dateString - Date in YYYY-MM-DD format
+         * @return {string} Archive URL
+         */
+        generateDateArchiveUrl(dateString) {
+            // Разбираем дату
+            const [year, month, day] = dateString.split('-');
+
+            // Формируем URL для архивной страницы даты
+            // Формат: /YYYY/MM/DD/ или /YYYY/MM/ в зависимости от темы
+            // Используем siteUrl из блока
+            return `${this.siteUrl}/${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}/`;
         }
 
         /**
@@ -89,7 +134,7 @@
          * Generate the calendar grid by months
          */
         generateCalendar() {
-            console.log('generateCalendar called - UPDATED VERSION');
+            console.log('generateCalendar called');
             // Remove loading indicator
             if (this.loadingElement) {
                 this.loadingElement.remove();
@@ -109,6 +154,12 @@
             monthsContainer.className = 'months';
 
             const now = new Date();
+            const monthNames = [
+                this.translate('Jan'), this.translate('Feb'), this.translate('Mar'),
+                this.translate('Apr'), this.translate('May'), this.translate('Jun'),
+                this.translate('Jul'), this.translate('Aug'), this.translate('Sep'),
+                this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
+            ];
 
             // Generate 12 months from current back to 12 months ago
             console.log('Generating months...');
@@ -166,145 +217,85 @@
         }
 
         /**
-         * Create GitHub-style month with weeks as columns, days as rows
+         * Create a month grid
+         * @param {Date} monthDate - The date representing the month to create
+         * @return {HTMLElement} The month container element
          */
         createMonth(monthDate) {
-            const monthDiv = document.createElement('div');
-            monthDiv.className = 'month';
+           console.log('createMonth called for', monthDate);
+           const monthDiv = document.createElement('div');
+           monthDiv.className = 'month';
 
-            const monthGrid = document.createElement('div');
-            monthGrid.className = 'month-grid';
+           const monthGrid = document.createElement('div');
+           monthGrid.className = 'month-grid';
 
-            const year = monthDate.getFullYear();
-            const month = monthDate.getMonth();
+           const year = monthDate.getFullYear();
+           const month = monthDate.getMonth();
 
-            // Первый день месяца
-            const firstDay = new Date(year, month, 1);
-            // Последний день месяца
-            const lastDay = new Date(year, month + 1, 0);
+           // Устанавливаем дату на первый день месяца для правильного расчета
+           monthDate.setDate(1);
 
-            // Находим понедельник недели, в которой начинается месяц
-            const startDate = new Date(firstDay);
-            const dayOfWeek = (firstDay.getDay() + 6) % 7; // Понедельник = 0
-            startDate.setDate(firstDay.getDate() - dayOfWeek);
+           // Get first day of month and what day of week it falls on
+           const firstDay = new Date(year, month, 1);
+           const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
-            // Находим воскресенье недели, в которой заканчивается месяц
-            const endDate = new Date(lastDay);
-            const lastDayOfWeek = (lastDay.getDay() + 6) % 7;
-            endDate.setDate(lastDay.getDate() + (6 - lastDayOfWeek));
+           // Adjust for Monday first (0 = Monday, 6 = Sunday)
+           // ВАЖНО: Это правильное количество пустых клеток ДО первого дня
+           const emptyCellsBefore = (firstDayOfWeek + 6) % 7;
 
-            // Создаем ячейки для всех дней от startDate до endDate
-            const currentDate = new Date(startDate);
+           // Get number of days in month
+           const daysInMonth = new Date(year, month + 1, 0).getDate();
+           console.log(`Month ${this.getMonthName(month)} ${year}, days: ${daysInMonth}, starts on: ${firstDayOfWeek} (${this.getDayName(firstDayOfWeek)}), empty cells before: ${emptyCellsBefore}`);
 
-            while (currentDate <= endDate) {
-                const dayCell = document.createElement('span');
+           // Create cells
+           // Empty cells before first day - ЛЕВЫЙ "РВАНЫЙ" КРАЙ
+           for (let i = 0; i < emptyCellsBefore; i++) {
+               const emptyCell = document.createElement('span');
+               emptyCell.className = 'day empty';
+               monthGrid.appendChild(emptyCell);
+           }
 
-                // Проверяем, принадлежит ли день текущему месяцу
-                const isCurrentMonth = currentDate.getMonth() === month;
+           // Days of the month
+           for (let day = 1; day <= daysInMonth; day++) {
+               const dayCell = document.createElement('span');
+               const cellDate = new Date(year, month, day);
 
-                if (isCurrentMonth) {
-                    // День текущего месяца - рассчитываем активность
-                    const activityLevel = this.getActivityLevel(currentDate);
-                    const postCount = this.postData ?
-                        (this.postData[currentDate.toISOString().split('T')[0]] || 0) : 0;
+               // Determine activity level
+               const activityLevel = this.getActivityLevel(cellDate);
 
-                    dayCell.className = `day lvl-${activityLevel}`;
+               if (activityLevel === 0) {
+                   dayCell.className = 'day lvl-0';
+               } else {
+                   dayCell.className = `day lvl-${activityLevel}`;
+                   // Добавляем data-date атрибут для квадратиков с постами
+                   dayCell.setAttribute('data-date', cellDate.toISOString().split('T')[0]);
+               }
 
-                    // Добавляем тултип
-                    const formattedDate = this.formatDateAccordingToWordPress(currentDate);
-                    dayCell.title = this.formatTooltip(formattedDate, postCount);
-                } else {
-                    // День соседнего месяца - пустая ячейка
-                    dayCell.className = 'day empty';
-                }
+               // Add tooltip with post count
+               const postCount = this.postData ?
+                   (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
 
-                monthGrid.appendChild(dayCell);
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
+               // Форматируем дату согласно настройкам WordPress
+               const formattedDate = this.formatDateAccordingToWordPress(cellDate);
 
-            monthDiv.appendChild(monthGrid);
+               // Создаем локализованный текст для тултипа
+               const tooltipText = this.formatTooltip(formattedDate, postCount);
+               dayCell.title = tooltipText;
 
-            // Добавляем label месяца (уже есть в вашем коде)
-            const monthLabel = document.createElement('div');
-            monthLabel.className = 'month-label';
-            monthLabel.textContent = this.getMonthName(month);
-            monthDiv.appendChild(monthLabel);
+               monthGrid.appendChild(dayCell);
+           }
 
-            return monthDiv;
-        }
+           monthDiv.appendChild(monthGrid);
 
-        /**
-         * Get day name for debugging
-         * @param {number} dayOfWeek - Day of week (0-6)
-         * @return {string} Day name
-         */
-        getDayName(dayOfWeek) {
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            return days[dayOfWeek];
-        }
+           // Add month label
+           const monthLabel = document.createElement('div');
+           monthLabel.className = 'month-label';
+           monthLabel.textContent = this.getMonthName(month);
+           monthDiv.appendChild(monthLabel);
+           console.log('Month created:', this.getMonthName(month), 'Total cells:', monthGrid.children.length);
 
-        /**
-         * Format date according to WordPress date format settings
-         * @param {Date} date - Date to format
-         * @return {string} Formatted date string
-         */
-        formatDateAccordingToWordPress(date) {
-            // Получаем локаль из настроек
-            const locale = this.getLocale();
-
-            // Базовые форматы дат для разных локалей
-            const dateFormats = {
-                'ru_RU': {
-                    // Русский формат: DD.MM.YYYY
-                    format: (d) => {
-                        const day = d.getDate().toString().padStart(2, '0');
-                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
-                        const year = d.getFullYear();
-                        return `${day}.${month}.${year}`;
-                    }
-                },
-                'en_US': {
-                    // Американский формат: MM/DD/YYYY
-                    format: (d) => {
-                        const day = d.getDate().toString().padStart(2, '0');
-                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
-                        const year = d.getFullYear();
-                        return `${month}/${day}/${year}`;
-                    }
-                },
-                'en_GB': {
-                    // Британский формат: DD/MM/YYYY
-                    format: (d) => {
-                        const day = d.getDate().toString().padStart(2, '0');
-                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
-                        const year = d.getFullYear();
-                        return `${day}/${month}/${year}`;
-                    }
-                },
-                'de_DE': {
-                    // Немецкий формат: DD.MM.YYYY
-                    format: (d) => {
-                        const day = d.getDate().toString().padStart(2, '0');
-                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
-                        const year = d.getFullYear();
-                        return `${day}.${month}.${year}`;
-                    }
-                },
-                'fr_FR': {
-                    // Французский формат: DD/MM/YYYY
-                    format: (d) => {
-                        const day = d.getDate().toString().padStart(2, '0');
-                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
-                        const year = d.getFullYear();
-                        return `${day}/${month}/${year}`;
-                    }
-                }
-            };
-
-            // Используем формат для текущей локали или fallback
-            const localeFormat = dateFormats[locale] || dateFormats['en_US'];
-            return localeFormat.format(date);
-        }
+           return monthDiv;
+       }
 
         /**
          * Format tooltip text with proper localization
@@ -324,22 +315,87 @@
          * @return {string} Localized posts text
          */
         getPostsText(count) {
-            // Для русского языка - особые правила множественного числа
-            if (this.getLocale().startsWith('ru')) {
-                const lastDigit = count % 10;
-                const lastTwoDigits = count % 100;
+           // Для русского языка - особые правила множественного числа
+           if (this.getLocale().startsWith('ru')) {
+               const lastDigit = count % 10;
+               const lastTwoDigits = count % 100;
 
-                if (lastDigit === 1 && lastTwoDigits !== 11) {
-                    return 'пост';
-                } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
-                    return 'поста';
-                } else {
-                    return 'постов';
-                }
+               if (lastDigit === 1 && lastTwoDigits !== 11) {
+                   return 'пост';
+               } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+                   return 'поста';
+               } else {
+                   return 'постов';
+               }
+           }
+
+           // Для английского и других языков
+           return this.translate('posts');
+       }
+
+        /**
+         * Format date according to WordPress date format settings
+         * @param {Date} date - Date to format
+         * @return {string} Formatted date string
+         */
+        formatDateAccordingToWordPress(date) {
+            // Если WordPress передал формат даты, используем его
+            if (postwallSettings.dateFormat) {
+                return this.formatDateWithWordPressFormat(date, postwallSettings.dateFormat);
             }
 
-            // Для английского и других языков
-            return this.translate('posts');
+            // Иначе используем локализованный формат по умолчанию
+            return this.getLocalizedDateFormat(date);
+        }
+
+        /**
+         * Format date using WordPress date format
+         * @param {Date} date - Date to format
+         * @param {string} format - WordPress date format string
+         * @return {string} Formatted date
+         */
+        formatDateWithWordPressFormat(date, format) {
+            const replacements = {
+                'd': () => date.getDate().toString().padStart(2, '0'),
+                'j': () => date.getDate(),
+                'm': () => (date.getMonth() + 1).toString().padStart(2, '0'),
+                'n': () => (date.getMonth() + 1),
+                'Y': () => date.getFullYear(),
+                'y': () => date.getFullYear().toString().slice(-2),
+                'F': () => this.getMonthName(date.getMonth()),
+                'M': () => this.translate(this.getMonthName(date.getMonth()).slice(0, 3))
+            };
+
+            let result = format;
+            for (const [key, formatter] of Object.entries(replacements)) {
+                result = result.replace(new RegExp(key, 'g'), formatter());
+            }
+
+            return result;
+        }
+
+        /**
+         * Get localized date format as fallback
+         * @param {Date} date - Date to format
+         * @return {string} Formatted date
+         */
+        getLocalizedDateFormat(date) {
+            const locale = this.getLocale();
+
+            const formats = {
+                'ru_RU': () => {
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    return `${day}.${month}.${date.getFullYear()}`;
+                },
+                'en_US': () => {
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    return `${month}/${day}/${date.getFullYear()}`;
+                }
+            };
+
+            return (formats[locale] || formats['en_US'])();
         }
 
         /**
@@ -395,6 +451,16 @@
         }
 
         /**
+         * Get day name for debugging
+         * @param {number} dayOfWeek - Day of week (0-6)
+         * @return {string} Day name
+         */
+        getDayName(dayOfWeek) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[dayOfWeek];
+        }
+
+        /**
          * Translation helper with fallback
          * @param {string} text Text to translate
          * @return {string} Translated text
@@ -412,7 +478,7 @@
                     'Loading post wall...': 'Загрузка кафельной стенки...',
                     'Failed to load post data': 'Не удалось загрузить данные постов',
                     'Error loading data': 'Ошибка при загрузке данных',
-                    'posts': 'постов',
+                    'posts': 'постов', // базовая форма для множественного числа
                     'Jan': 'янв', 'Feb': 'фев', 'Mar': 'мар', 'Apr': 'апр',
                     'May': 'май', 'Jun': 'июн', 'Jul': 'июл', 'Aug': 'авг',
                     'Sep': 'сен', 'Oct': 'окт', 'Nov': 'ноя', 'Dec': 'дек'
