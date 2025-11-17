@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Commit Chart
  * Description: Displays GitHub commit charts as Gutenberg blocks or shortcodes
- * Version: 2.0.1
+ * Version: 2.0.2
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: github-commit-chart
