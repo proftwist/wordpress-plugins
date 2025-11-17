@@ -3,7 +3,7 @@
  * Plugin Name: Quick Link Checker
  * Plugin URI: http://bychko.ru
  * Description: Проверяет битые ссылки в постах и подсвечивает их в редакторе
- * Version: 1.0.0
+ * Version: 2.0.0
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
  * License: GPL v2 or later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 // Константы плагина
 define('QLC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('QLC_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('QLC_PLUGIN_VERSION', '1.0.0');
+define('QLC_PLUGIN_VERSION', '2.0.0');
 
 class QuickLinkChecker {
 

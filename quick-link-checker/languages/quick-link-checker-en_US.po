@@ -1,0 +1,71 @@
+# Copyright (C) 2024 Vladimir Bychko
+# This file is distributed under the same license as the Quick Link Checker plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Quick Link Checker 1.1.0\n"
+"Report-Msgid-Bugs-To: http://bychko.ru\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Language-Team: English\n"
+
+#: quick-link-checker.php
+msgid "Quick Link Checker"
+msgstr ""
+
+#: quick-link-checker.php
+msgid "Checking links..."
+msgstr ""
+
+#: quick-link-checker.php
+msgid "Broken links found:"
+msgstr ""
+
+#: quick-link-checker.php
+msgid "No broken links found"
+msgstr ""
+
+#: includes/class-editor-integration.php
+msgid "Broken Links"
+msgstr ""
+
+#: includes/class-editor-integration.php
+msgid "All links are working!"
+msgstr ""
+
+msgid "Found %d broken link"
+msgstr ""
+
+msgid "Found %d broken links"
+msgstr ""
+
+msgid "...and %d more broken link"
+msgstr ""
+
+msgid "...and %d more broken links"
+msgstr ""
+
+msgid "Auto-check: active"
+msgstr ""
+
+#: admin/settings.php
+msgid "Quick Link Checker Settings"
+msgstr ""
+
+#: admin/settings.php
+msgid "Main Settings"
+msgstr ""
+
+#: admin/settings.php
+msgid "Configure the Quick Link Checker settings."
+msgstr ""
+
+#: admin/settings.php
+msgid "Enable Broken Link Checking"
+msgstr ""
+
+#: admin/settings.php
+msgid "Enable automatic link checking when saving posts"
+msgstr ""
