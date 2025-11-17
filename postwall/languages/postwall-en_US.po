@@ -7,8 +7,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-16T20:28:40+00:00\n"
-"PO-Revision-Date: 2025-11-16T20:28:40+00:00\n"
+"POT-Creation-Date: 2025-11-17T00:38:04+00:00\n"
+"PO-Revision-Date: 2025-11-17T00:38:04+00:00\n"
 "Language: en_US\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: postwall\n"
@@ -39,12 +39,12 @@ msgstr "Loading post wall..."
 
 #: includes/class-ajax-handler.php:74
 msgid "Security check failed"
-msgstr ""
+msgstr "Security check failed"
 
 #: includes/class-ajax-handler.php:124
 msgid "Site URL is required"
-msgstr ""
+msgstr "Site URL is required"
 
 #: includes/class-ajax-handler.php:129
 msgid "Invalid site URL format"
-msgstr ""
+msgstr "Invalid site URL format"

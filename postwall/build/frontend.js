@@ -177,8 +177,8 @@
              const postCount = this.postData ?
                  (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
              const formattedDate = cellDate.toLocaleDateString();
-             const postText = wp.i18n._n('%d post', '%d posts', postCount, 'postwall');
-             dayCell.title = `${formattedDate}: ${postText.replace('%d', postCount)}`;
+             const postText = postCount === 1 ? wp.i18n.__('post', 'postwall') : wp.i18n.__('posts', 'postwall');
+             dayCell.title = `${formattedDate}: ${postCount} ${postText}`;
 
              monthGrid.appendChild(dayCell);
          }
