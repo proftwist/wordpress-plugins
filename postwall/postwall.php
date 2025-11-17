@@ -150,7 +150,8 @@ class PostWall {
         wp_localize_script('postwall-frontend', 'postwallSettings', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),    // URL для AJAX запросов
             'nonce' => wp_create_nonce('postwall_get_data'), // Токен безопасности для AJAX
-            'locale' => get_locale() // Передаем локаль для фронтенда
+            'locale' => get_locale(), // Передаем локаль для фронтенда
+            'dateFormat' => get_option('date_format', 'F j, Y') // Получаем формат даты из настроек WordPress
         ));
 
         // Подключение CSS стилей для фронтенда

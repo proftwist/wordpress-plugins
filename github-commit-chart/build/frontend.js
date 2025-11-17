@@ -309,22 +309,14 @@
                 startDate = new Date(selectedYear, 0, 1); // 1 января выбранного года
             }
 
-            // Всегда начинаем с понедельника первой недели года, чтобы заполнить всю сетку
-            var jan1 = new Date(selectedYear, 0, 1);
-            var dayOfWeek = jan1.getDay();
-            if (dayOfWeek === 0) dayOfWeek = 7; // Воскресенье = 7
-            var yearStartMonday = new Date(jan1);
-            yearStartMonday.setDate(jan1.getDate() - (dayOfWeek - 1)); // Устанавливаем на понедельник
+            // Начинаем с 1 января выбранного года
+            startDate = new Date(selectedYear, 0, 1);
 
-            // Используем yearStartMonday как базовую начальную дату для консистентности
-            startDate = yearStartMonday;
-
-            // Рассчитываем количество дней и недель - всегда используем полный год (53 недели максимум)
+            // Рассчитываем количество дней и недель - полный год
             var yearEnd = new Date(selectedYear, 11, 31);
-            var yearStart = new Date(selectedYear, 0, 1);
-            var timeDiff = yearEnd.getTime() - yearStartMonday.getTime();
+            var timeDiff = yearEnd.getTime() - startDate.getTime();
             var daysTotal = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1;
-            var weeksCount = Math.min(Math.ceil(daysTotal / 7), 53); // Ограничиваем 53 неделями для полного года
+            var weeksCount = Math.ceil(daysTotal / 7);
 
             // Создаем заголовки месяцев
             html += '<div class="heatmap-row month-labels">';
@@ -333,17 +325,10 @@
             // Создаем отображение месяцев - всегда отображаем все 12 месяцев
             var monthPositions = []; // Храним позиции начала каждого месяца
 
-            // Определяем позиции начала каждого месяца
-            var jan1 = new Date(selectedYear, 0, 1);
-            var firstMonday = new Date(jan1);
-            var dayOfWeek = firstMonday.getDay();
-            if (dayOfWeek === 0) dayOfWeek = 7; // Воскресенье = 7
-            firstMonday.setDate(jan1.getDate() - (dayOfWeek - 1)); // Устанавливаем на понедельник
-
-            // Для каждого месяца определяем его позицию (неделю) начала
+            // Определяем позиции начала каждого месяца относительно 1 января
             for (var monthIndex = 0; monthIndex < 12; monthIndex++) {
                 var monthStart = new Date(selectedYear, monthIndex, 1);
-                var daysFromStart = Math.floor((monthStart - firstMonday) / (1000 * 3600 * 24));
+                var daysFromStart = Math.floor((monthStart - startDate) / (1000 * 3600 * 24));
                 var weekPosition = Math.floor(daysFromStart / 7);
 
                 monthPositions[monthIndex] = {
@@ -371,7 +356,7 @@
                 lastPosition = position + 1;
             }
 
-            // Заполняем оставшиеся ячейки до конца года (53 недели)
+            // Заполняем оставшиеся ячейки до конца года
             for (var i = lastPosition; i < weeksCount; i++) {
                 html += '<div class="heatmap-label"></div>';
             }
@@ -379,8 +364,8 @@
             html += '</div>';
 
             // Создаем строки для каждой недели
-            // Создаем 7 строк для дней недели (Пн-Вс)
-            var daysOfWeek = [
+            // Создаем 7 строк для дней недели, начиная с дня недели 1 января
+            var allDaysOfWeek = [
                 __('Mon', 'github-commit-chart'),
                 __('Tue', 'github-commit-chart'),
                 __('Wed', 'github-commit-chart'),
@@ -389,6 +374,15 @@
                 __('Sat', 'github-commit-chart'),
                 __('Sun', 'github-commit-chart')
             ];
+
+            var startDayOfWeek = startDate.getDay();
+            var daysOfWeek = [];
+
+            // Начинаем с дня недели 1 января и идем по кругу
+            for (var i = 0; i < 7; i++) {
+                daysOfWeek.push(allDaysOfWeek[(startDayOfWeek + i) % 7]);
+            }
+            // Перестраиваем индексацию, чтобы dayIndex соответствовал правильному дню
             for (var dayIndex = 0; dayIndex < 7; dayIndex++) {
                 html += '<div class="heatmap-row">';
 
@@ -397,19 +391,19 @@
 
                 // Создаем ячейки для каждого дня недели на протяжении всего года
                 // Для текущего года отображаем только прошедшие недели, для прошлых лет - весь год
-                var weeksToShow = 53;
+                var weeksToShow = weeksCount;
                 if (selectedYear === new Date().getFullYear()) {
                     // Для текущего года вычисляем количество прошедших недель
                     var today = new Date();
                     var firstDayOfYear = new Date(selectedYear, 0, 1);
                     var daysPassed = Math.floor((today - firstDayOfYear) / (1000 * 3600 * 24));
-                    weeksToShow = Math.min(Math.ceil(daysPassed / 7) + 1, 53); // +1 для полноты недели
+                    weeksToShow = Math.min(Math.ceil(daysPassed / 7) + 1, weeksCount); // +1 для полноты недели
                 }
 
                 for (var week = 0; week < weeksToShow; week++) {
-                    // Вычисляем дату для текущей ячейки
-                    var cellDate = new Date(firstMonday);
-                    cellDate.setDate(firstMonday.getDate() + (week * 7) + dayIndex);
+                    // Вычисляем дату для текущей ячейки с учетом правильного смещения
+                    var cellDate = new Date(startDate);
+                    cellDate.setDate(startDate.getDate() + (week * 7) + dayIndex);
                     var dateStr = cellDate.toISOString().split('T')[0];
                     var commits = commitData[dateStr] || 0;
 
@@ -438,8 +432,8 @@
                     }
                 }
 
-                // Заполняем оставшиеся ячейки пустыми блоками до 53 недель
-                for (var week = weeksToShow; week < 53; week++) {
+                // Заполняем оставшиеся ячейки пустыми блоками до weeksCount недель
+                for (var week = weeksToShow; week < weeksCount; week++) {
                     html += '<div class="heatmap-cell intensity-0"></div>';
                 }
 

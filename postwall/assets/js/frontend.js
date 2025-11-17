@@ -217,13 +217,13 @@
                     dayCell.className = `day lvl-${activityLevel}`;
                 }
 
-                // Add tooltip with post count - ЛОКАЛИЗУЕМ ТУТ!
+                // Add tooltip with post count - ИСПОЛЬЗУЕМ ЛОКАЛИЗОВАННУЮ ДАТУ
                 const postCount = this.postData ?
                     (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
-                
-                // Форматируем дату в локализованном формате
-                const formattedDate = cellDate.toLocaleDateString(this.getLocale());
-                
+
+                // Форматируем дату согласно настройкам WordPress
+                const formattedDate = this.formatDateAccordingToWordPress(cellDate);
+
                 // Создаем локализованный текст для тултипа
                 const tooltipText = this.formatTooltip(formattedDate, postCount);
                 dayCell.title = tooltipText;
@@ -275,6 +275,71 @@
             // Для английского и других языков - простые правила
             const postsText = this.translate('posts');
             return postsText;
+        }
+        
+        /**
+         * Format date according to WordPress date format settings
+         * @param {Date} date - Date to format
+         * @return {string} Formatted date string
+         */
+        formatDateAccordingToWordPress(date) {
+            // Если WordPress передал формат даты, используем его
+            if (postwallSettings.dateFormat) {
+                return this.formatDateWithWordPressFormat(date, postwallSettings.dateFormat);
+            }
+
+            // Иначе используем локализованный формат по умолчанию
+            return this.getLocalizedDateFormat(date);
+        }
+
+        /**
+         * Format date using WordPress date format
+         * @param {Date} date - Date to format
+         * @param {string} format - WordPress date format string
+         * @return {string} Formatted date
+         */
+        formatDateWithWordPressFormat(date, format) {
+            const replacements = {
+                'd': () => date.getDate().toString().padStart(2, '0'),
+                'j': () => date.getDate(),
+                'm': () => (date.getMonth() + 1).toString().padStart(2, '0'),
+                'n': () => (date.getMonth() + 1),
+                'Y': () => date.getFullYear(),
+                'y': () => date.getFullYear().toString().slice(-2),
+                'F': () => this.getMonthName(date.getMonth()),
+                'M': () => this.translate(this.getMonthName(date.getMonth()).slice(0, 3))
+            };
+
+            let result = format;
+            for (const [key, formatter] of Object.entries(replacements)) {
+                result = result.replace(new RegExp(key, 'g'), formatter());
+            }
+
+            return result;
+        }
+
+        /**
+         * Get localized date format as fallback
+         * @param {Date} date - Date to format
+         * @return {string} Formatted date
+         */
+        getLocalizedDateFormat(date) {
+            const locale = this.getLocale();
+
+            const formats = {
+                'ru_RU': () => {
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    return `${day}.${month}.${date.getFullYear()}`;
+                },
+                'en_US': () => {
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    return `${month}/${day}/${date.getFullYear()}`;
+                }
+            };
+
+            return (formats[locale] || formats['en_US'])();
         }
         
         /**

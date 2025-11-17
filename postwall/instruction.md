@@ -1,246 +1,551 @@
-Проблема в том, что у вас много JSON файлов с разными хешами и некоторые из них не содержат переводы месяцев. Давайте починим это!
+Отличная идея! Давайте локализуем даты в тултипах согласно настройкам WordPress. Вот подробная инструкция:
 
-## 1. Сначала почистим папку languages от лишних файлов
+## 1. Обновляем `frontend.js` - добавляем локализацию дат
 
-```bash
-# Переходим в папку плагина
-cd /path/to/your/wp-content/plugins/post-wall
+```javascript
+/**
+ * Post Wall Frontend JavaScript
+ *
+ * Handles the interactive post wall display on the frontend.
+ *
+ * @package PostWall
+ * @since 1.0.0
+ */
 
-# Удаляем все старые JSON файлы (они пересоздадутся)
-rm languages/postwall-*.json
+(function($) {
+    'use strict';
 
-# Оставляем только PO, MO и POT файлы
-ls -la languages/
-```
+    /**
+     * PostWall class for managing the calendar visualization
+     */
+    class PostWall {
+        constructor(containerElement) {
+            this.container = containerElement;
+            this.siteUrl = this.container.dataset.siteUrl;
+            this.containerId = this.container.dataset.containerId;
+            this.loadingElement = this.container.querySelector('.postwall-loading');
 
-Должны остаться:
-- `postwall.pot`
-- `postwall-en_US.po`
-- `postwall-en_US.mo`
-- `postwall-ru_RU.po`
-- `postwall-ru_RU.mo`
+            // Получаем данные из data-атрибутов
+            this.baseTitle = this.container.dataset.baseTitle || 'Posts from the site for the last 12 months';
+            this.loadingText = this.container.dataset.loadingText || 'Loading post wall...';
+            this.domain = this.container.dataset.domain || '';
 
-## 2. Проверим PO файлы на наличие переводов месяцев
+            this.init();
+        }
 
-**В `postwall-ru_RU.po` убедитесь, что есть переводы месяцев:**
+        /**
+         * Initialize the post wall
+         */
+        init() {
+            console.log('PostWall init called');
+            if (this.siteUrl) {
+                this.fetchPostData();
+            } else {
+                this.generateCalendar();
+            }
+        }
 
-```po
-#: build/frontend.js:105
-msgid "Jan"
-msgstr "Янв"
+        /**
+         * Fetch post data via AJAX
+         */
+        fetchPostData() {
+            console.log('Fetching post data for', this.siteUrl);
 
-#: build/frontend.js:105
-msgid "Feb"
-msgstr "Фев"
+            $.ajax({
+                url: postwallSettings.ajaxUrl,
+                method: 'POST',
+                data: {
+                    action: 'postwall_get_post_data',
+                    nonce: postwallSettings.nonce,
+                    site_url: this.siteUrl
+                },
+                success: (response) => {
+                    console.log('AJAX success:', response);
+                    if (response.success && response.data) {
+                        this.postData = response.data;
+                        this.generateCalendar();
+                    } else {
+                        this.showError(this.translate('Failed to load post data'));
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('AJAX error:', error);
+                    this.showError(this.translate('Error loading data'));
+                }
+            });
+        }
 
-#: build/frontend.js:105
-msgid "Mar"
-msgstr "Мар"
+        /**
+         * Show error message
+         * @param {string} message Error message to display
+         */
+        showError(message) {
+            if (this.loadingElement) {
+                this.loadingElement.textContent = message;
+            } else {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'postwall-error';
+                errorDiv.textContent = message;
+                this.container.appendChild(errorDiv);
+            }
+        }
 
-#: build/frontend.js:106
-msgid "Apr"
-msgstr "Апр"
+        /**
+         * Generate the calendar grid by months
+         */
+        generateCalendar() {
+            console.log('generateCalendar called');
+            // Remove loading indicator
+            if (this.loadingElement) {
+                this.loadingElement.remove();
+                console.log('Loading element removed');
+            }
 
-#: build/frontend.js:106
-msgid "May"
-msgstr "Май"
+            // Создаем или обновляем заголовок
+            this.createOrUpdateTitle();
 
-#: build/frontend.js:106
-msgid "Jun"
-msgstr "Июн"
+            // Create the heatmap wrapper
+            const wrapper = document.createElement('div');
+            wrapper.className = 'heatmap-wrapper';
+            console.log('Wrapper created');
 
-#: build/frontend.js:107
-msgid "Jul"
-msgstr "Июл"
+            // Create months container
+            const monthsContainer = document.createElement('div');
+            monthsContainer.className = 'months';
 
-#: build/frontend.js:107
-msgid "Aug"
-msgstr "Авг"
+            const now = new Date();
+            const monthNames = [
+                this.translate('Jan'), this.translate('Feb'), this.translate('Mar'),
+                this.translate('Apr'), this.translate('May'), this.translate('Jun'),
+                this.translate('Jul'), this.translate('Aug'), this.translate('Sep'),
+                this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
+            ];
 
-#: build/frontend.js:107
-msgid "Sep"
-msgstr "Сен"
+            // Generate 12 months from current back to 12 months ago
+            console.log('Generating months...');
+            for (let i = 11; i >= 0; i--) {
+                const monthDate = new Date(now);
+                monthDate.setMonth(now.getMonth() - i);
 
-#: build/frontend.js:108
-msgid "Oct"
-msgstr "Окт"
+                const monthDiv = this.createMonth(monthDate);
+                monthsContainer.appendChild(monthDiv);
+                console.log(`Month ${i} added`);
+            }
 
-#: build/frontend.js:108
-msgid "Nov"
-msgstr "Ноя"
+            wrapper.appendChild(monthsContainer);
+            this.container.appendChild(wrapper);
+            console.log('Calendar appended to container');
+        }
 
-#: build/frontend.js:108
-msgid "Dec"
-msgstr "Дек"
-```
+        /**
+         * Create or update the title element
+         */
+        createOrUpdateTitle() {
+            let titleElement = this.container.querySelector('.postwall-title');
 
-**В `postwall-en_US.po` убедитесь, что есть английские версии:**
+            // Создаем локализованный заголовок с доменом
+            const translatedTitle = this.generateTitleWithDomain();
 
-```po
-#: build/frontend.js:105
-msgid "Jan"
-msgstr "Jan"
+            if (!titleElement) {
+                titleElement = document.createElement('h3');
+                titleElement.className = 'postwall-title';
+                this.container.insertBefore(titleElement, this.container.firstChild);
+            }
 
-#: build/frontend.js:105
-msgid "Feb"
-msgstr "Feb"
+            titleElement.textContent = translatedTitle;
+            console.log('Final title:', translatedTitle);
+        }
 
-#: build/frontend.js:105
-msgid "Mar"
-msgstr "Mar"
+        /**
+         * Generate title with domain
+         * @return {string} Localized title with domain
+         */
+        generateTitleWithDomain() {
+            if (!this.domain) {
+                return this.translate(this.baseTitle);
+            }
 
-#: build/frontend.js:106
-msgid "Apr"
-msgstr "Apr"
+            // Простой способ - создаем заголовок в зависимости от языка
+            if (this.getLocale().startsWith('ru')) {
+                return 'Посты сайта ' + this.domain + ' за последние 12 месяцев';
+            } else {
+                return 'Posts from the site ' + this.domain + ' for the last 12 months';
+            }
+        }
 
-#: build/frontend.js:106
-msgid "May"
-msgstr "May"
+        /**
+         * Create a month grid
+         * @param {Date} monthDate - The date representing the month to create
+         * @return {HTMLElement} The month container element
+         */
+        createMonth(monthDate) {
+            console.log('createMonth called for', monthDate);
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'month';
 
-#: build/frontend.js:106
-msgid "Jun"
-msgstr "Jun"
+            const monthGrid = document.createElement('div');
+            monthGrid.className = 'month-grid';
 
-#: build/frontend.js:107
-msgid "Jul"
-msgstr "Jul"
+            const year = monthDate.getFullYear();
+            const month = monthDate.getMonth();
 
-#: build/frontend.js:107
-msgid "Aug"
-msgstr "Aug"
+            // Get first day of month and what day of week it falls on
+            const firstDay = new Date(year, month, 1);
+            const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
-#: build/frontend.js:107
-msgid "Sep"
-msgstr "Sep"
+            // Adjust for Monday first (0 = Monday, 6 = Sunday)
+            const adjustedFirstDay = (firstDayOfWeek + 6) % 7;
 
-#: build/frontend.js:108
-msgid "Oct"
-msgstr "Oct"
+            // Get number of days in month
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            console.log(`Month ${month + 1}, days: ${daysInMonth}, first day offset: ${adjustedFirstDay}`);
 
-#: build/frontend.js:108
-msgid "Nov"
-msgstr "Nov"
+            // Create cells
+            // Empty cells before first day
+            for (let i = 0; i < adjustedFirstDay; i++) {
+                const emptyCell = document.createElement('span');
+                emptyCell.className = 'day empty';
+                monthGrid.appendChild(emptyCell);
+            }
 
-#: build/frontend.js:108
-msgid "Dec"
-msgstr "Dec"
-```
+            // Days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('span');
+                const cellDate = new Date(year, month, day);
 
-## 3. Перекомпилируем MO файлы
+                // Determine activity level
+                const activityLevel = this.getActivityLevel(cellDate);
 
-```bash
-# Компилируем MO файлы из PO
-wp i18n make-mo languages/
-```
+                if (activityLevel === 0) {
+                    dayCell.className = 'day empty';
+                } else {
+                    dayCell.className = `day lvl-${activityLevel}`;
+                }
 
-## 4. Генерируем новые JSON файлы правильной командой
+                // Add tooltip with post count - ИСПОЛЬЗУЕМ ЛОКАЛИЗОВАННУЮ ДАТУ
+                const postCount = this.postData ?
+                    (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
 
-```bash
-# Генерируем JSON файлы для всех PO файлов
-wp i18n make-json languages/ --no-purge --pretty-print
-```
+                // Форматируем дату согласно настройкам WordPress
+                const formattedDate = this.formatDateAccordingToWordPress(cellDate);
 
-## 5. Проверяем результат
+                // Создаем локализованный текст для тултипа
+                const tooltipText = this.formatTooltip(formattedDate, postCount);
+                dayCell.title = tooltipText;
 
-```bash
-# Смотрим что создалось
-ls -la languages/
-```
+                monthGrid.appendChild(dayCell);
+            }
 
-Должны быть созданы 4 JSON файла:
-- `postwall-en_US-XXXXXXXXXXXX.json` (для index.js)
-- `postwall-en_US-YYYYYYYYYYYY.json` (для frontend.js)
-- `postwall-ru_RU-XXXXXXXXXXXX.json` (для index.js)
-- `postwall-ru_RU-YYYYYYYYYYYY.json` (для frontend.js)
+            monthDiv.appendChild(monthGrid);
 
-## 6. Проверяем содержимое русского JSON для frontend.js
+            // Add month label
+            const monthLabel = document.createElement('div');
+            monthLabel.className = 'month-label';
+            monthLabel.textContent = this.getMonthName(month);
+            monthDiv.appendChild(monthLabel);
+            console.log('Month created:', this.getMonthName(month));
 
-```bash
-# Находим файл для frontend.js (у него будет другой хеш)
-ls languages/postwall-ru_RU-*.json
+            return monthDiv;
+        }
 
-# Смотрим содержимое (замените ХХХ на реальный хеш)
-cat languages/postwall-ru_RU-79431f0eb8deb8221f24df5112e15095.json
-```
+        /**
+         * Format date according to WordPress date format settings
+         * @param {Date} date - Date to format
+         * @return {string} Formatted date string
+         */
+        formatDateAccordingToWordPress(date) {
+            // Получаем локаль из настроек
+            const locale = this.getLocale();
 
-Должно содержать переводы месяцев:
-```json
-{
-    "translation-revision-date": "2025-11-17T01:30:00+00:00",
-    "generator": "WP-CLI/2.12.0",
-    "source": "build/frontend.js",
-    "domain": "messages",
-    "locale_data": {
-        "messages": {
-            "": {
-                "domain": "messages",
-                "lang": "ru_RU",
-                "plural-forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
-            },
-            "Jan": ["Янв"],
-            "Feb": ["Фев"],
-            "Mar": ["Мар"],
-            "Apr": ["Апр"],
-            "May": ["Май"],
-            "Jun": ["Июн"],
-            "Jul": ["Июл"],
-            "Aug": ["Авг"],
-            "Sep": ["Сен"],
-            "Oct": ["Окт"],
-            "Nov": ["Ноя"],
-            "Dec": ["Дек"],
-            "post": ["пост"],
-            "posts": ["постов"]
+            // Базовые форматы дат для разных локалей
+            const dateFormats = {
+                'ru_RU': {
+                    // Русский формат: DD.MM.YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}.${month}.${year}`;
+                    }
+                },
+                'en_US': {
+                    // Американский формат: MM/DD/YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${month}/${day}/${year}`;
+                    }
+                },
+                'en_GB': {
+                    // Британский формат: DD/MM/YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}/${month}/${year}`;
+                    }
+                },
+                'de_DE': {
+                    // Немецкий формат: DD.MM.YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}.${month}.${year}`;
+                    }
+                },
+                'fr_FR': {
+                    // Французский формат: DD/MM/YYYY
+                    format: (d) => {
+                        const day = d.getDate().toString().padStart(2, '0');
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}/${month}/${year}`;
+                    }
+                }
+            };
+
+            // Используем формат для текущей локали или fallback
+            const localeFormat = dateFormats[locale] || dateFormats['en_US'];
+            return localeFormat.format(date);
+        }
+
+        /**
+         * Format tooltip text with proper localization
+         * @param {string} date Formatted date
+         * @param {number} postCount Number of posts
+         * @return {string} Localized tooltip text
+         */
+        formatTooltip(date, postCount) {
+            // Получаем переведенное слово "posts" в правильной форме
+            const postsText = this.getPostsText(postCount);
+            return `${date}: ${postCount} ${postsText}`;
+        }
+
+        /**
+         * Get localized posts text with proper plural forms
+         * @param {number} count Number of posts
+         * @return {string} Localized posts text
+         */
+        getPostsText(count) {
+            // Для русского языка - особые правила множественного числа
+            if (this.getLocale().startsWith('ru')) {
+                const lastDigit = count % 10;
+                const lastTwoDigits = count % 100;
+
+                if (lastDigit === 1 && lastTwoDigits !== 11) {
+                    return 'пост';
+                } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+                    return 'поста';
+                } else {
+                    return 'постов';
+                }
+            }
+
+            // Для английского и других языков
+            return this.translate('posts');
+        }
+
+        /**
+         * Get current locale
+         * @return {string} Current locale
+         */
+        getLocale() {
+            return postwallSettings.locale || 'en_US';
+        }
+
+        /**
+         * Get activity level for a date based on real post data
+         *
+         * @param {Date} date The date to check
+         * @return {number} Activity level (0-4)
+         */
+        getActivityLevel(date) {
+            // If we have real data, use it
+            if (this.postData) {
+                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const postCount = this.postData[dateKey] || 0;
+
+                // Determine activity level based on post count
+                if (postCount === 0) return 0; // No posts
+                if (postCount === 1) return 1; // 1 post
+                if (postCount === 2) return 2; // 2 posts
+                if (postCount <= 4) return 3; // 3-4 posts
+                return 4; // 5+ posts
+            }
+
+            // Fallback to random for demo when no data available
+            const random = Math.random();
+            if (random < 0.3) return 0;
+            if (random < 0.5) return 1;
+            if (random < 0.7) return 2;
+            if (random < 0.9) return 3;
+            return 4;
+        }
+
+        /**
+         * Get localized month name
+         * @param {number} monthIndex - Month index (0-11)
+         * @return {string} Month name
+         */
+        getMonthName(monthIndex) {
+            const monthNames = [
+                this.translate('Jan'), this.translate('Feb'), this.translate('Mar'),
+                this.translate('Apr'), this.translate('May'), this.translate('Jun'),
+                this.translate('Jul'), this.translate('Aug'), this.translate('Sep'),
+                this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
+            ];
+            return monthNames[monthIndex];
+        }
+
+        /**
+         * Translation helper with fallback
+         * @param {string} text Text to translate
+         * @return {string} Translated text
+         */
+        translate(text) {
+            // Try to use wp.i18n if available
+            if (typeof wp !== 'undefined' && wp.i18n && typeof wp.i18n.__ === 'function') {
+                return wp.i18n.__(text, 'postwall');
+            }
+
+            // Fallback: manual translation based on locale
+            if (this.getLocale().startsWith('ru')) {
+                const russianTranslations = {
+                    'Posts from the site for the last 12 months': 'Посты с сайта за последние 12 месяцев',
+                    'Loading post wall...': 'Загрузка кафельной стенки...',
+                    'Failed to load post data': 'Не удалось загрузить данные постов',
+                    'Error loading data': 'Ошибка при загрузке данных',
+                    'posts': 'постов',
+                    'Jan': 'янв', 'Feb': 'фев', 'Mar': 'мар', 'Apr': 'апр',
+                    'May': 'май', 'Jun': 'июн', 'Jul': 'июл', 'Aug': 'авг',
+                    'Sep': 'сен', 'Oct': 'окт', 'Nov': 'ноя', 'Dec': 'дек'
+                };
+                return russianTranslations[text] || text;
+            }
+
+            // Default to English
+            return text;
         }
     }
-}
+
+    /**
+     * Initialize PostWall instances when DOM is ready
+     */
+    $(document).ready(function() {
+        $('.postwall-container').each(function() {
+            new PostWall(this);
+        });
+    });
+
+})(jQuery);
 ```
 
-## 7. Очищаем кеш
+## 2. Альтернативный вариант - если хотим использовать точные настройки WordPress
 
-```bash
-# Очищаем кеш браузера (Ctrl+F5 или Ctrl+Shift+R)
-# Если используете кеширующий плагин - очистите кеш WordPress
-```
+Если хотите получать реальный формат даты из настроек WordPress, нужно передать его через `postwallSettings`:
 
-## 8. Если всё равно не работает - принудительно обновляем frontend.js
-
-Добавьте версию к скрипту в `postwall.php`:
+### 2.1 Обновляем `postwall.php` - передаем формат даты
 
 ```php
 public function enqueue_frontend_assets() {
-    // Пути к файлам сборки для фронтенда
-    $frontend_js = POSTWALL_PLUGIN_PATH . 'build/frontend.js';
-    $style_css = POSTWALL_PLUGIN_PATH . 'build/style-index.css';
+    // ... существующий код ...
 
-    // Принудительно обновляем версию при изменении файла
-    $frontend_version = file_exists($frontend_js) ? filemtime($frontend_js) : time();
+    // Передача настроек плагина в JavaScript
+    wp_localize_script('postwall-frontend', 'postwallSettings', array(
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('postwall_get_data'),
+        'locale' => get_locale(),
+        'dateFormat' => get_option('date_format', 'F j, Y') // Получаем формат даты из настроек WordPress
+    ));
 
-    // Подключение JavaScript для фронтенда
-    wp_enqueue_script(
-        'postwall-frontend',
-        POSTWALL_PLUGIN_URL . 'build/frontend.js',
-        array('jquery', 'wp-i18n'),
-        $frontend_version, // Используем время изменения файла как версию
-        true
-    );
-
-    // ... остальной код без изменений
+    // ... остальной код ...
 }
 ```
 
-## 9. Проверяем в браузере
-
-Откройте консоль разработчика (F12) и проверьте:
+### 2.2 Обновляем `frontend.js` - используем WordPress формат
 
 ```javascript
-// Должны видеть русские переводы
-console.log(wp.i18n.__('Jan', 'postwall')); // Должно быть "Янв"
-console.log(wp.i18n.__('Feb', 'postwall')); // Должно быть "Фев"
+/**
+ * Format date according to WordPress date format settings
+ * @param {Date} date - Date to format
+ * @return {string} Formatted date string
+ */
+formatDateAccordingToWordPress(date) {
+    // Если WordPress передал формат даты, используем его
+    if (postwallSettings.dateFormat) {
+        return this.formatDateWithWordPressFormat(date, postwallSettings.dateFormat);
+    }
+
+    // Иначе используем локализованный формат по умолчанию
+    return this.getLocalizedDateFormat(date);
+}
+
+/**
+ * Format date using WordPress date format
+ * @param {Date} date - Date to format
+ * @param {string} format - WordPress date format string
+ * @return {string} Formatted date
+ */
+formatDateWithWordPressFormat(date, format) {
+    const replacements = {
+        'd': () => date.getDate().toString().padStart(2, '0'),
+        'j': () => date.getDate(),
+        'm': () => (date.getMonth() + 1).toString().padStart(2, '0'),
+        'n': () => (date.getMonth() + 1),
+        'Y': () => date.getFullYear(),
+        'y': () => date.getFullYear().toString().slice(-2),
+        'F': () => this.getMonthName(date.getMonth()),
+        'M': () => this.translate(this.getMonthName(date.getMonth()).slice(0, 3))
+    };
+
+    let result = format;
+    for (const [key, formatter] of Object.entries(replacements)) {
+        result = result.replace(new RegExp(key, 'g'), formatter());
+    }
+
+    return result;
+}
+
+/**
+ * Get localized date format as fallback
+ * @param {Date} date - Date to format
+ * @return {string} Formatted date
+ */
+getLocalizedDateFormat(date) {
+    const locale = this.getLocale();
+
+    const formats = {
+        'ru_RU': () => {
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            return `${day}.${month}.${date.getFullYear()}`;
+        },
+        'en_US': () => {
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            return `${month}/${day}/${date.getFullYear()}`;
+        }
+    };
+
+    return (formats[locale] || formats['en_US'])();
+}
 ```
 
-## Резюме проблемы:
+## 3. Проверяем результат
 
-У вас было много JSON файлов с разными хешами, и WordPress мог загружать не тот файл, который содержит переводы месяцев. После очистки и перегенерации всё должно заработать!
+После обновления:
 
-После выполнения этих шагов месяцы должны снова переводиться на русский язык.
+- **В русской локали** даты будут показываться как: `17.11.2025: 3 поста`
+- **В американской локали** даты будут показываться как: `11/17/2025: 3 posts`
+- **В британской локали** даты будут показываться как: `17/11/2025: 3 posts`
+
+## 4. Очищаем кеш
+
+```bash
+# Очищаем кеш браузера
+# Очищаем кеш WordPress если нужно
+```
+
+Теперь даты в тултипах будут отображаться в формате, соответствующем настройкам локали WordPress!

@@ -173,12 +173,17 @@
                  dayCell.className = `day lvl-${activityLevel}`;
              }
 
-             // Add tooltip with post count
+             // Add tooltip with post count - ИСПОЛЬЗУЕМ ЛОКАЛИЗОВАННУЮ ДАТУ
              const postCount = this.postData ?
                  (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
-             const dateStr = cellDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-             const postText = postCount === 1 ? wp.i18n.__('post', 'postwall') : wp.i18n.__('posts', 'postwall');
-             dayCell.title = dateStr + ': ' + postCount + ' ' + postText;
+
+             // Форматируем дату согласно настройкам WordPress
+             const formattedDate = this.formatDateAccordingToWordPress(cellDate);
+
+             // Создаем локализованный текст для тултипа
+             const postText = this.getPostsText(postCount);
+             const tooltipText = formattedDate + ': ' + postCount + ' ' + postText;
+             dayCell.title = tooltipText;
 
              monthGrid.appendChild(dayCell);
          }
@@ -237,6 +242,95 @@
                 wp.i18n.__('Oct', 'postwall'), wp.i18n.__('Nov', 'postwall'), wp.i18n.__('Dec', 'postwall')
             ];
             return monthNames[monthIndex];
+        }
+        
+        /**
+         * Get localized posts text with proper plural forms
+         * @param {number} count Number of posts
+         * @return {string} Localized posts text
+         */
+        getPostsText(count) {
+            // Для русского языка - особые правила множественного числа
+            if (postwallSettings.locale && postwallSettings.locale.startsWith('ru')) {
+                const lastDigit = count % 10;
+                const lastTwoDigits = count % 100;
+
+                if (lastDigit === 1 && lastTwoDigits !== 11) {
+                    return 'пост';
+                } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+                    return 'поста';
+                } else {
+                    return 'постов';
+                }
+            }
+            
+            // Для английского и других языков - простые правила
+            return count === 1 ? wp.i18n.__('post', 'postwall') : wp.i18n.__('posts', 'postwall');
+        }
+        
+        /**
+         * Format date according to WordPress date format settings
+         * @param {Date} date - Date to format
+         * @return {string} Formatted date string
+         */
+        formatDateAccordingToWordPress(date) {
+            // Если WordPress передал формат даты, используем его
+            if (postwallSettings.dateFormat) {
+                return this.formatDateWithWordPressFormat(date, postwallSettings.dateFormat);
+            }
+
+            // Иначе используем локализованный формат по умолчанию
+            return this.getLocalizedDateFormat(date);
+        }
+
+        /**
+         * Format date using WordPress date format
+         * @param {Date} date - Date to format
+         * @param {string} format - WordPress date format string
+         * @return {string} Formatted date
+         */
+        formatDateWithWordPressFormat(date, format) {
+            const replacements = {
+                'd': () => date.getDate().toString().padStart(2, '0'),
+                'j': () => date.getDate(),
+                'm': () => (date.getMonth() + 1).toString().padStart(2, '0'),
+                'n': () => (date.getMonth() + 1),
+                'Y': () => date.getFullYear(),
+                'y': () => date.getFullYear().toString().slice(-2),
+                'F': () => this.getMonthName(date.getMonth()),
+                'M': () => this.getMonthName(date.getMonth()).slice(0, 3)
+            };
+
+            let result = format;
+            for (const [key, formatter] of Object.entries(replacements)) {
+                result = result.replace(new RegExp(key, 'g'), formatter());
+            }
+
+            return result;
+        }
+
+        /**
+         * Get localized date format as fallback
+         * @param {Date} date - Date to format
+         * @return {string} Formatted date
+         */
+        getLocalizedDateFormat(date) {
+            const locale = postwallSettings.locale || 'en_US';
+
+            const formats = {
+                'ru_RU': () => {
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    return `${day}.${month}.${date.getFullYear()}`;
+                },
+                'en_US': () => {
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    return `${month}/${day}/${date.getFullYear()}`;
+                }
+            };
+
+            return (formats[locale] || formats['en_US'])();
         }
     }
 
