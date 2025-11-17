@@ -78,7 +78,10 @@
     border-radius: 2px;
 }
 
-.empty { background: var(--empty); }
+.empty {
+    background: transparent;
+    border: none;
+}
 
 .lvl-0 { background: var(--lvl0); }
 .lvl-1 { background: var(--lvl1); }
