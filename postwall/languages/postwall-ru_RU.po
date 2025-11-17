@@ -1,5 +1,3 @@
-# Copyright (C) 2025 Владимир Бычко
-# This file is distributed under the same license as the Post Wall plugin.
 msgid ""
 msgstr ""
 "Project-Id-Version: Post Wall 1.0.0\n"
@@ -11,13 +9,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2025-11-16T20:28:40+00:00\n"
 "PO-Revision-Date: 2025-11-16T20:28:40+00:00\n"
+"Language: ru_RU\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: postwall\n"
-"Language: ru_RU\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 #. Plugin Name of the plugin
 #: postwall.php
+#: build/index.js:22
 msgid "Post Wall"
 msgstr "Кафельная стенка постов"
 
@@ -31,18 +30,98 @@ msgstr "Отображает кафельные стенки постов как
 msgid "Владимир Бычко"
 msgstr "Владимир Бычко"
 
-#: includes/block-registration.php:52
-msgid "Please specify the site URL in the block settings."
-msgstr "Укажите адрес сайта в настройках блока."
-
-#: includes/block-registration.php:57
-msgid "Invalid site URL format."
-msgstr "Неверный формат адреса сайта."
-
-#: includes/block-registration.php:69
+#: includes/block-registration.php:68
 msgid "Posts from the site for the last 12 months"
 msgstr "Посты сайта за последние 12 месяцев"
 
-#: includes/block-registration.php:70
+#: includes/block-registration.php:69
 msgid "Loading post wall..."
 msgstr "Загрузка кафельной стенки..."
+
+#: includes/class-ajax-handler.php:74
+msgid "Security check failed"
+msgstr ""
+
+#: includes/class-ajax-handler.php:124
+msgid "Site URL is required"
+msgstr ""
+
+#: includes/class-ajax-handler.php:129
+msgid "Invalid site URL format"
+msgstr ""
+
+#: build/index.js:50
+msgid "Кафельная стенка постов"
+msgstr ""
+
+#: build/index.js:57
+msgid "Настройки Post Wall"
+msgstr ""
+
+#: build/index.js:59
+msgid "Адрес сайта"
+msgstr ""
+
+#: build/index.js:64
+msgid "https://example.com"
+msgstr ""
+
+#: build/frontend.js:105
+#: build/frontend.js:232
+msgid "Jan"
+msgstr "янв"
+
+#: build/frontend.js:105
+#: build/frontend.js:232
+msgid "Feb"
+msgstr "фев"
+
+#: build/frontend.js:105
+#: build/frontend.js:232
+msgid "Mar"
+msgstr "мар"
+
+#: build/frontend.js:106
+#: build/frontend.js:233
+msgid "Apr"
+msgstr "апр"
+
+#: build/frontend.js:106
+#: build/frontend.js:233
+msgid "May"
+msgstr "май"
+
+#: build/frontend.js:106
+#: build/frontend.js:233
+msgid "Jun"
+msgstr "июн"
+
+#: build/frontend.js:107
+#: build/frontend.js:234
+msgid "Jul"
+msgstr "июл"
+
+#: build/frontend.js:107
+#: build/frontend.js:234
+msgid "Aug"
+msgstr "авг"
+
+#: build/frontend.js:107
+#: build/frontend.js:234
+msgid "Sep"
+msgstr "сен"
+
+#: build/frontend.js:108
+#: build/frontend.js:235
+msgid "Oct"
+msgstr "окт"
+
+#: build/frontend.js:108
+#: build/frontend.js:235
+msgid "Nov"
+msgstr "ноя"
+
+#: build/frontend.js:108
+#: build/frontend.js:235
+msgid "Dec"
+msgstr "дек"

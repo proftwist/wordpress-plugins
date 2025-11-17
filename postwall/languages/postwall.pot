@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Post Wall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Post Wall 1.0.0\n"
+"Project-Id-Version: Post Wall 1.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/postwall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-16T20:33:29+00:00\n"
+"POT-Creation-Date: 2025-11-17T00:31:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: postwall\n"
@@ -30,20 +30,84 @@ msgstr ""
 msgid "Владимир Бычко"
 msgstr ""
 
-#: includes/block-registration.php:52
-msgid "Please specify the site URL in the block settings."
-msgstr ""
-
-#: includes/block-registration.php:57
-msgid "Invalid site URL format."
-msgstr ""
-
-#: includes/block-registration.php:69
+#: includes/block-registration.php:68
 msgid "Posts from the site for the last 12 months"
 msgstr ""
 
-#: includes/block-registration.php:70
+#: includes/block-registration.php:69
 msgid "Loading post wall..."
+msgstr ""
+
+#: includes/class-ajax-handler.php:74
+msgid "Security check failed"
+msgstr ""
+
+#: includes/class-ajax-handler.php:124
+msgid "Site URL is required"
+msgstr ""
+
+#: includes/class-ajax-handler.php:129
+msgid "Invalid site URL format"
+msgstr ""
+
+#: build/frontend.js:105
+#: build/frontend.js:232
+msgid "Jan"
+msgstr ""
+
+#: build/frontend.js:105
+#: build/frontend.js:232
+msgid "Feb"
+msgstr ""
+
+#: build/frontend.js:105
+#: build/frontend.js:232
+msgid "Mar"
+msgstr ""
+
+#: build/frontend.js:106
+#: build/frontend.js:233
+msgid "Apr"
+msgstr ""
+
+#: build/frontend.js:106
+#: build/frontend.js:233
+msgid "May"
+msgstr ""
+
+#: build/frontend.js:106
+#: build/frontend.js:233
+msgid "Jun"
+msgstr ""
+
+#: build/frontend.js:107
+#: build/frontend.js:234
+msgid "Jul"
+msgstr ""
+
+#: build/frontend.js:107
+#: build/frontend.js:234
+msgid "Aug"
+msgstr ""
+
+#: build/frontend.js:107
+#: build/frontend.js:234
+msgid "Sep"
+msgstr ""
+
+#: build/frontend.js:108
+#: build/frontend.js:235
+msgid "Oct"
+msgstr ""
+
+#: build/frontend.js:108
+#: build/frontend.js:235
+msgid "Nov"
+msgstr ""
+
+#: build/frontend.js:108
+#: build/frontend.js:235
+msgid "Dec"
 msgstr ""
 
 #: build/index.js:50

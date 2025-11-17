@@ -102,8 +102,10 @@
 
             const now = new Date();
             const monthNames = [
-                'янв', 'фев', 'мар', 'апр', 'май', 'июн',
-                'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
+                wp.i18n.__('Jan', 'postwall'), wp.i18n.__('Feb', 'postwall'), wp.i18n.__('Mar', 'postwall'),
+                wp.i18n.__('Apr', 'postwall'), wp.i18n.__('May', 'postwall'), wp.i18n.__('Jun', 'postwall'),
+                wp.i18n.__('Jul', 'postwall'), wp.i18n.__('Aug', 'postwall'), wp.i18n.__('Sep', 'postwall'),
+                wp.i18n.__('Oct', 'postwall'), wp.i18n.__('Nov', 'postwall'), wp.i18n.__('Dec', 'postwall')
             ];
 
             // Generate 12 months from current back to 12 months ago
@@ -227,8 +229,10 @@
          */
         getMonthName(monthIndex) {
             const monthNames = [
-                'янв', 'фев', 'мар', 'апр', 'май', 'июн',
-                'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
+                wp.i18n.__('Jan', 'postwall'), wp.i18n.__('Feb', 'postwall'), wp.i18n.__('Mar', 'postwall'),
+                wp.i18n.__('Apr', 'postwall'), wp.i18n.__('May', 'postwall'), wp.i18n.__('Jun', 'postwall'),
+                wp.i18n.__('Jul', 'postwall'), wp.i18n.__('Aug', 'postwall'), wp.i18n.__('Sep', 'postwall'),
+                wp.i18n.__('Oct', 'postwall'), wp.i18n.__('Nov', 'postwall'), wp.i18n.__('Dec', 'postwall')
             ];
             return monthNames[monthIndex];
         }

@@ -21,7 +21,6 @@ define('POSTWALL_PLUGIN_VERSION', '1.0.0');                // Версия пл�
 
 // Подключение вспомогательных файлов
 require_once POSTWALL_PLUGIN_PATH . 'includes/class-assets-manager.php';       // Менеджер ресурсов
-require_once POSTWALL_PLUGIN_PATH . 'includes/class-language-manager.php';     // Менеджер языков
 require_once POSTWALL_PLUGIN_PATH . 'includes/class-ajax-handler.php';          // AJAX обработчики
 require_once POSTWALL_PLUGIN_PATH . 'includes/class-postwall-api.php';          // API для получения данных
 require_once POSTWALL_PLUGIN_PATH . 'includes/block-registration.php';         // Регистрация Gutenberg-блока
@@ -65,11 +64,9 @@ class PostWall {
      * @since 1.0.0
      */
     private function __construct() {
-        // Инициализация менеджера языков
-        PostWall_Language_Manager::init();
-
         // Регистрация основных хуков WordPress
         add_action('init', array($this, 'init'));  // Инициализация плагина
+        add_action('plugins_loaded', array($this, 'load_textdomain'));
     }
 
     /**
@@ -162,6 +159,19 @@ class PostWall {
             POSTWALL_PLUGIN_URL . 'build/style-index.css', // URL к файлу стилей
             array(),                             // Без зависимостей
             file_exists($style_css) ? filemtime($style_css) : time() // Версия файла
+        );
+    }
+
+    /**
+     * Загрузка текстового домена
+     *
+     * @since 1.0.0
+     */
+    public function load_textdomain() {
+        load_plugin_textdomain(
+            'postwall',
+            false,
+            dirname(plugin_basename(__FILE__)) . '/languages/'
         );
     }
 
