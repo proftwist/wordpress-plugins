@@ -27,6 +27,7 @@ class EasyChangelog {
         add_action('init', array($this, 'init'));
         add_action('enqueue_block_assets', array($this, 'enqueue_block_assets'));
         add_action('init', array($this, 'load_textdomain'));
+        add_action('plugins_loaded', array($this, 'set_locale'));
     }
 
     public function init() {
@@ -84,6 +85,33 @@ class EasyChangelog {
         );
     }
 
+    /**
+     * Установка локали на основе локали WordPress
+     */
+    public function set_locale() {
+        $locale = get_locale();
+
+        // Определяем язык на основе локали WordPress
+        if (strpos($locale, 'ru') === 0) {
+            $locale = 'ru_RU';
+        } else {
+            $locale = 'en_US';
+        }
+
+        // Обновляем локаль для плагина
+        load_plugin_textdomain(
+            'easy-changelog',
+            false,
+            dirname(plugin_basename(__FILE__)) . '/languages'
+        );
+
+        // Принудительно загружаем соответствующий языковой файл
+        $mo_file = dirname(plugin_basename(__FILE__)) . '/languages/easy-changelog-' . $locale . '.mo';
+        if (file_exists(dirname(__FILE__) . '/languages/easy-changelog-' . $locale . '.mo')) {
+            load_textdomain('easy-changelog', dirname(__FILE__) . '/languages/easy-changelog-' . $locale . '.mo');
+        }
+    }
+
     public function render_block($attributes) {
         if (empty($attributes['changelogData'])) {
             return '<p>' . __('No changelog data provided', 'easy-changelog') . '</p>';
@@ -105,7 +133,7 @@ class EasyChangelog {
                         <div class="easy-changelog-release">
                             <div class="easy-changelog-header">
                                 <span class="easy-changelog-version"><?php echo esc_html($release['version']); ?></span>
-                                <span class="easy-changelog-date"><?php echo esc_html($release['date']); ?></span>
+                                <span class="easy-changelog-date"><?php echo esc_html($this->format_date($release['date'])); ?></span>
                             </div>
                             <?php if (!empty($release['added']) && is_array($release['added'])): ?>
                                 <div class="easy-changelog-section">
@@ -124,6 +152,17 @@ class EasyChangelog {
         </div>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Форматирование даты в российском формате (DD.MM.YYYY)
+     */
+    private function format_date($date_string) {
+        $timestamp = strtotime($date_string);
+        if ($timestamp !== false) {
+            return date('d.m.Y', $timestamp);
+        }
+        return $date_string; // Возвращаем оригинальную строку, если парсинг не удался
     }
 }
 

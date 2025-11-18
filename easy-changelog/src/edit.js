@@ -69,6 +69,24 @@ const Edit = ({ attributes, setAttributes }) => {
         </div>
     );
 
+    // Функция форматирования даты в российском формате (DD.MM.YYYY)
+    const formatDate = (dateString) => {
+        if (!dateString || dateString === 'No date') {
+            return dateString;
+        }
+
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return dateString;
+        }
+
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+
+        return `${day}.${month}.${year}`;
+    };
+
     const renderPreviewTab = () => (
         <div className="easy-changelog-preview">
             {jsonError ? (
@@ -90,7 +108,7 @@ const Edit = ({ attributes, setAttributes }) => {
                                         {release.version || 'No version'}
                                     </span>
                                     <span className="easy-changelog-date">
-                                        {release.date || 'No date'}
+                                        {formatDate(release.date || 'No date')}
                                     </span>
                                 </div>
                                 {release.added && release.added.length > 0 && (
