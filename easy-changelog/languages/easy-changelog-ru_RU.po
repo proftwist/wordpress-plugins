@@ -1,0 +1,58 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Easy Changelog\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Vladimir Bychko <http://bychko.ru>\n"
+"Language-Team: Russian\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-01-15 12:00+0000\n"
+"PO-Revision-Date: 2024-01-15 12:00+0000\n"
+"Language: ru_RU\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+msgid "Easy Changelog"
+msgstr "Легкий Чейнджлог"
+
+msgid "Display a beautiful changelog with JSON data"
+msgstr "Отображение красивого чейнджлога с данными JSON"
+
+msgid "Changelog"
+msgstr "История изменений"
+
+msgid "Added"
+msgstr "Добавлено"
+
+msgid "JSON Editor"
+msgstr "Редактор JSON"
+
+msgid "Preview"
+msgstr "Предпросмотр"
+
+msgid "Changelog JSON"
+msgstr "JSON чейнджлога"
+
+msgid "Enter valid JSON array with version, date, and added fields"
+msgstr "Введите валидный массив JSON с полями version, date и added"
+
+msgid "Invalid JSON format"
+msgstr "Неверный формат JSON"
+
+msgid "JSON must be an array"
+msgstr "JSON должен быть массивом"
+
+msgid "Fix JSON errors to see preview"
+msgstr "Исправьте ошибки JSON для просмотра"
+
+msgid "No changelog data to display"
+msgstr "Нет данных чейнджлога для отображения"
+
+msgid "Changelog Settings"
+msgstr "Настройки чейнджлога"
+
+msgid "Use the JSON Editor tab to input your changelog data in JSON format."
+msgstr "Используйте вкладку редактора JSON для ввода данных чейнджлога в формате JSON."
+
+msgid "Invalid changelog data"
+msgstr "Неверные данные чейнджлога"

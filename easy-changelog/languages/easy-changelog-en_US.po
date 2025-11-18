@@ -1,0 +1,58 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Easy Changelog\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Vladimir Bychko <http://bychko.ru>\n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-01-15 12:00+0000\n"
+"PO-Revision-Date: 2024-01-15 12:00+0000\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Easy Changelog"
+msgstr "Easy Changelog"
+
+msgid "Display a beautiful changelog with JSON data"
+msgstr "Display a beautiful changelog with JSON data"
+
+msgid "Changelog"
+msgstr "Changelog"
+
+msgid "Added"
+msgstr "Added"
+
+msgid "JSON Editor"
+msgstr "JSON Editor"
+
+msgid "Preview"
+msgstr "Preview"
+
+msgid "Changelog JSON"
+msgstr "Changelog JSON"
+
+msgid "Enter valid JSON array with version, date, and added fields"
+msgstr "Enter valid JSON array with version, date, and added fields"
+
+msgid "Invalid JSON format"
+msgstr "Invalid JSON format"
+
+msgid "JSON must be an array"
+msgstr "JSON must be an array"
+
+msgid "Fix JSON errors to see preview"
+msgstr "Fix JSON errors to see preview"
+
+msgid "No changelog data to display"
+msgstr "No changelog data to display"
+
+msgid "Changelog Settings"
+msgstr "Changelog Settings"
+
+msgid "Use the JSON Editor tab to input your changelog data in JSON format."
+msgstr "Use the JSON Editor tab to input your changelog data in JSON format."
+
+msgid "Invalid changelog data"
+msgstr "Invalid changelog data"
