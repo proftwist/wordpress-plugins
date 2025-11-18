@@ -22,7 +22,7 @@ msgid "Scroll Progress Bar"
 msgstr "Scroll Progress Bar"
 
 #: scroll-progress-bar.php:7
-msgid "Минималистичная полоска прогресса чтения вверху страницы. Улучшает UX длинных статей."
+msgid "Minimalistic scroll progress bar at the top of the page. Improves UX for long articles."
 msgstr "Минималистичная полоска прогресса чтения вверху страницы. Улучшает UX длинных статей."
 
 #: includes/class-settings.php:44
@@ -30,7 +30,7 @@ msgid "Scroll Progress Bar - Настройки"
 msgstr "Scroll Progress Bar - Настройки"
 
 #: includes/class-settings.php:45
-msgid "Основные настройки"
+msgid "Main Settings"
 msgstr "Основные настройки"
 
 #: includes/class-settings.php:46
