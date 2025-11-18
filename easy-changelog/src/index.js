@@ -16,7 +16,7 @@ registerBlockType('easy-changelog/changelog', {
             default: `[
     {
         "version": "1.0.0",
-        "date": "2024-01-15",
+        "date": "15.01.2024",
         "added": [
             "Initial release of the plugin",
             "Basic changelog functionality",
@@ -25,7 +25,7 @@ registerBlockType('easy-changelog/changelog', {
     },
     {
         "version": "1.1.0",
-        "date": "2024-01-20",
+        "date": "20.01.2024",
         "added": [
             "Added preview tab",
             "Improved styling",
