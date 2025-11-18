@@ -1,0 +1,52 @@
+# Copyright (C) 2024 Владимир Бычко
+# This file is distributed under the same license as the Plugin Update Disabler plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Plugin Update Disabler 1.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: \n"
+"X-Generator: WP-CLI 2.5.0\n"
+"X-Domain: plugin-update-disabler\n"
+
+#. Plugin Name of the plugin
+msgid "Plugin Update Disabler"
+msgstr ""
+
+#. Description of the plugin
+msgid "Allows to forcefully block updates for selected plugins and disable all update notifications"
+msgstr ""
+
+#: plugin-update-disabler.php:96
+msgid "Block updates"
+msgstr ""
+
+#: plugin-update-disabler.php:97
+msgid "Unblock updates"
+msgstr ""
+
+#: plugin-update-disabler.php:143
+msgid "Plugin not specified"
+msgstr ""
+
+#: plugin-update-disabler.php:176
+msgid "Updating this plugin may harm the site. Continue?"
+msgstr ""
+
+#: plugin-update-disabler.php:177
+msgid "Blocking updates..."
+msgstr ""
+
+#: plugin-update-disabler.php:178
+msgid "Unblocking updates..."
+msgstr ""
+
+#: plugin-update-disabler.php:180
+msgid "Invalid action"
+msgstr ""
