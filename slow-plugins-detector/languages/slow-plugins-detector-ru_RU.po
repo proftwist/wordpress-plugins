@@ -1,0 +1,99 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Slow Plugins Detector 1.0.0\n"
+"Report-Msgid-Bugs-To: https://bychko.ru\n"
+"Last-Translator: Владимир Бычко <admin@bychko.ru>\n"
+"Language-Team: Russian <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-11-18 01:00:00+00:00\n"
+"PO-Revision-Date: 2024-11-18 01:00+00:00\n"
+"Language: ru_RU\n"
+"X-Generator: WP-CLI 2.5.0\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Domain: slow-plugins-detector\n"
+
+#: slow-plugins-detector.php:93
+msgid "Slow Plugins Detector"
+msgstr "Детектор медленных плагинов"
+
+#: slow-plugins-detector.php:99
+msgid "Testing..."
+msgstr "Тестирование..."
+
+#: slow-plugins-detector.php:100
+msgid "Test Complete!"
+msgstr "Тест завершен!"
+
+#: slow-plugins-detector.php:135
+msgid "Insufficient permissions"
+msgstr "Недостаточные права доступа"
+
+#: admin/admin-page.php:15
+msgid "Performance Test"
+msgstr "Тест производительности"
+
+#: admin/admin-page.php:21
+msgid "Run Performance Test"
+msgstr "Запустить тест производительности"
+
+#: admin/admin-page.php:17
+msgid "This test will measure the load time of each active plugin on the frontend of your site. The test may take several minutes to complete."
+msgstr "Этот тест измеряет время загрузки каждого активного плагина на фронтенде вашего сайта. Тест может занять несколько минут."
+
+#: admin/admin-page.php:27
+msgid "Testing plugins... This may take a few minutes."
+msgstr "Тестирование плагинов... Это может занять несколько минут."
+
+#: admin/admin-page.php:33
+msgid "Test Results"
+msgstr "Результаты теста"
+
+#: admin/admin-page.php:38
+msgid "Important Notes"
+msgstr "Важные замечания"
+
+#: admin/admin-page.php:40
+msgid "Tests are performed on your site's homepage"
+msgstr "Тесты выполняются на главной странице вашего сайта"
+
+#: admin/admin-page.php:41
+msgid "Each plugin is tested individually for accurate measurements"
+msgstr "Каждый плагин тестируется индивидуально для точных измерений"
+
+#: admin/admin-page.php:42
+msgid "Results may vary depending on server load and caching"
+msgstr "Результаты могут варьироваться в зависимости от нагрузки сервера и кеширования"
+
+#: admin/admin-page.php:43
+msgid "Plugins labeled \"Slow\" may need optimization or replacement"
+msgstr "Плагины, помеченные как \"Медленные\", могут нуждаться в оптимизации или замене"
+
+#: includes/class-results-table.php:16
+msgid "No test results available. Run a test first."
+msgstr "Результаты теста недоступны. Сначала запустите тест."
+
+#: includes/class-results-table.php:23
+msgid "Plugin Name"
+msgstr "Имя плагина"
+
+#: includes/class-results-table.php:24
+msgid "Load Time"
+msgstr "Время загрузки"
+
+#: includes/class-results-table.php:25
+msgid "Status"
+msgstr "Статус"
+
+#: includes/class-results-table.php:53
+msgid "Slow"
+msgstr "Медленный"
+
+#: includes/class-results-table.php:55
+msgid "Moderate"
+msgstr "Умеренный"
+
+#: includes/class-results-table.php:57
+msgid "Fast"
+msgstr "Быстрый"
