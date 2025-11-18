@@ -59,7 +59,7 @@ if (!class_exists('PostWall_API')) {
          * Обработать ошибки API
          *
          * @param string $error_message Сообщение об ошибке
-         * @return WP_Error Объект ошибки WordPress
+         * @return \WP_Error Объект ошибки WordPress
          * @since 2.0.0
          */
         private static function handle_api_error($error_message) {
@@ -70,7 +70,7 @@ if (!class_exists('PostWall_API')) {
          * Получить посты с WordPress сайта через REST API
          *
          * @param string $site_url URL сайта для получения постов
-         * @return array|WP_Error Массив постов или WP_Error при ошибке
+         * @return array|\WP_Error Массив постов или WP_Error при ошибке
          * @since 2.0.0
          */
          public static function get_posts_from_site($site_url) {
@@ -194,7 +194,7 @@ if (!class_exists('PostWall_API')) {
          * Получить статистику постов по дням за последние 12 месяцев
          *
          * @param string $site_url URL сайта для получения статистики
-         * @return array|WP_Error Массив статистики постов или WP_Error при ошибке
+         * @return array|\WP_Error Массив статистики постов или WP_Error при ошибке
          * @since 2.0.0
          */
         public static function get_post_stats($site_url) {
@@ -252,9 +252,9 @@ if (!class_exists('PostWall_API')) {
                 return $posts;
             }
 
-            // Проверяем, является ли результат массивом с ошибкой
-            if (is_array($posts) && isset($posts['error'])) {
-                return self::handle_api_error($posts['error']);
+            // Проверяем, является ли результат WP_Error
+            if (function_exists('is_wp_error') && is_wp_error($posts)) {
+                return $posts;
             }
 
             // Создаем массив для статистики по дням за последние 12 месяцев
@@ -351,10 +351,10 @@ if (!class_exists('PostWall_API')) {
         public static function clear_cache($site_url) {
             // Удаляем кэш если функция доступна
             if (function_exists('delete_transient')) {
-                $cache_key_prefix = self::$cache_key_prefix . md5($site_url);
-                delete_transient($cache_key_prefix . '_posts');
-                delete_transient($cache_key_prefix . '_stats');
-                delete_transient($cache_key_prefix . '_api_check');
+                $cache_key_base = self::$cache_key_prefix . md5($site_url);
+                delete_transient($cache_key_base . '_posts');
+                delete_transient($cache_key_base . '_stats');
+                delete_transient($cache_key_base . '_api_check');
             }
         }
     }
