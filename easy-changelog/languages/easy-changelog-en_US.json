@@ -1,0 +1,30 @@
+{
+  "translation-revision-date": "2024-11-18 21:38+0000",
+  "generator": "WP-CLI/2.8.1",
+  "source": "src/index.js",
+  "domain": "easy-changelog",
+  "locale_data": {
+    "easy-changelog": {
+      "": {
+        "domain": "easy-changelog",
+        "plural-forms": "nplurals=2; plural=(n != 1);",
+        "lang": "en_US"
+      },
+      "Easy Changelog": ["Easy Changelog"],
+      "Display a beautiful changelog with JSON data": ["Display a beautiful changelog with JSON data"],
+      "Changelog": ["Changelog"],
+      "Added": ["Added"],
+      "JSON Editor": ["JSON Editor"],
+      "Preview": ["Preview"],
+      "Changelog JSON": ["Changelog JSON"],
+      "Enter valid JSON array with version, date, and added fields": ["Enter valid JSON array with version, date, and added fields"],
+      "Invalid JSON format": ["Invalid JSON format"],
+      "JSON must be an array": ["JSON must be an array"],
+      "Fix JSON errors to see preview": ["Fix JSON errors to see preview"],
+      "No changelog data to display": ["No changelog data to display"],
+      "Changelog Settings": ["Changelog Settings"],
+      "Use the JSON Editor tab to input your changelog data in JSON format.": ["Use the JSON Editor tab to input your changelog data in JSON format."],
+      "Invalid changelog data": ["Invalid changelog data"]
+    }
+  }
+}
