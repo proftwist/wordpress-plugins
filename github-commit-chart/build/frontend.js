@@ -397,15 +397,15 @@
             html += '</div>';
 
             // Создаем строки для каждой недели
-            // Создаем 7 строк для дней недели в фиксированном порядке от понедельника к воскресенью
+            // Создаем 7 строк для дней недели в фиксированном порядке от воскресенья к субботе
             var daysOfWeek = [
+                __('Sun', 'github-commit-chart'),
                 __('Mon', 'github-commit-chart'),
                 __('Tue', 'github-commit-chart'),
                 __('Wed', 'github-commit-chart'),
                 __('Thu', 'github-commit-chart'),
                 __('Fri', 'github-commit-chart'),
-                __('Sat', 'github-commit-chart'),
-                __('Sun', 'github-commit-chart')
+                __('Sat', 'github-commit-chart')
             ];
 
             // Создаем строки для каждого дня недели от понедельника к воскресенью
