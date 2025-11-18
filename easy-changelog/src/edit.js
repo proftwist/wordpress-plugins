@@ -104,9 +104,9 @@ const Edit = ({ attributes, setAttributes }) => {
                         {previewData.map((release, index) => (
                             <div key={index} className="easy-changelog-release">
                                 <div className="easy-changelog-header">
-                                    <span className="easy-changelog-version">
+                                    <strong className="easy-changelog-version">
                                         {release.version || 'No version'}
-                                    </span>
+                                    </strong>
                                     <span className="easy-changelog-date">
                                         {formatDate(release.date || 'No date')}
                                     </span>

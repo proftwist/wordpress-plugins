@@ -3,7 +3,7 @@
  * Plugin Name: Easy Changelog
  * Plugin URI: http://bychko.ru
  * Description: Гутенберговский блок для создания красивого чейнджлога с предпросмотром
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
  * Text Domain: easy-changelog
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Константы плагина
-define('EASY_CHANGELOG_VERSION', '1.0.0');
+define('EASY_CHANGELOG_VERSION', '1.0.1');
 define('EASY_CHANGELOG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('EASY_CHANGELOG_PLUGIN_PATH', plugin_dir_path(__FILE__));
 
@@ -27,7 +27,6 @@ class EasyChangelog {
         add_action('init', array($this, 'init'));
         add_action('enqueue_block_assets', array($this, 'enqueue_block_assets'));
         add_action('init', array($this, 'load_textdomain'));
-        add_action('plugins_loaded', array($this, 'set_locale'));
     }
 
     public function init() {
@@ -53,6 +52,9 @@ class EasyChangelog {
             EASY_CHANGELOG_VERSION,
             true
         );
+
+        // Локализация для JavaScript
+        wp_set_script_translations('easy-changelog-editor-script', 'easy-changelog', EASY_CHANGELOG_PLUGIN_PATH . 'build');
 
         // Стили для редактора
         wp_register_style(
@@ -85,33 +87,6 @@ class EasyChangelog {
         );
     }
 
-    /**
-     * Установка локали на основе локали WordPress
-     */
-    public function set_locale() {
-        $locale = get_locale();
-
-        // Определяем язык на основе локали WordPress
-        if (strpos($locale, 'ru') === 0) {
-            $locale = 'ru_RU';
-        } else {
-            $locale = 'en_US';
-        }
-
-        // Обновляем локаль для плагина
-        load_plugin_textdomain(
-            'easy-changelog',
-            false,
-            dirname(plugin_basename(__FILE__)) . '/languages'
-        );
-
-        // Принудительно загружаем соответствующий языковой файл
-        $mo_file = dirname(plugin_basename(__FILE__)) . '/languages/easy-changelog-' . $locale . '.mo';
-        if (file_exists(dirname(__FILE__) . '/languages/easy-changelog-' . $locale . '.mo')) {
-            load_textdomain('easy-changelog', dirname(__FILE__) . '/languages/easy-changelog-' . $locale . '.mo');
-        }
-    }
-
     public function render_block($attributes) {
         if (empty($attributes['changelogData'])) {
             return '<p>' . __('No changelog data provided', 'easy-changelog') . '</p>';
@@ -132,7 +107,7 @@ class EasyChangelog {
                     <?php if (isset($release['version']) && isset($release['date'])): ?>
                         <div class="easy-changelog-release">
                             <div class="easy-changelog-header">
-                                <span class="easy-changelog-version"><?php echo esc_html($release['version']); ?></span>
+                                <strong class="easy-changelog-version"><?php echo esc_html($release['version']); ?></strong>
                                 <span class="easy-changelog-date"><?php echo esc_html($this->format_date($release['date'])); ?></span>
                             </div>
                             <?php if (!empty($release['added']) && is_array($release['added'])): ?>

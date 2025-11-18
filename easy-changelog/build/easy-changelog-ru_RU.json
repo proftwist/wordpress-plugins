@@ -1,7 +1,7 @@
 {
-  "translation-revision-date": "2024-11-18 21:38+0000",
+  "translation-revision-date": "2024-11-18 22:00+0000",
   "generator": "WP-CLI/2.8.1",
-  "source": "build/index.js",
+  "source": "index.js",
   "domain": "easy-changelog",
   "locale_data": {
     "easy-changelog": {
