@@ -17,6 +17,50 @@ defined('ABSPATH') || exit;
 class TypoReporterAjaxHandler {
 
     /**
+     * Генерация математической капчи
+     *
+     * @return array Массив с данными капчи
+     * @since 2.1.0
+     */
+    public static function generate_math_captcha() {
+        // Генерируем два случайных числа от 1 до 10
+        $num1 = rand(1, 10);
+        $num2 = rand(1, 10);
+        
+        // Вычисляем правильный ответ
+        $answer = $num1 + $num2;
+        
+        // Создаем хэш ответа для хранения в сессии
+        $hash = hash_hmac('sha256', $answer, wp_salt('nonce'));
+        
+        // Возвращаем данные капчи
+        return array(
+            'num1' => $num1,
+            'num2' => $num2,
+            'hash' => $hash
+        );
+    }
+
+    /**
+     * Проверка математической капчи
+     *
+     * @param string $user_answer Ответ пользователя
+     * @param string $captcha_hash Хэш капчи
+     * @return bool Результат проверки
+     * @since 2.1.0
+     */
+    public static function verify_math_captcha($user_answer, $captcha_hash) {
+        // Проверяем, что ответ является числом
+        if (!is_numeric($user_answer)) {
+            return false;
+        }
+        
+        // Проверяем хэш
+        $expected_hash = hash_hmac('sha256', $user_answer, wp_salt('nonce'));
+        return hash_equals($expected_hash, $captcha_hash);
+    }
+
+    /**
      * Инициализация AJAX обработчиков
      *
      * @since 1.0.0
@@ -41,6 +85,15 @@ class TypoReporterAjaxHandler {
         // Проверка nonce для безопасности
         if (!wp_verify_nonce($_POST['nonce'] ?? '', 'typo_reporter_submit')) {
             wp_send_json_error(array('message' => __('Security check failed.', 'typo-reporter')));
+            return;
+        }
+
+        // Проверка капчи
+        $captcha_hash = $_POST['captcha_hash'] ?? '';
+        $user_captcha = sanitize_text_field($_POST['captcha'] ?? '');
+
+        if (empty($captcha_hash) || !self::verify_math_captcha($user_captcha, $captcha_hash)) {
+            wp_send_json_error(array('message' => __('Invalid CAPTCHA answer. Please try again.', 'typo-reporter')));
             return;
         }
 

@@ -38,15 +38,20 @@ class TypoReporterAssetsManager {
         // Установка переводов для фронтенд скрипта
         wp_set_script_translations('typo-reporter-frontend', 'typo-reporter', TR_PLUGIN_PATH . 'languages');
 
+        // Генерация капчи
+        $captcha = TypoReporterAjaxHandler::generate_math_captcha();
+        
         // Передача настроек в JavaScript
         wp_localize_script('typo-reporter-frontend', 'typoReporterSettings', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('typo_reporter_submit'),
+            'captcha' => $captcha,
             'messages' => array(
                 'success' => __('Report sent successfully!', 'typo-reporter'),
                 'error' => __('Error sending report. Please try again.', 'typo-reporter'),
                 'emptyText' => __('Please select some text first.', 'typo-reporter'),
-                'emptyDescription' => __('Please describe the error.', 'typo-reporter')
+                'emptyDescription' => __('Please describe the error.', 'typo-reporter'),
+                'invalidCaptcha' => __('Invalid CAPTCHA answer. Please try again.', 'typo-reporter')
             )
         ));
 

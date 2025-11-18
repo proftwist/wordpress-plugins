@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Typo Reporter
  * Description: Позволяет пользователям сообщать об опечатках на сайте
- * Version: 2.0.1
+ * Version: 2.1.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: typo-reporter
@@ -17,7 +17,7 @@ defined('ABSPATH') || exit;
 // Определение констант для удобства работы с путями
 define('TR_PLUGIN_PATH', plugin_dir_path(__FILE__)); // Абсолютный путь к папке плагина
 define('TR_PLUGIN_URL', plugin_dir_url(__FILE__));   // URL к папке плагина
-define('TR_PLUGIN_VERSION', '2.0.1');                // Версия плагина
+define('TR_PLUGIN_VERSION', '2.1.0');                // Версия плагина
 
 // Подключение вспомогательных файлов
 require_once TR_PLUGIN_PATH . 'includes/class-database.php';          // Работа с базой данных

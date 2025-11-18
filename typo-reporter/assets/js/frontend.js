@@ -96,6 +96,11 @@
                                 <label for="typo-reporter-error-description">${wp.i18n.__('Error Description:', 'typo-reporter')}</label>
                                 <textarea id="typo-reporter-error-description" placeholder="${wp.i18n.__('Please describe what\'s wrong with the text...', 'typo-reporter')}"></textarea>
                             </div>
+                            <div class="typo-reporter-field">
+                                <label for="typo-reporter-captcha">${wp.i18n.__('CAPTCHA:', 'typo-reporter')} ${typoReporterSettings.captcha.num1} + ${typoReporterSettings.captcha.num2} = ?</label>
+                                <input type="text" id="typo-reporter-captcha" placeholder="${wp.i18n.__('Enter the result', 'typo-reporter')}" />
+                                <input type="hidden" id="typo-reporter-captcha-hash" value="${typoReporterSettings.captcha.hash}" />
+                            </div>
                         </div>
                         <div class="typo-reporter-modal-footer">
                             <button type="button" class="button typo-reporter-cancel">${wp.i18n.__('Cancel', 'typo-reporter')}</button>
@@ -185,12 +190,21 @@
             var self = this;
             var selectedText = $('#typo-reporter-selected-text').val();
             var errorDescription = $('#typo-reporter-error-description').val();
+            var captcha = $('#typo-reporter-captcha').val();
+            var captchaHash = $('#typo-reporter-captcha-hash').val();
             var pageUrl = window.location.href;
 
 
             // Валидация - только проверка на наличие выделенного текста
             if (!selectedText.trim()) {
                 this.showMessage(typoReporterSettings.messages.emptyText, 'error');
+                return;
+            }
+
+            // Проверка капчи
+            if (!captcha.trim()) {
+                this.showMessage(typoReporterSettings.messages.invalidCaptcha, 'error');
+                $('#typo-reporter-captcha').focus();
                 return;
             }
 
@@ -205,6 +219,8 @@
                     action: 'typo_reporter_submit',
                     selected_text: selectedText,
                     error_description: errorDescription,
+                    captcha: captcha,
+                    captcha_hash: captchaHash,
                     page_url: pageUrl,
                     nonce: typoReporterSettings.nonce
                 },
@@ -218,6 +234,13 @@
                     } else {
                         self.showMessage(response.data.message, 'error');
                         submitButton.prop('disabled', false).text(originalText);
+                        
+                        // Генерируем новую капчу при ошибке
+                        if (response.data.message === typoReporterSettings.messages.invalidCaptcha) {
+                            // Здесь можно добавить логику для обновления капчи
+                            // Пока просто фокусируемся на поле
+                            $('#typo-reporter-captcha').focus();
+                        }
                     }
                 },
                 error: function(xhr, status, error) {

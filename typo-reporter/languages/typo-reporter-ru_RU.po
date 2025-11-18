@@ -1,5 +1,3 @@
-# Copyright (C) 2025 Владимир Бычко
-# This file is distributed under the same license as the Typo Reporter plugin.
 msgid ""
 msgstr ""
 "Project-Id-Version: Typo Reporter 1.0.0\n"
@@ -11,6 +9,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2025-11-16T17:22:59+00:00\n"
 "PO-Revision-Date: 2025-11-16 17:23+0000\n"
+"Language: \n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: typo-reporter\n"
 
@@ -211,49 +210,6 @@ msgstr "Не удалось сохранить репорт об опечатк�
 msgid "Typo Reporter Settings"
 msgstr "Настройки Typo Reporter"
 
-#: assets/js/admin.js:50
-msgid "Deleting..."
-msgstr "Удаление..."
-
-#: assets/js/admin.js:156
-msgid "Settings saved successfully."
-msgstr "Настройки успешно сохранены."
-
-#: assets/js/admin.js:158
-#: assets/js/admin.js:162
-msgid "Error saving settings."
-msgstr "Ошибка сохранения настроек."
-
-#: assets/js/frontend.js:83
-msgid "Report Typo"
-msgstr "Сообщить об опечатке"
-
-#: assets/js/frontend.js:88
-msgid "Selected Text:"
-msgstr "Выделенный текст:"
-
-#: assets/js/frontend.js:92
-msgid "Error Description:"
-msgstr "Описание ошибки:"
-
-#: assets/js/frontend.js:93
-msgid "Please describe what's wrong with the text..."
-msgstr "Пожалуйста, опишите, что не так с текстом..."
-
-#: assets/js/frontend.js:97
-msgid "Cancel"
-msgstr "Отмена"
-
-#: assets/js/frontend.js:98
-#: assets/js/frontend.js:165
-#: assets/js/frontend.js:174
-msgid "Submit Report"
-msgstr "Отправить репорт"
-
-#: assets/js/frontend.js:147
-msgid "Sending..."
-msgstr "Отправка..."
-
 #: includes/class-ajax-handler.php:62
 msgid "Error description is too long. Maximum 1000 characters allowed."
 msgstr "Описание ошибки слишком длинное. Максимум 1000 символов разрешено."
@@ -285,3 +241,7 @@ msgstr "очистка"
 #: includes/admin-settings.php:88
 msgid "clearError"
 msgstr "ошибка очистки"
+
+#: includes/class-assets-manager.php:54
+msgid "Invalid CAPTCHA answer. Please try again."
+msgstr "Неверный ответ на КАПЧУ. Попробуйте еще раз."
