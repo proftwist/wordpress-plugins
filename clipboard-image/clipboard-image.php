@@ -67,7 +67,7 @@ class ClipboardImage {
                 'uploading_text' => __('Uploading image...', 'clipboard-image'),
                 'success_text' => __('Image uploaded successfully!', 'clipboard-image'),
                 'error_text' => __('Error uploading image.', 'clipboard-image'),
-                'invalid_type_text' => __('Only JPG and PNG images are allowed.', 'clipboard-image'),
+                'invalid_type_text' => __('Only JPG, PNG and SVG images are allowed.', 'clipboard-image'),
                 'file_too_large_text' => __('File is too large. Maximum size: 5MB.', 'clipboard-image'),
                 'no_image_text' => __('No image found in clipboard.', 'clipboard-image'),
                 'security_error_text' => __('Security verification failed.', 'clipboard-image'),
@@ -109,12 +109,12 @@ class ClipboardImage {
         }
 
         // Проверяем тип файла
-        $allowed_types = array('image/jpeg', 'image/jpg', 'image/png');
+        $allowed_types = array('image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/svg');
         $file_info = wp_check_filetype_and_ext($uploaded_file['tmp_name'], $uploaded_file['name']);
 
         if (empty($file_info['type']) || !in_array($file_info['type'], $allowed_types)) {
             wp_send_json_error(array(
-                'message' => __('Only JPG and PNG images are allowed.', 'clipboard-image')
+                'message' => __('Only JPG, PNG and SVG images are allowed.', 'clipboard-image')
             ));
         }
 

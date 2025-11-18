@@ -105,7 +105,7 @@
 
     // Проверка валидности файла изображения
     function isValidImageFile(file) {
-        var validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        var validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
         return validTypes.indexOf(file.type) !== -1;
     }
 

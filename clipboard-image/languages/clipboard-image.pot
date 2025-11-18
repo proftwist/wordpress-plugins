@@ -25,7 +25,7 @@ msgid "Error uploading image."
 msgstr ""
 
 #: clipboard-image.php:67
-msgid "Only JPG and PNG images are allowed."
+msgid "Only JPG, PNG and SVG images are allowed."
 msgstr ""
 
 #: clipboard-image.php:68
