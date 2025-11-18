@@ -1,6 +1,20 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
+import { setLocaleData } from '@wordpress/i18n';
 import Edit from './edit';
+
+// Автоматическая загрузка локализации WordPress для блока
+(function() {
+    try {
+        // Проверяем доступность данных локали
+        const locale = window.wp && window.wp.i18n ? window.wp.i18n.getLocaleData('easy-changelog') : null;
+        if (locale) {
+            setLocaleData(locale, 'easy-changelog');
+        }
+    } catch (e) {
+        // Игнорируем ошибки, локализация будет работать по умолчанию
+    }
+})();
 
 registerBlockType('easy-changelog/changelog', {
     title: __('Easy Changelog', 'easy-changelog'),
