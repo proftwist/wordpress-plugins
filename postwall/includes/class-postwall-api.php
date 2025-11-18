@@ -73,30 +73,35 @@ if (!class_exists('PostWall_API')) {
          * @return array|WP_Error Массив постов или WP_Error при ошибке
          * @since 2.0.0
          */
-        public static function get_posts_from_site($site_url) {
-            // Проверяем кэш если функция доступна
-            if (function_exists('get_transient')) {
-                $cache_key = self::$cache_key_prefix . 'posts_' . md5($site_url);
-                $cached_data = get_transient($cache_key);
+         public static function get_posts_from_site($site_url) {
+             // Для текущего сайта используем прямой доступ к базе данных без кэширования
+             if ($site_url === get_site_url()) {
+                 return self::get_posts_from_current_site();
+             }
 
-                if ($cached_data !== false) {
-                    return $cached_data;
-                }
-            }
+             // Проверяем кэш если функция доступна
+             if (function_exists('get_transient')) {
+                 $cache_key = self::$cache_key_prefix . 'posts_' . md5($site_url);
+                 $cached_data = get_transient($cache_key);
 
-            // Вычисляем даты для последних 12 месяцев
-            $end_date = new DateTime();
-            $start_date = new DateTime();
-            $start_date->modify('-12 months');
+                 if ($cached_data !== false) {
+                     return $cached_data;
+                 }
+             }
 
-            // Формируем URL REST API
-            $api_url = rtrim($site_url, '/') . '/wp-json/wp/v2/posts';
-            $params = array(
-                'per_page' => 100,
-                'after' => $start_date->format('Y-m-d\TH:i:s'),
-                'before' => $end_date->format('Y-m-d\TH:i:s'),
-                '_embed' => 'false'
-            );
+             // Вычисляем даты для последних 12 месяцев
+             $end_date = new DateTime();
+             $start_date = new DateTime();
+             $start_date->modify('-12 months');
+
+             // Формируем URL REST API
+             $api_url = rtrim($site_url, '/') . '/wp-json/wp/v2/posts';
+             $params = array(
+                 'per_page' => 100,
+                 'after' => $start_date->format('Y-m-d\TH:i:s'),
+                 'before' => $end_date->format('Y-m-d\TH:i:s'),
+                 '_embed' => 'false'
+             );
 
             $request_url = add_query_arg($params, $api_url);
 
@@ -136,6 +141,54 @@ if (!class_exists('PostWall_API')) {
                 return array();
             }
         }
+            /**
+             * Получить посты с текущего сайта напрямую из базы данных
+             *
+             * @return array Массив постов текущего сайта
+             * @since 2.0.0
+             */
+            private static function get_posts_from_current_site() {
+                if (!function_exists('get_posts')) {
+                    return array();
+                }
+
+                // Вычисляем даты для последних 12 месяцев
+                $end_date = new DateTime();
+                $end_date->setTime(23, 59, 59); // Включаем весь текущий день
+                $start_date = new DateTime();
+                $start_date->modify('-12 months');
+                $start_date->setTime(0, 0, 0); // Начинаем с начала дня 12 месяцев назад
+
+                // Получаем посты напрямую из базы данных
+                // Используем более широкие границы для надежности
+                $args = array(
+                    'post_type' => 'post',
+                    'post_status' => 'publish',
+                    'posts_per_page' => -1,
+                    'date_query' => array(
+                        array(
+                            'after' => $start_date->format('Y-m-d'),
+                            'before' => $end_date->format('Y-m-d'),
+                            'inclusive' => true,
+                        ),
+                    ),
+                );
+
+                $posts = get_posts($args);
+
+                // Преобразуем в формат REST API для совместимости
+                $formatted_posts = array();
+                foreach ($posts as $post) {
+                    $formatted_posts[] = array(
+                        'id' => $post->ID,
+                        'date' => $post->post_date,
+                        'title' => array('rendered' => $post->post_title),
+                        'content' => array('rendered' => $post->post_content),
+                    );
+                }
+
+                return $formatted_posts;
+            }
 
         /**
          * Получить статистику постов по дням за последние 12 месяцев
@@ -145,7 +198,44 @@ if (!class_exists('PostWall_API')) {
          * @since 2.0.0
          */
         public static function get_post_stats($site_url) {
-            // Проверяем кэш если функция доступна
+            // Для текущего сайта не используем кэш, чтобы видеть свежие посты
+            if ($site_url === get_site_url()) {
+                $posts = self::get_posts_from_current_site();
+
+                // Создаем массив для статистики по дням за последние 12 месяцев
+                $stats = array();
+                $end_date = new DateTime();
+                $end_date->setTime(23, 59, 59); // Включаем весь текущий день
+                $start_date = new DateTime();
+                $start_date->modify('-12 months');
+                $start_date->setTime(0, 0, 0); // Начинаем с начала дня 12 месяцев назад
+
+                // Инициализируем все дни за период
+                $current_date = clone $start_date;
+                while ($current_date <= $end_date) {
+                    $stats[$current_date->format('Y-m-d')] = 0;
+                    $current_date->modify('+1 day');
+                }
+
+                // Подсчитываем посты по дням
+                foreach ($posts as $post) {
+                    if (isset($post['date'])) {
+                        $post_date = new DateTime($post['date']);
+                        $post_date_str = $post_date->format('Y-m-d');
+
+                        // Проверяем, что дата в диапазоне последних 12 месяцев
+                        if ($post_date >= $start_date && $post_date <= $end_date) {
+                            if (isset($stats[$post_date_str])) {
+                                $stats[$post_date_str]++;
+                            }
+                        }
+                    }
+                }
+
+                return $stats;
+            }
+
+            // Проверяем кэш если функция доступна (для внешних сайтов)
             if (function_exists('get_transient')) {
                 $cache_key = self::$cache_key_prefix . 'stats_' . md5($site_url);
                 $cached_data = get_transient($cache_key);
@@ -170,8 +260,10 @@ if (!class_exists('PostWall_API')) {
             // Создаем массив для статистики по дням за последние 12 месяцев
             $stats = array();
             $end_date = new DateTime();
+            $end_date->setTime(23, 59, 59); // Включаем весь текущий день
             $start_date = new DateTime();
             $start_date->modify('-12 months');
+            $start_date->setTime(0, 0, 0); // Начинаем с начала дня 12 месяцев назад
 
             // Инициализируем все дни за период
             $current_date = clone $start_date;
