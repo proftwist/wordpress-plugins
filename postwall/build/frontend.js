@@ -176,12 +176,21 @@
         createOrUpdateTitle() {
             let titleElement = this.container.querySelector('.postwall-title');
 
+            // Получаем тег заголовка из data-атрибута или используем значение по умолчанию
+            const headingTag = this.container.getAttribute('data-heading-tag') || 'h3';
+
             // Создаем локализованный заголовок с доменом
             const translatedTitle = this.generateTitleWithDomain();
 
             if (!titleElement) {
-                titleElement = document.createElement('h3');
-                titleElement.className = 'postwall-title';
+                // Создаем элемент заголовка с выбранным тегом
+                if (headingTag === 'div') {
+                    titleElement = document.createElement('div');
+                    titleElement.className = 'postwall-text';
+                } else {
+                    titleElement = document.createElement(headingTag);
+                    titleElement.className = 'postwall-title';
+                }
                 this.container.insertBefore(titleElement, this.container.firstChild);
             }
 
@@ -255,12 +264,16 @@
                } else {
                    dayCell.className = `day lvl-${activityLevel}`;
                    // Добавляем data-date атрибут для квадратиков с постами
-                   dayCell.setAttribute('data-date', cellDate.toISOString().split('T')[0]);
+                   // Используем локальную дату для data-date атрибута
+                   const localDate = new Date(cellDate.getTime() - (cellDate.getTimezoneOffset() * 60000));
+                   dayCell.setAttribute('data-date', localDate.toISOString().split('T')[0]);
                }
 
                // Add tooltip with post count
+               // Используем локальную дату для получения количества постов
+               const localDate = new Date(cellDate.getTime() - (cellDate.getTimezoneOffset() * 60000));
                const postCount = this.postData ?
-                   (this.postData[cellDate.toISOString().split('T')[0]] || 0) : 0;
+                   (this.postData[localDate.toISOString().split('T')[0]] || 0) : 0;
 
                // Форматируем дату согласно настройкам WordPress
                const formattedDate = this.formatDateAccordingToWordPress(cellDate);
@@ -401,7 +414,9 @@
         getActivityLevel(date) {
             // Если у нас есть реальные данные, используем их
             if (this.postData) {
-                const dateKey = date.toISOString().split('T')[0]; // Формат YYYY-MM-DD
+                // Используем локальную дату для ключа данных
+                const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                const dateKey = localDate.toISOString().split('T')[0]; // Формат YYYY-MM-DD
                 const postCount = this.postData[dateKey] || 0;
 
                 // Определяем уровень активности на основе количества постов
