@@ -1,0 +1,46 @@
+# Russian translation for Alone Post Redirector
+# Copyright (C) 2024 Владимир Бычко
+# This file is distributed under the same license as the Alone Post Redirector plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Alone Post Redirector 1.0.0\n"
+"Report-Msgid-Bugs-To: http://bychko.ru\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Last-Translator: Владимир Бычко <http://bychko.ru>\n"
+"Language-Team: Russian\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+msgid "Redirect Settings"
+msgstr "Настройки редиректа"
+
+msgid "Redirect to the single post when there is only one post in:"
+msgstr "Перенаправлять на единственный пост, когда в следующих случаях только один пост:"
+
+msgid "Categories"
+msgstr "Категории"
+
+msgid "Enable redirect for categories"
+msgstr "Включить редирект для категорий"
+
+msgid "Tags"
+msgstr "Метки"
+
+msgid "Enable redirect for tags"
+msgstr "Включить редирект для меток"
+
+msgid "Dates"
+msgstr "Даты"
+
+msgid "Enable redirect for date archives"
+msgstr "Включить редирект для архивов по датам"
+
+msgid "Alone Post Redirector"
+msgstr "Редиректор одиноких постов"
+
+msgid "Alone Post Redirector Settings"
+msgstr "Настройки редиректора одиноких постов"

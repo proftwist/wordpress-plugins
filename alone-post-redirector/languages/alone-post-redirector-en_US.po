@@ -1,0 +1,56 @@
+# English translation for Alone Post Redirector
+# Copyright (C) 2024 Владимир Бычко
+# This file is distributed under the same license as the Alone Post Redirector plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Alone Post Redirector 1.0.0\n"
+"Report-Msgid-Bugs-To: http://bychko.ru\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Last-Translator: Vladimir Bychko <http://bychko.ru>\n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: alone-post-redirector.php:65
+msgid "Redirect Settings"
+msgstr "Redirect Settings"
+
+#: alone-post-redirector.php:69
+msgid "Redirect to the single post when there is only one post in:"
+msgstr "Redirect to the single post when there is only one post in:"
+
+#: alone-post-redirector.php:89
+msgid "Categories"
+msgstr "Categories"
+
+#: alone-post-redirector.php:90
+msgid "Enable redirect for categories"
+msgstr "Enable redirect for categories"
+
+#: alone-post-redirector.php:101
+msgid "Tags"
+msgstr "Tags"
+
+#: alone-post-redirector.php:102
+msgid "Enable redirect for tags"
+msgstr "Enable redirect for tags"
+
+#: alone-post-redirector.php:113
+msgid "Dates"
+msgstr "Dates"
+
+#: alone-post-redirector.php:114
+msgid "Enable redirect for date archives"
+msgstr "Enable redirect for date archives"
+
+#: alone-post-redirector.php:128
+msgid "Alone Post Redirector"
+msgstr "Alone Post Redirector"
+
+#: alone-post-redirector.php:144
+msgid "Alone Post Redirector Settings"
+msgstr "Alone Post Redirector Settings"

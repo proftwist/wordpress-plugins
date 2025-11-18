@@ -1,0 +1,52 @@
+# Copyright (C) 2024 Владимир Бычко
+# This file is distributed under the same license as the Alone Post Redirector plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Alone Post Redirector 1.0.0\n"
+"Report-Msgid-Bugs-To: http://bychko.ru\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Language-Team: Russian\n"
+
+#: alone-post-redirector.php:65
+msgid "Redirect Settings"
+msgstr "Настройки редиректа"
+
+#: alone-post-redirector.php:69
+msgid "Redirect to the single post when there is only one post in:"
+msgstr "Перенаправлять на единственный пост, когда в следующих случаях только один пост:"
+
+#: alone-post-redirector.php:89
+msgid "Categories"
+msgstr "Категории"
+
+#: alone-post-redirector.php:90
+msgid "Enable redirect for categories"
+msgstr "Включить редирект для категорий"
+
+#: alone-post-redirector.php:101
+msgid "Tags"
+msgstr "Метки"
+
+#: alone-post-redirector.php:102
+msgid "Enable redirect for tags"
+msgstr "Включить редирект для меток"
+
+#: alone-post-redirector.php:113
+msgid "Dates"
+msgstr "Даты"
+
+#: alone-post-redirector.php:114
+msgid "Enable redirect for date archives"
+msgstr "Включить редирект для архивов по датам"
+
+#: alone-post-redirector.php:128
+msgid "Alone Post Redirector"
+msgstr "Редиректор одиноких постов"
+
+#: alone-post-redirector.php:144
+msgid "Alone Post Redirector Settings"
+msgstr "Настройки редиректора одиноких постов"
