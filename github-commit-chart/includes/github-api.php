@@ -190,8 +190,8 @@ if (!class_exists('GitHubCommitChart_API')) {
 
                 $repos = array();
                 foreach ($data as $repo) {
-                    // Пропускаем форки и архивные репозитории
-                    if (!$repo['fork'] && !$repo['archived']) {
+                    // Пропускаем только архивные репозитории, форки включаем
+                    if (!$repo['archived']) {
                         $repos[] = array(
                             'name' => $repo['name'],
                             'full_name' => $repo['full_name'],
@@ -232,54 +232,71 @@ if (!class_exists('GitHubCommitChart_API')) {
                 }
             }
 
-            $url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&sort=author-date&order=desc&committer=' . $username;
+            $all_commits = array();
+            $page = 1;
+            $has_more = true;
 
-            // Выполняем запрос если функция доступна
-            if (function_exists('wp_remote_get')) {
-                $response = wp_remote_get($url, array(
-                    'headers' => self::get_api_headers(),
-                    'timeout' => 30
-                ));
+            while ($has_more) {
+                $url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&page=' . $page . '&sort=author-date&order=desc&author=' . $username;
 
-                if (is_wp_error($response)) {
-                    return $response;
+                // Выполняем запрос если функция доступна
+                if (function_exists('wp_remote_get')) {
+                    $response = wp_remote_get($url, array(
+                        'headers' => self::get_api_headers(),
+                        'timeout' => 30
+                    ));
+
+                    if (is_wp_error($response)) {
+                        return $response;
+                    }
+
+                    $body = wp_remote_retrieve_body($response);
+                    $data = json_decode($body, true);
+
+                    // Проверяем лимиты API
+                    $headers = wp_remote_retrieve_headers($response);
+                    if (isset($headers['x-ratelimit-remaining']) && $headers['x-ratelimit-remaining'] < 10) {
+                        error_log('GitHub API rate limit warning: ' . $headers['x-ratelimit-remaining'] . ' requests remaining');
+                    }
+
+                    if (wp_remote_retrieve_response_code($response) !== 200) {
+                        return self::handle_api_error($data);
+                    }
+
+                    // Если нет коммитов на странице или меньше 100, это последняя страница
+                    if (empty($data) || count($data) < 100) {
+                        $has_more = false;
+                    }
+
+                    foreach ($data as $commit) {
+                        $all_commits[] = array(
+                            'sha' => substr($commit['sha'], 0, 7), // Сокращенный SHA
+                            'message' => $commit['commit']['message'],
+                            'date' => $commit['commit']['author']['date'],
+                            'author' => $commit['commit']['author']['name'],
+                            'repo' => $repo_name
+                        );
+                    }
+
+                    $page++;
+
+                    // Защита от бесконечного цикла - максимум 10 страниц (1000 коммитов)
+                    if ($page > 10) {
+                        break;
+                    }
+                } else {
+                    // Если WordPress функции недоступны, выходим из цикла
+                    $has_more = false;
                 }
-
-                $body = wp_remote_retrieve_body($response);
-                $data = json_decode($body, true);
-
-                // Проверяем лимиты API
-                $headers = wp_remote_retrieve_headers($response);
-                if (isset($headers['x-ratelimit-remaining']) && $headers['x-ratelimit-remaining'] < 10) {
-                    error_log('GitHub API rate limit warning: ' . $headers['x-ratelimit-remaining'] . ' requests remaining');
-                }
-
-                if (wp_remote_retrieve_response_code($response) !== 200) {
-                    return self::handle_api_error($data);
-                }
-
-                $commits = array();
-                foreach ($data as $commit) {
-                    $commits[] = array(
-                        'sha' => substr($commit['sha'], 0, 7), // Сокращенный SHA
-                        'message' => $commit['commit']['message'],
-                        'date' => $commit['commit']['author']['date'],
-                        'author' => $commit['commit']['author']['name'],
-                        'repo' => $repo_name
-                    );
-                }
-
-                // Кэшируем результат если функция доступна
-                if (function_exists('set_transient')) {
-                    $cache_key = self::$cache_key_prefix . 'commits_' . $username . '_' . $repo_name;
-                    set_transient($cache_key, $commits, self::$cache_expiration);
-                }
-
-                return $commits;
-            } else {
-                // Если WordPress функции недоступны, возвращаем пустой массив
-                return array();
             }
+
+            // Кэшируем результат если функция доступна
+            if (function_exists('set_transient')) {
+                $cache_key = self::$cache_key_prefix . 'commits_' . $username . '_' . $repo_name;
+                set_transient($cache_key, $all_commits, self::$cache_expiration);
+            }
+
+            return $all_commits;
         }
 
         /**
