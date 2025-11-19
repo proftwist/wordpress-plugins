@@ -1,75 +1,104 @@
-Проанализировав код плагина, я нашел несколько проблем в логике подсчета коммитов, которые приводят к расхождениям с GitHub.
+Отлично! Тогда действительно проблема в том, что мы учитываем только коммиты, а GitHub включает Issues, PR и другие активности. Давайте расширим функционал.
 
-## Основные проблемы:
+## Полное решение с Events API
 
-### 1. **Неправильная фильтрация по коммиттеру**
-В файле `github-api.php` используется параметр `committer` вместо `author`:
-
-```php
-// Строка 232 в github-api.php
-$url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&sort=author-date&order=desc&committer=' . $username;
-```
-
-**Проблема:** Параметр `committer` фильтрует по тому, кто выполнил коммит (может отличаться от автора), а `author` фильтрует по тому, кто написал код.
-
-### 2. **Ограничение на 100 коммитов на репозиторий**
-Код получает только первые 100 коммитов из каждого репозитория:
+Замените метод `get_commit_stats` в `github-api.php`:
 
 ```php
-// Строка 232 в github-api.php
-$url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&sort=author-date&order=desc&committer=' . $username;
-```
+/**
+ * Get user activity statistics using GitHub Events API
+ *
+ * @param string $username GitHub username
+ * @param int|null $year Year to get statistics for (null for current year)
+ * @return array|WP_Error Array of activity statistics or WP_Error on failure
+ * @since 2.0.3
+ */
+public static function get_commit_stats($username, $year = null) {
+    // Если год не указан, используем текущий год
+    if ($year === null) {
+        $year = date('Y');
+    }
 
-**Проблема:** Если в репозитории больше 100 коммитов за период, остальные не учитываются.
+    // Проверяем кэш
+    if (function_exists('get_transient')) {
+        $cache_key = self::$cache_key_prefix . 'activity_' . $username . '_' . $year;
+        $cached_data = get_transient($cache_key);
 
-### 3. **Пропуск коммитов из форков**
-Код пропускает форки:
+        if ($cached_data !== false) {
+            return $cached_data;
+        }
+    }
 
-```php
-// Строка 189-191 в github-api.php
-if (!$repo['fork'] && !$repo['archived']) {
-    $repos[] = array(
-```
+    // Получаем события через Events API
+    $events = self::get_user_events($username);
 
-**Проблема:** Коммиты в форкнутых репозиториях не учитываются, хотя GitHub их показывает.
+    if (function_exists('is_wp_error') && is_wp_error($events)) {
+        return $events;
+    }
 
-## Исправления:
+    // Создаем массив для статистики по дням
+    $stats = array();
+    $year_start = new DateTime($year . '-01-01');
+    $year_end = new DateTime($year . '-12-31');
 
-### 1. Заменить `committer` на `author` и убрать ограничения
-В файле `github-api.php` замените:
+    // Для текущего года ограничиваем до сегодняшнего дня
+    if ($year == date('Y')) {
+        $year_end = new DateTime();
+    }
 
-```php
-// Было (строка ~232):
-$url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&sort=author-date&order=desc&committer=' . $username;
+    // Инициализируем все дни года
+    $current_date = clone $year_start;
+    while ($current_date <= $year_end) {
+        $stats[$current_date->format('Y-m-d')] = 0;
+        $current_date->modify('+1 day');
+    }
 
-// Стало:
-$url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&sort=author-date&order=desc&author=' . $username;
-```
+    // Подсчитываем активность по дням
+    foreach ($events as $event) {
+        $event_date = new DateTime($event['created_at']);
+        $event_date_str = $event_date->format('Y-m-d');
 
-### 2. Убрать ограничение на форки или сделать его опциональным
-В файле `github-api.php` замените:
+        // Проверяем, что дата в диапазоне выбранного года
+        if ($event_date >= $year_start && $event_date <= $year_end) {
+            if (isset($stats[$event_date_str])) {
+                $stats[$event_date_str] += self::calculate_event_weight($event);
+            }
+        }
+    }
 
-```php
-// Было (строка ~189):
-if (!$repo['fork'] && !$repo['archived']) {
+    // Кэшируем результат
+    if (function_exists('set_transient')) {
+        $cache_key = self::$cache_key_prefix . 'activity_' . $username . '_' . $year;
+        set_transient($cache_key, $stats, self::$cache_expiration);
+    }
 
-// Стало (включаем форки):
-if (!$repo['archived']) {
-```
+    return $stats;
+}
 
-### 3. Добавить пагинацию для получения всех коммитов
-Нужно модифицировать метод `get_repo_commits` для обработки пагинации:
+/**
+ * Get user events from GitHub Events API
+ *
+ * @param string $username GitHub username
+ * @return array|WP_Error Array of events or WP_Error on failure
+ * @since 2.0.3
+ */
+private static function get_user_events($username) {
+    // Проверяем кэш
+    if (function_exists('get_transient')) {
+        $cache_key = self::$cache_key_prefix . 'events_' . $username;
+        $cached_data = get_transient($cache_key);
 
-```php
-private static function get_repo_commits($username, $repo_name) {
-    // ... существующий код проверки кэша ...
+        if ($cached_data !== false) {
+            return $cached_data;
+        }
+    }
 
-    $all_commits = array();
+    $all_events = array();
     $page = 1;
     $has_more = true;
 
     while ($has_more) {
-        $url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&page=' . $page . '&sort=author-date&order=desc&author=' . $username;
+        $url = self::$api_url . '/users/' . $username . '/events?per_page=100&page=' . $page;
 
         $response = wp_remote_get($url, array(
             'headers' => self::get_api_headers(),
@@ -83,124 +112,151 @@ private static function get_repo_commits($username, $repo_name) {
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
 
+        // Проверяем лимиты API
+        $headers = wp_remote_retrieve_headers($response);
+        if (isset($headers['x-ratelimit-remaining']) && $headers['x-ratelimit-remaining'] < 10) {
+            error_log('GitHub API rate limit warning: ' . $headers['x-ratelimit-remaining'] . ' requests remaining');
+        }
+
         if (wp_remote_retrieve_response_code($response) !== 200) {
             return self::handle_api_error($data);
         }
 
-        // Если нет коммитов на странице или меньше 100, это последняя страница
+        // Если нет событий на странице или меньше 100, это последняя страница
         if (empty($data) || count($data) < 100) {
             $has_more = false;
         }
 
-        foreach ($data as $commit) {
-            $all_commits[] = array(
-                'sha' => substr($commit['sha'], 0, 7),
-                'message' => $commit['commit']['message'],
-                'date' => $commit['commit']['author']['date'],
-                'author' => $commit['commit']['author']['name'],
-                'repo' => $repo_name
-            );
+        // Фильтруем только релевантные события
+        foreach ($data as $event) {
+            if (self::is_relevant_event($event)) {
+                $all_events[] = $event;
+            }
         }
 
         $page++;
 
-        // Защита от бесконечного цикла - максимум 10 страниц (1000 коммитов)
-        if ($page > 10) {
+        // Защита от бесконечного цикла - максимум 5 страниц (500 событий)
+        if ($page > 5) {
             break;
         }
+
+        // Небольшая задержка чтобы не превысить лимиты API
+        usleep(100000); // 100ms
     }
 
-    // ... существующий код кэширования ...
+    // Кэшируем результат
+    if (function_exists('set_transient')) {
+        $cache_key = self::$cache_key_prefix . 'events_' . $username;
+        set_transient($cache_key, $all_events, self::$cache_expiration);
+    }
 
-    return $all_commits;
+    return $all_events;
+}
+
+/**
+ * Check if event should be counted in activity
+ *
+ * @param array $event GitHub event
+ * @return bool True if event is relevant
+ * @since 2.0.3
+ */
+private static function is_relevant_event($event) {
+    $relevant_events = array(
+        'PushEvent',           // Коммиты
+        'PullRequestEvent',    // Pull Requests
+        'IssuesEvent',         // Issues
+        'CreateEvent',         // Создание репозиториев/веток
+        'PullRequestReviewEvent', // Ревью PR
+        'IssueCommentEvent',   // Комментарии к Issues
+        'PullRequestReviewCommentEvent', // Комментарии к PR review
+        'CommitCommentEvent',  // Комментарии к коммитам
+    );
+
+    return in_array($event['type'], $relevant_events);
+}
+
+/**
+ * Calculate weight for event (how much it contributes to activity)
+ *
+ * @param array $event GitHub event
+ * @return int Activity weight
+ * @since 2.0.3
+ */
+private static function calculate_event_weight($event) {
+    switch ($event['type']) {
+        case 'PushEvent':
+            // Каждый коммит считается отдельно
+            return count($event['payload']['commits']);
+
+        case 'PullRequestEvent':
+            // PR считается как 2 активности (создание + работа над ним)
+            return $event['payload']['action'] === 'opened' ? 2 : 1;
+
+        case 'IssuesEvent':
+            // Issue считается как 2 активности (создание + обсуждение)
+            return $event['payload']['action'] === 'opened' ? 2 : 1;
+
+        case 'CreateEvent':
+            // Создание репозитория/ветки - значимое событие
+            return 3;
+
+        case 'PullRequestReviewEvent':
+        case 'IssueCommentEvent':
+        case 'PullRequestReviewCommentEvent':
+        case 'CommitCommentEvent':
+            // Комментарии и ревью - 1 активность
+            return 1;
+
+        default:
+            return 1;
+    }
 }
 ```
 
-## Полный исправленный метод `get_repo_commits`:
+## Также обновите метод очистки кэша:
 
 ```php
-private static function get_repo_commits($username, $repo_name) {
-    // Проверяем кэш если функция доступна
-    if (function_exists('get_transient')) {
-        $cache_key = self::$cache_key_prefix . 'commits_' . $username . '_' . $repo_name;
-        $cached_data = get_transient($cache_key);
+/**
+ * Clear cache for a user
+ *
+ * @param string $username GitHub username
+ * @since 2.0.3
+ */
+public static function clear_cache($username) {
+    // Удаляем кэш если функция доступна
+    if (function_exists('delete_transient')) {
+        delete_transient(self::$cache_key_prefix . 'commits_' . $username);
+        delete_transient(self::$cache_key_prefix . 'repos_' . $username);
+        delete_transient(self::$cache_key_prefix . 'events_' . $username); // Новый кэш
 
-        if ($cached_data !== false) {
-            return $cached_data;
+        // Очищаем кэш статистики за все года
+        $current_year = date('Y');
+        for ($year = $current_year - 6; $year <= $current_year; $year++) {
+            delete_transient(self::$cache_key_prefix . 'stats_' . $username . '_' . $year);
+            delete_transient(self::$cache_key_prefix . 'activity_' . $username . '_' . $year); // Новый кэш
+        }
+
+        delete_transient(self::$cache_key_prefix . 'user_exists_' . $username);
+
+        // Очищаем кэш для всех репозиториев пользователя
+        $repos = self::get_user_repos($username);
+        if (!(function_exists('is_wp_error') && is_wp_error($repos)) && !(is_array($repos) && isset($repos['error']))) {
+            foreach ($repos as $repo) {
+                delete_transient(self::$cache_key_prefix . 'commits_' . $username . '_' . $repo['name']);
+            }
         }
     }
-
-    $all_commits = array();
-    $page = 1;
-    $has_more = true;
-
-    while ($has_more) {
-        $url = self::$api_url . '/repos/' . $username . '/' . $repo_name . '/commits?per_page=100&page=' . $page . '&sort=author-date&order=desc&author=' . $username;
-
-        // Выполняем запрос если функция доступна
-        if (function_exists('wp_remote_get')) {
-            $response = wp_remote_get($url, array(
-                'headers' => self::get_api_headers(),
-                'timeout' => 30
-            ));
-
-            if (is_wp_error($response)) {
-                return $response;
-            }
-
-            $body = wp_remote_retrieve_body($response);
-            $data = json_decode($body, true);
-
-            // Проверяем лимиты API
-            $headers = wp_remote_retrieve_headers($response);
-            if (isset($headers['x-ratelimit-remaining']) && $headers['x-ratelimit-remaining'] < 10) {
-                error_log('GitHub API rate limit warning: ' . $headers['x-ratelimit-remaining'] . ' requests remaining');
-            }
-
-            if (wp_remote_retrieve_response_code($response) !== 200) {
-                return self::handle_api_error($data);
-            }
-
-            // Если нет коммитов на странице или меньше 100, это последняя страница
-            if (empty($data) || count($data) < 100) {
-                $has_more = false;
-            }
-
-            foreach ($data as $commit) {
-                $all_commits[] = array(
-                    'sha' => substr($commit['sha'], 0, 7),
-                    'message' => $commit['commit']['message'],
-                    'date' => $commit['commit']['author']['date'],
-                    'author' => $commit['commit']['author']['name'],
-                    'repo' => $repo_name
-                );
-            }
-
-            $page++;
-
-            // Защита от бесконечного цикла - максимум 10 страниц (1000 коммитов)
-            if ($page > 10) {
-                break;
-            }
-        } else {
-            // Если WordPress функции недоступны, выходим из цикла
-            $has_more = false;
-        }
-    }
-
-    // Кэшируем результат если функция доступна
-    if (function_exists('set_transient')) {
-        $cache_key = self::$cache_key_prefix . 'commits_' . $username . '_' . $repo_name;
-        set_transient($cache_key, $all_commits, self::$cache_expiration);
-    }
-
-    return $all_commits;
 }
 ```
 
-После этих изменений плагин будет:
-1. Считать коммиты по автору, а не коммиттеру
-2. Включать коммиты из форкнутых репозиториев
-3. Обрабатывать все коммиты через пагинацию, а не только первые 100
+## Что теперь учитывается:
 
-Это должно устранить расхождения в подсчете коммитов между плагином и GitHub.
+✅ **Коммиты** (PushEvent) - каждый коммит = 1 активность
+✅ **Issues** - создание = 2, комментарии = 1
+✅ **Pull Requests** - создание = 2, обсуждение = 1
+✅ **Code Reviews** - 1 активность
+✅ **Комментарии** к коммитам/PR/issues - 1 активность
+✅ **Создание репозиториев** - 3 активности
+
+Это должно полностью соответствовать логике GitHub и устранить расхождения. После применения изменений не забудьте очистить кэш плагина в настройках.

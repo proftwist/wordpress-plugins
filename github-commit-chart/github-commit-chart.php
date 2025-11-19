@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GitHub Commit Chart
  * Description: Displays GitHub commit charts as Gutenberg blocks or shortcodes
- * Version: 2.0.2
+ * Version: 2.1.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: github-commit-chart
@@ -17,7 +17,7 @@ defined('ABSPATH') || exit;
 // Определение констант для удобства работы с путями
 define('GCC_PLUGIN_PATH', plugin_dir_path(__FILE__)); // Абсолютный путь к папке плагина
 define('GCC_PLUGIN_URL', plugin_dir_url(__FILE__));   // URL к папке плагина
-define('GCC_PLUGIN_VERSION', '2.0.0');                // Версия плагина
+define('GCC_PLUGIN_VERSION', '2.1.0');                // Версия плагина
 
 // Подключение вспомогательных файлов
 require_once GCC_PLUGIN_PATH . 'includes/class-assets-manager.php';       // Менеджер ресурсов

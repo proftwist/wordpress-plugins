@@ -300,12 +300,12 @@ if (!class_exists('GitHubCommitChart_API')) {
         }
 
         /**
-         * Get commit statistics by day for a specified year or last 365 days
+         * Get user activity statistics using GitHub Events API
          *
          * @param string $username GitHub username
          * @param int|null $year Year to get statistics for (null for current year)
-         * @return array|WP_Error Array of commit statistics or WP_Error on failure
-         * @since 1.0.0
+         * @return array|WP_Error Array of activity statistics or WP_Error on failure
+         * @since 2.0.3
          */
         public static function get_commit_stats($username, $year = null) {
             // Если год не указан, используем текущий год
@@ -313,9 +313,9 @@ if (!class_exists('GitHubCommitChart_API')) {
                 $year = date('Y');
             }
 
-            // Проверяем кэш если функция доступна
+            // Проверяем кэш
             if (function_exists('get_transient')) {
-                $cache_key = self::$cache_key_prefix . 'stats_' . $username . '_' . $year;
+                $cache_key = self::$cache_key_prefix . 'activity_' . $username . '_' . $year;
                 $cached_data = get_transient($cache_key);
 
                 if ($cached_data !== false) {
@@ -323,16 +323,11 @@ if (!class_exists('GitHubCommitChart_API')) {
                 }
             }
 
-            $commits = self::get_user_commits($username);
+            // Получаем события через Events API
+            $events = self::get_user_events($username);
 
-            // Проверяем ошибки
-            if (function_exists('is_wp_error') && is_wp_error($commits)) {
-                return $commits;
-            }
-
-            // Проверяем, является ли результат массивом с ошибкой
-            if (is_array($commits) && isset($commits['error'])) {
-                return self::handle_api_error($commits);
+            if (function_exists('is_wp_error') && is_wp_error($events)) {
+                return $events;
             }
 
             // Создаем массив для статистики по дням
@@ -352,26 +347,185 @@ if (!class_exists('GitHubCommitChart_API')) {
                 $current_date->modify('+1 day');
             }
 
-            // Подсчитываем коммиты по дням
-            foreach ($commits as $commit) {
-                $commit_date = new DateTime($commit['date']);
-                $commit_date_str = $commit_date->format('Y-m-d');
+            // Подсчитываем активность по дням
+            foreach ($events as $event) {
+                $event_date = new DateTime($event['created_at']);
+                $event_date_str = $event_date->format('Y-m-d');
 
                 // Проверяем, что дата в диапазоне выбранного года
-                if ($commit_date >= $year_start && $commit_date <= $year_end) {
-                    if (isset($stats[$commit_date_str])) {
-                        $stats[$commit_date_str]++;
+                if ($event_date >= $year_start && $event_date <= $year_end) {
+                    if (isset($stats[$event_date_str])) {
+                        $stats[$event_date_str] += self::calculate_event_weight($event);
                     }
                 }
             }
 
-            // Кэшируем результат если функция доступна
+            // Кэшируем результат
             if (function_exists('set_transient')) {
-                $cache_key = self::$cache_key_prefix . 'stats_' . $username . '_' . $year;
+                $cache_key = self::$cache_key_prefix . 'activity_' . $username . '_' . $year;
                 set_transient($cache_key, $stats, self::$cache_expiration);
             }
 
             return $stats;
+        }
+
+        /**
+         * Get user events from GitHub Events API
+         *
+         * @param string $username GitHub username
+         * @return array|WP_Error Array of events or WP_Error on failure
+         * @since 2.0.3
+         */
+        private static function get_user_events($username) {
+            // Проверяем кэш
+            if (function_exists('get_transient')) {
+                $cache_key = self::$cache_key_prefix . 'events_' . $username;
+                $cached_data = get_transient($cache_key);
+
+                if ($cached_data !== false) {
+                    return $cached_data;
+                }
+            }
+
+            $all_events = array();
+            $page = 1;
+            $has_more = true;
+
+            while ($has_more) {
+                $url = self::$api_url . '/users/' . $username . '/events?per_page=100&page=' . $page;
+
+                $response = wp_remote_get($url, array(
+                    'headers' => self::get_api_headers(),
+                    'timeout' => 30
+                ));
+
+                if (is_wp_error($response)) {
+                    return $response;
+                }
+
+                $body = wp_remote_retrieve_body($response);
+                $data = json_decode($body, true);
+
+                // Проверяем лимиты API
+                $headers = wp_remote_retrieve_headers($response);
+                if (isset($headers['x-ratelimit-remaining']) && $headers['x-ratelimit-remaining'] < 10) {
+                    error_log('GitHub API rate limit warning: ' . $headers['x-ratelimit-remaining'] . ' requests remaining');
+                }
+
+                if (wp_remote_retrieve_response_code($response) !== 200) {
+                    return self::handle_api_error($data);
+                }
+
+                // Если нет событий на странице или меньше 100, это последняя страница
+                if (empty($data) || !is_array($data) || count($data) < 100) {
+                    $has_more = false;
+                }
+
+                // Фильтруем только релевантные события
+                if (is_array($data)) {
+                    foreach ($data as $event) {
+                        if (self::is_relevant_event($event)) {
+                            $all_events[] = $event;
+                        }
+                    }
+                }
+
+                $page++;
+
+                // Защита от бесконечного цикла - максимум 5 страниц (500 событий)
+                if ($page > 5) {
+                    break;
+                }
+            }
+
+            // Кэшируем результат
+            if (function_exists('set_transient')) {
+                $cache_key = self::$cache_key_prefix . 'events_' . $username;
+                set_transient($cache_key, $all_events, self::$cache_expiration);
+            }
+
+            return $all_events;
+        }
+
+        /**
+         * Check if event should be counted in activity
+         *
+         * @param array $event GitHub event
+         * @return bool True if event is relevant
+         * @since 2.0.3
+         */
+        private static function is_relevant_event($event) {
+            // Проверяем что event существует и имеет тип
+            if (!is_array($event) || !isset($event['type'])) {
+                return false;
+            }
+
+            $relevant_events = array(
+                'PushEvent',           // Коммиты
+                'PullRequestEvent',    // Pull Requests
+                'IssuesEvent',         // Issues
+                'CreateEvent',         // Создание репозиториев/веток
+                'PullRequestReviewEvent', // Ревью PR
+                'IssueCommentEvent',   // Комментарии к Issues
+                'PullRequestReviewCommentEvent', // Комментарии к PR review
+                'CommitCommentEvent',  // Комментарии к коммитам
+            );
+
+            return in_array($event['type'], $relevant_events);
+        }
+
+        /**
+         * Calculate weight for event (how much it contributes to activity)
+         *
+         * @param array $event GitHub event
+         * @return int Activity weight
+         * @since 2.0.3
+         */
+        private static function calculate_event_weight($event) {
+            // Проверяем что event существует и имеет тип
+            if (!is_array($event) || !isset($event['type'])) {
+                return 1;
+            }
+
+            // Проверяем что payload существует если нужен
+            $has_payload = isset($event['payload']) && is_array($event['payload']);
+
+            switch ($event['type']) {
+                case 'PushEvent':
+                    // Каждый коммит считается отдельно, но только если поле существует
+                    if ($has_payload && isset($event['payload']['commits']) && is_array($event['payload']['commits'])) {
+                        return count($event['payload']['commits']);
+                    }
+                    return 1;
+
+                case 'PullRequestEvent':
+                    // PR считается как 2 активности (создание + работа над ним)
+                    if ($has_payload && isset($event['payload']['action']) && $event['payload']['action'] === 'opened') {
+                        return 2;
+                    }
+                    return 1;
+
+                case 'IssuesEvent':
+                    // Issue считается как 2 активности (создание + обсуждение)
+                    if ($has_payload && isset($event['payload']['action']) && $event['payload']['action'] === 'opened') {
+                        return 2;
+                    }
+                    return 1;
+
+                case 'CreateEvent':
+                    // Создание репозитория/ветки - значимое событие
+                    return 3;
+
+                case 'PullRequestReviewEvent':
+                case 'IssueCommentEvent':
+                case 'PullRequestReviewCommentEvent':
+                case 'CommitCommentEvent':
+                    // Комментарии и ревью - 1 активность
+                    return 1;
+
+                default:
+                    return 1;
+            }
         }
 
         /**
@@ -425,18 +579,20 @@ if (!class_exists('GitHubCommitChart_API')) {
          * Clear cache for a user
          *
          * @param string $username GitHub username
-         * @since 1.0.0
+         * @since 2.0.3
          */
         public static function clear_cache($username) {
             // Удаляем кэш если функция доступна
             if (function_exists('delete_transient')) {
                 delete_transient(self::$cache_key_prefix . 'commits_' . $username);
                 delete_transient(self::$cache_key_prefix . 'repos_' . $username);
+                delete_transient(self::$cache_key_prefix . 'events_' . $username); // Новый кэш
 
                 // Очищаем кэш статистики за все года
                 $current_year = date('Y');
                 for ($year = $current_year - 6; $year <= $current_year; $year++) {
                     delete_transient(self::$cache_key_prefix . 'stats_' . $username . '_' . $year);
+                    delete_transient(self::$cache_key_prefix . 'activity_' . $username . '_' . $year); // Новый кэш
                 }
 
                 delete_transient(self::$cache_key_prefix . 'user_exists_' . $username);
