@@ -119,7 +119,7 @@ class GitHubCommitChart_Ajax_Handler {
      * @param string   $github_profile Имя пользователя GitHub
      * @param int|null $year           Год для статистики
      * @return array Массив ошибок валидации
-     * @since 1.8.4
+     * @since 2.1.1
      */
     private static function validate_request_data($github_profile, $year) {
         $errors = array();
@@ -134,9 +134,10 @@ class GitHubCommitChart_Ajax_Handler {
             $errors[] = __('Invalid GitHub profile format', 'github-commit-chart');
         }
 
-        // Проверяем год
-        if ($year !== null && ($year < 2008 || $year > date('Y') + 1)) {
-            $errors[] = __('Invalid year specified', 'github-commit-chart');
+        // Проверяем год (поддерживаем 6 лет истории)
+        $current_year = date('Y');
+        if ($year !== null && ($year < $current_year - 5 || $year > $current_year + 1)) {
+            $errors[] = __('Invalid year specified. Supported range: ' . ($current_year - 5) . ' to ' . ($current_year + 1), 'github-commit-chart');
         }
 
         return $errors;

@@ -300,12 +300,12 @@ if (!class_exists('GitHubCommitChart_API')) {
         }
 
         /**
-         * Get user activity statistics using GitHub Events API
+         * Get user activity statistics with full 6-year history support
          *
          * @param string $username GitHub username
          * @param int|null $year Year to get statistics for (null for current year)
          * @return array|WP_Error Array of activity statistics or WP_Error on failure
-         * @since 2.0.3
+         * @since 2.1.1
          */
         public static function get_commit_stats($username, $year = null) {
             // Если год не указан, используем текущий год
@@ -315,7 +315,7 @@ if (!class_exists('GitHubCommitChart_API')) {
 
             // Проверяем кэш
             if (function_exists('get_transient')) {
-                $cache_key = self::$cache_key_prefix . 'activity_' . $username . '_' . $year;
+                $cache_key = self::$cache_key_prefix . 'commits_' . $username . '_' . $year;
                 $cached_data = get_transient($cache_key);
 
                 if ($cached_data !== false) {
@@ -323,11 +323,11 @@ if (!class_exists('GitHubCommitChart_API')) {
                 }
             }
 
-            // Получаем события через Events API
-            $events = self::get_user_events($username);
+            // Получаем ВСЕ коммиты пользователя (не только из своих репозиториев)
+            $all_commits = self::get_all_user_commits($username, $year);
 
-            if (function_exists('is_wp_error') && is_wp_error($events)) {
-                return $events;
+            if (function_exists('is_wp_error') && is_wp_error($all_commits)) {
+                return $all_commits;
             }
 
             // Создаем массив для статистики по дням
@@ -347,22 +347,22 @@ if (!class_exists('GitHubCommitChart_API')) {
                 $current_date->modify('+1 day');
             }
 
-            // Подсчитываем активность по дням
-            foreach ($events as $event) {
-                $event_date = new DateTime($event['created_at']);
-                $event_date_str = $event_date->format('Y-m-d');
+            // Подсчитываем коммиты по дням
+            foreach ($all_commits as $commit) {
+                $commit_date = new DateTime($commit['date']);
+                $commit_date_str = $commit_date->format('Y-m-d');
 
                 // Проверяем, что дата в диапазоне выбранного года
-                if ($event_date >= $year_start && $event_date <= $year_end) {
-                    if (isset($stats[$event_date_str])) {
-                        $stats[$event_date_str] += self::calculate_event_weight($event);
+                if ($commit_date >= $year_start && $commit_date <= $year_end) {
+                    if (isset($stats[$commit_date_str])) {
+                        $stats[$commit_date_str]++;
                     }
                 }
             }
 
             // Кэшируем результат
             if (function_exists('set_transient')) {
-                $cache_key = self::$cache_key_prefix . 'activity_' . $username . '_' . $year;
+                $cache_key = self::$cache_key_prefix . 'commits_' . $username . '_' . $year;
                 set_transient($cache_key, $stats, self::$cache_expiration);
             }
 
@@ -370,16 +370,17 @@ if (!class_exists('GitHubCommitChart_API')) {
         }
 
         /**
-         * Get user events from GitHub Events API
+         * Get ALL user commits from all repositories (including contributions to others)
          *
          * @param string $username GitHub username
-         * @return array|WP_Error Array of events or WP_Error on failure
-         * @since 2.0.3
+         * @param int $year Specific year to optimize query
+         * @return array|WP_Error Array of commits or WP_Error on failure
+         * @since 2.1.1
          */
-        private static function get_user_events($username) {
-            // Проверяем кэш
+        private static function get_all_user_commits($username, $year) {
+            // Проверяем кэш если функция доступна
             if (function_exists('get_transient')) {
-                $cache_key = self::$cache_key_prefix . 'events_' . $username;
+                $cache_key = self::$cache_key_prefix . 'all_commits_' . $username . '_' . $year;
                 $cached_data = get_transient($cache_key);
 
                 if ($cached_data !== false) {
@@ -387,12 +388,15 @@ if (!class_exists('GitHubCommitChart_API')) {
                 }
             }
 
-            $all_events = array();
+            // Используем Search API для поиска ВСЕХ коммитов пользователя за конкретный год
+            $search_url = self::$api_url . '/search/commits?q=author:' . $username . '+committer-date:' . $year . '-01-01..' . $year . '-12-31&per_page=100&sort=committer-date&order=desc';
+
+            $all_commits = array();
             $page = 1;
             $has_more = true;
 
             while ($has_more) {
-                $url = self::$api_url . '/users/' . $username . '/events?per_page=100&page=' . $page;
+                $url = $search_url . '&page=' . $page;
 
                 $response = wp_remote_get($url, array(
                     'headers' => self::get_api_headers(),
@@ -416,35 +420,39 @@ if (!class_exists('GitHubCommitChart_API')) {
                     return self::handle_api_error($data);
                 }
 
-                // Если нет событий на странице или меньше 100, это последняя страница
-                if (empty($data) || !is_array($data) || count($data) < 100) {
+                // Если нет коммитов на странице или меньше 100, это последняя страница
+                if (empty($data['items']) || !is_array($data['items']) || count($data['items']) < 100) {
                     $has_more = false;
                 }
 
-                // Фильтруем только релевантные события
-                if (is_array($data)) {
-                    foreach ($data as $event) {
-                        if (self::is_relevant_event($event)) {
-                            $all_events[] = $event;
-                        }
+                // Обрабатываем найденные коммиты
+                if (isset($data['items']) && is_array($data['items'])) {
+                    foreach ($data['items'] as $commit_item) {
+                        $all_commits[] = array(
+                            'sha' => isset($commit_item['sha']) ? substr($commit_item['sha'], 0, 7) : '',
+                            'message' => isset($commit_item['commit']['message']) ? $commit_item['commit']['message'] : '',
+                            'date' => isset($commit_item['commit']['committer']['date']) ? $commit_item['commit']['committer']['date'] : '',
+                            'author' => isset($commit_item['commit']['author']['name']) ? $commit_item['commit']['author']['name'] : $username,
+                            'repo' => isset($commit_item['repository']['name']) ? $commit_item['repository']['name'] : 'unknown'
+                        );
                     }
                 }
 
                 $page++;
 
-                // Защита от бесконечного цикла - максимум 5 страниц (500 событий)
-                if ($page > 5) {
+                // Защита от бесконечного цикла - максимум 10 страниц (1000 коммитов за год)
+                if ($page > 10) {
                     break;
                 }
             }
 
-            // Кэшируем результат
+            // Кэшируем результат если функция доступна
             if (function_exists('set_transient')) {
-                $cache_key = self::$cache_key_prefix . 'events_' . $username;
-                set_transient($cache_key, $all_events, self::$cache_expiration);
+                $cache_key = self::$cache_key_prefix . 'all_commits_' . $username . '_' . $year;
+                set_transient($cache_key, $all_commits, self::$cache_expiration);
             }
 
-            return $all_events;
+            return $all_commits;
         }
 
         /**
@@ -529,6 +537,171 @@ if (!class_exists('GitHubCommitChart_API')) {
         }
 
         /**
+         * Get events from GitHub Events API (limited to 300)
+         *
+         * @param string $username GitHub username
+         * @return array|WP_Error Array of events or WP_Error on failure
+         * @since 2.1.1
+         */
+        private static function get_events_from_events_api($username) {
+            $all_events = array();
+            $page = 1;
+            $has_more = true;
+
+            while ($has_more) {
+                $url = self::$api_url . '/users/' . $username . '/events?per_page=100&page=' . $page;
+
+                $response = wp_remote_get($url, array(
+                    'headers' => self::get_api_headers(),
+                    'timeout' => 30
+                ));
+
+                if (is_wp_error($response)) {
+                    return $response;
+                }
+
+                $body = wp_remote_retrieve_body($response);
+                $data = json_decode($body, true);
+
+                // Проверяем лимиты API
+                $headers = wp_remote_retrieve_headers($response);
+                if (isset($headers['x-ratelimit-remaining']) && $headers['x-ratelimit-remaining'] < 10) {
+                    error_log('GitHub API rate limit warning: ' . $headers['x-ratelimit-remaining'] . ' requests remaining');
+                }
+
+                if (wp_remote_retrieve_response_code($response) !== 200) {
+                    return self::handle_api_error($data);
+                }
+
+                // Если нет событий на странице или меньше 100, это последняя страница
+                if (empty($data) || !is_array($data) || count($data) < 100) {
+                    $has_more = false;
+                }
+
+                // Фильтруем только релевантные события
+                if (is_array($data)) {
+                    foreach ($data as $event) {
+                        if (self::is_relevant_event($event)) {
+                            $all_events[] = $event;
+                        }
+                    }
+                }
+
+                $page++;
+
+                // Ограничиваем 3 страницами (300 событий) - максимум что дает Events API
+                if ($page > 3) {
+                    break;
+                }
+            }
+
+            return $all_events;
+        }
+
+        /**
+         * Get older commits from GitHub Search API
+         *
+         * @param string $username GitHub username
+         * @return array|WP_Error Array of commit events or WP_Error on failure
+         * @since 2.1.1
+         */
+        private static function get_commits_from_search_api($username) {
+            // Для надежности используем существующий Commits API вместо Search API
+            // Search API требует токен и может быть недоступен
+
+            $current_year = date('Y');
+            $all_events = array();
+
+            // Получаем коммиты через существующий метод get_user_commits
+            $commits_data = self::get_user_commits($username);
+
+            if (is_wp_error($commits_data)) {
+                return array();
+            }
+
+            // Преобразуем коммиты в формат событий для совместимости
+            foreach ($commits_data as $commit) {
+                $commit_year = date('Y', strtotime($commit['date']));
+
+                // Включаем только коммиты за последние 6 лет (кроме текущего)
+                if ($commit_year < $current_year && $commit_year >= ($current_year - 6)) {
+                    $all_events[] = array(
+                        'type' => 'PushEvent',
+                        'created_at' => $commit['date'],
+                        'payload' => array(
+                            'commits' => array(array(
+                                'sha' => $commit['sha'],
+                                'message' => $commit['message']
+                            ))
+                        )
+                    );
+                }
+            }
+
+            return $all_events;
+        }
+
+        /**
+         * Search commits for specific year using GitHub Search API
+         *
+         * @param string $username GitHub username
+         * @param int $year Year to search
+         * @return array|WP_Error Array of commit events or WP_Error on failure
+         * @since 2.1.1
+         */
+        private static function search_commits_by_year($username, $year) {
+            $start_date = $year . '-01-01';
+            $end_date = $year . '-12-31';
+
+            // Формируем поисковый запрос
+            $query = 'author:' . $username . '+committer-date:' . $start_date . '..' . $end_date;
+            $url = self::$api_url . '/search/commits?q=' . urlencode($query) . '&per_page=100&sort=committer-date&order=desc';
+
+            // Получаем базовые заголовки
+            $headers = self::get_api_headers();
+
+            // Для Search API нужен специальный заголовок
+            $headers['Accept'] = 'application/vnd.github.v3+json';
+
+            $response = wp_remote_get($url, array(
+                'headers' => $headers,
+                'timeout' => 30
+            ));
+
+            if (is_wp_error($response)) {
+                // Логируем ошибку для отладки
+                error_log('GitHub Search API Error for ' . $username . ' ' . $year . ': ' . $response->get_error_message());
+                return array(); // Возвращаем пустой массив вместо ошибки
+            }
+
+            $status_code = wp_remote_retrieve_response_code($response);
+            $body = wp_remote_retrieve_body($response);
+            $data = json_decode($body, true);
+
+            if ($status_code !== 200) {
+                // Логируем ошибку для отладки
+                error_log('GitHub Search API HTTP Error for ' . $username . ' ' . $year . ': ' . $status_code);
+                return array(); // Возвращаем пустой массив вместо ошибки
+            }
+
+            $commits = array();
+            if (isset($data['items']) && is_array($data['items'])) {
+                foreach ($data['items'] as $commit_item) {
+                    // Создаем структуру похожую на Events API для совместимости
+                    $commits[] = array(
+                        'type' => 'PushEvent',
+                        'created_at' => $commit_item['commit']['committer']['date'],
+                        'payload' => array(
+                            'commits' => array($commit_item)
+                        )
+                    );
+                }
+            }
+
+            return $commits;
+        }
+
+        /**
          * Check if a GitHub user exists
          *
          * @param string $username GitHub username
@@ -579,20 +752,23 @@ if (!class_exists('GitHubCommitChart_API')) {
          * Clear cache for a user
          *
          * @param string $username GitHub username
-         * @since 2.0.3
+         * @since 2.1.1
          */
         public static function clear_cache($username) {
             // Удаляем кэш если функция доступна
             if (function_exists('delete_transient')) {
+                // Удаляем старые кэши
                 delete_transient(self::$cache_key_prefix . 'commits_' . $username);
                 delete_transient(self::$cache_key_prefix . 'repos_' . $username);
-                delete_transient(self::$cache_key_prefix . 'events_' . $username); // Новый кэш
+                delete_transient(self::$cache_key_prefix . 'events_' . $username);
+                delete_transient(self::$cache_key_prefix . 'activity_' . $username);
 
-                // Очищаем кэш статистики за все года
+                // Очищаем кэш статистики за все года (6 лет)
                 $current_year = date('Y');
-                for ($year = $current_year - 6; $year <= $current_year; $year++) {
+                for ($year = $current_year - 5; $year <= $current_year; $year++) {
                     delete_transient(self::$cache_key_prefix . 'stats_' . $username . '_' . $year);
-                    delete_transient(self::$cache_key_prefix . 'activity_' . $username . '_' . $year); // Новый кэш
+                    delete_transient(self::$cache_key_prefix . 'commits_' . $username . '_' . $year);
+                    delete_transient(self::$cache_key_prefix . 'all_commits_' . $username . '_' . $year);
                 }
 
                 delete_transient(self::$cache_key_prefix . 'user_exists_' . $username);
