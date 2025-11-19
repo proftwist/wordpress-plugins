@@ -13,46 +13,37 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 msgid "Easy Changelog"
-msgstr "Легкий Чейнджлог"
+msgstr "Easy Changelog"
 
-msgid "Display a beautiful changelog with JSON data"
-msgstr "Отображение красивого чейнджлога с данными JSON"
+msgid "Блок для отображения changelog с редактором JSON и предпросмотром"
+msgstr "Блок для отображения changelog с редактором JSON и предпросмотром"
 
-msgid "Changelog"
-msgstr "История изменений"
-
-msgid "Added"
-msgstr "Добавлено"
-
-msgid "JSON Editor"
+msgid "Редактор JSON"
 msgstr "Редактор JSON"
 
-msgid "Preview"
+msgid "Предпросмотр"
 msgstr "Предпросмотр"
 
-msgid "Changelog JSON"
-msgstr "JSON чейнджлога"
+msgid "Данные Changelog (JSON)"
+msgstr "Данные Changelog (JSON)"
 
-msgid "Enter valid JSON array with version, date, and added fields"
-msgstr "Введите валидный массив JSON с полями version, date и added"
+msgid "Введите данные в формате JSON. Каждый релиз должен содержать version, date и added."
+msgstr "Введите данные в формате JSON. Каждый релиз должен содержать version, date и added."
 
-msgid "Invalid JSON format"
-msgstr "Неверный формат JSON"
+msgid "Ошибка:"
+msgstr "Ошибка:"
 
-msgid "JSON must be an array"
-msgstr "JSON должен быть массивом"
+msgid "Некорректный JSON формат"
+msgstr "Некорректный JSON формат"
 
-msgid "Fix JSON errors to see preview"
-msgstr "Исправьте ошибки JSON для просмотра"
+msgid "Данные должны быть массивом"
+msgstr "Данные должны быть массивом"
 
-msgid "No changelog data to display"
-msgstr "Нет данных чейнджлога для отображения"
+msgid "Невозможно отобразить предпросмотр из-за ошибок в JSON"
+msgstr "Невозможно отобразить предпросмотр из-за ошибок в JSON"
 
-msgid "Changelog Settings"
-msgstr "Настройки чейнджлога"
+msgid "Некорректный формат данных changelog"
+msgstr "Некорректный формат данных changelog"
 
-msgid "Use the JSON Editor tab to input your changelog data in JSON format."
-msgstr "Используйте вкладку редактора JSON для ввода данных чейнджлога в формате JSON."
-
-msgid "Invalid changelog data"
-msgstr "Неверные данные чейнджлога"
+msgid "История изменений"
+msgstr "История изменений"

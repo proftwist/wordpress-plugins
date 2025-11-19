@@ -1,161 +1,156 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import {
-    PanelBody,
-    TextareaControl,
-    TabPanel,
-    Notice
-} from '@wordpress/components';
-import {
-    InspectorControls,
-    useBlockProps
-} from '@wordpress/block-editor';
+import { useBlockProps } from '@wordpress/block-editor';
+import { TextareaControl, TabPanel } from '@wordpress/components';
 
+// Получаем переводы из PHP
+const i18n = window.easyChangelogI18n || {};
+
+/**
+ * Компонент редактирования блока Easy Changelog
+ *
+ * @param {Object} attributes - Атрибуты блока
+ * @param {Function} setAttributes - Функция для обновления атрибутов
+ */
 const Edit = ({ attributes, setAttributes }) => {
+    // Получаем данные changelog из атрибутов
     const { changelogData } = attributes;
-    const [jsonError, setJsonError] = useState('');
-    const [previewData, setPreviewData] = useState([]);
-    const blockProps = useBlockProps();
 
-    // Валидация и парсинг JSON
+    // Состояния компонента
+    const [previewData, setPreviewData] = useState([]); // Данные для предпросмотра
+    const [jsonError, setJsonError] = useState('');      // Ошибки парсинга JSON
+
+    /**
+     * Эффект для валидации и парсинга JSON данных
+     * Выполняется при изменении changelogData
+     */
     useEffect(() => {
         try {
-            if (changelogData.trim()) {
-                const parsed = JSON.parse(changelogData);
-                if (Array.isArray(parsed)) {
-                    setPreviewData(parsed);
-                    setJsonError('');
-                } else {
-                    setJsonError(__('JSON must be an array', 'easy-changelog'));
-                }
+            // Пытаемся распарсить JSON
+            const parsed = JSON.parse(changelogData);
+
+            // Проверяем, что данные являются массивом
+            if (Array.isArray(parsed)) {
+                setPreviewData(parsed);     // Устанавливаем данные для предпросмотра
+                setJsonError('');           // Очищаем ошибки
             } else {
-                setPreviewData([]);
-                setJsonError('');
+                // Если данные не массив, показываем ошибку
+                setJsonError(i18n.mustBeArray || __('Данные должны быть массивом', 'easy-changelog'));
             }
         } catch (error) {
-            setJsonError(__('Invalid JSON format', 'easy-changelog'));
-            setPreviewData([]);
+            // При ошибке парсинга JSON показываем сообщение об ошибке
+            setJsonError(i18n.invalidJson || __('Некорректный JSON формат', 'easy-changelog'));
         }
     }, [changelogData]);
 
+    /**
+     * Конфигурация вкладок редактора
+     */
     const tabs = [
         {
-            name: 'json',
-            title: __('JSON Editor', 'easy-changelog'),
-            className: 'easy-changelog-json-tab',
+            name: 'editor',
+            title: i18n.jsonEditor || __('Редактор JSON', 'easy-changelog'),
         },
         {
             name: 'preview',
-            title: __('Preview', 'easy-changelog'),
-            className: 'easy-changelog-preview-tab',
+            title: i18n.preview || __('Предпросмотр', 'easy-changelog'),
         },
     ];
 
-    const renderJsonTab = () => (
-        <div className="easy-changelog-json-editor">
-            {jsonError && (
-                <Notice status="error" isDismissible={false}>
-                    {jsonError}
-                </Notice>
-            )}
+    /**
+     * Рендер вкладки редактора JSON
+     */
+    const renderEditorTab = () => (
+        <div>
             <TextareaControl
-                label={__('Changelog JSON', 'easy-changelog')}
-                help={__('Enter valid JSON array with version, date, and added fields', 'easy-changelog')}
+                // Метка поля
+                label={i18n.changelogData || __('Данные Changelog (JSON)', 'easy-changelog')}
+
+                // Значение поля
                 value={changelogData}
+
+                // Обработчик изменения
                 onChange={(value) => setAttributes({ changelogData: value })}
-                rows={20}
-                className="easy-changelog-textarea"
+
+                // Количество строк в поле
+                rows={15}
+
+                // Подсказка под полем
+                help={i18n.jsonHelp || __('Введите данные в формате JSON. Каждый релиз должен содержать version, date и added.', 'easy-changelog')}
             />
-        </div>
-    );
 
-    // Функция форматирования даты в российском формате (DD.MM.YYYY)
-    const formatDate = (dateString) => {
-        if (!dateString || dateString === 'No date') {
-            return dateString;
-        }
-
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            return dateString;
-        }
-
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-
-        return `${day}.${month}.${year}`;
-    };
-
-    const renderPreviewTab = () => (
-        <div className="easy-changelog-preview">
-            {jsonError ? (
-                <Notice status="warning" isDismissible={false}>
-                    {__('Fix JSON errors to see preview', 'easy-changelog')}
-                </Notice>
-            ) : previewData.length === 0 ? (
-                <Notice status="info" isDismissible={false}>
-                    {__('No changelog data to display', 'easy-changelog')}
-                </Notice>
-            ) : (
-                <div className="easy-changelog-block">
-                    <h3 className="easy-changelog-title">{__('Changelog', 'easy-changelog')}</h3>
-                    <div className="easy-changelog-list">
-                        {previewData.map((release, index) => (
-                            <div key={index} className="easy-changelog-release">
-                                <div className="easy-changelog-header">
-                                    <strong className="easy-changelog-version">
-                                        {release.version || 'No version'}
-                                    </strong>
-                                    <span className="easy-changelog-date">
-                                        {formatDate(release.date || 'No date')}
-                                    </span>
-                                </div>
-                                {release.added && release.added.length > 0 && (
-                                    <div className="easy-changelog-section">
-                                        <h4 className="easy-changelog-section-title">
-                                            {__('Added', 'easy-changelog')}
-                                        </h4>
-                                        <ul className="easy-changelog-items">
-                                            {release.added.map((item, itemIndex) => (
-                                                <li key={itemIndex} className="easy-changelog-item">
-                                                    {item}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+            {/* Отображение ошибок парсинга */}
+            {jsonError && (
+                <div style={{ color: '#cc1818', marginTop: '10px' }}>
+                    {i18n.error || __('Ошибка:', 'easy-changelog')} {jsonError}
                 </div>
             )}
         </div>
     );
 
-    return (
-        <div {...blockProps}>
-            <InspectorControls>
-                <PanelBody title={__('Changelog Settings', 'easy-changelog')} initialOpen={true}>
-                    <p>{__('Use the JSON Editor tab to input your changelog data in JSON format.', 'easy-changelog')}</p>
-                </PanelBody>
-            </InspectorControls>
+    /**
+     * Рендер вкладки предпросмотра
+     */
+    const renderPreviewTab = () => (
+        <div className="easy-changelog-preview">
+            {/* Если есть ошибки, показываем сообщение */}
+            {jsonError ? (
+                <div style={{ color: '#cc1818' }}>
+                    {i18n.cannotPreview || __('Невозможно отобразить предпросмотр из-за ошибок в JSON', 'easy-changelog')}
+                </div>
+            ) : (
+                <>
+                    {/* Заголовок блока */}
+                    <h2 className="easy-changelog-title">
+                        {i18n.changelogTitle || __('История изменений', 'easy-changelog')}
+                    </h2>
 
-            <div className="easy-changelog-editor">
-                <TabPanel
-                    className="easy-changelog-tabs"
-                    activeClass="is-active"
-                    onSelect={() => {}}
-                    tabs={tabs}
-                >
-                    {(tab) => (
-                        <div className="easy-changelog-tab-content">
-                            {tab.name === 'json' && renderJsonTab()}
-                            {tab.name === 'preview' && renderPreviewTab()}
+                    {/* Отображение релизов */}
+                    {previewData.map((release, index) => (
+                        <div key={index} className="easy-changelog-release">
+                            {/* Версия релиза */}
+                            <div className="easy-changelog-version">
+                                <strong>{release.version}</strong>
+                            </div>
+
+                            {/* Дата релиза */}
+                            <div className="easy-changelog-date">
+                                {release.date}
+                            </div>
+
+                            {/* Список изменений */}
+                            <div className="easy-changelog-added">
+                                {Array.isArray(release.added) && (
+                                    <ul>
+                                        {release.added.map((item, itemIndex) => (
+                                            <li key={itemIndex}>{item}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
                         </div>
-                    )}
-                </TabPanel>
-            </div>
+                    ))}
+                </>
+            )}
+        </div>
+    );
+
+    /**
+     * Основной рендер компонента
+     */
+    return (
+        <div {...useBlockProps()}>
+            <TabPanel
+                className="easy-changelog-tabs"
+                tabs={tabs}
+            >
+                {(tab) => (
+                    <div className="easy-changelog-tab-content">
+                        {tab.name === 'editor' && renderEditorTab()}
+                        {tab.name === 'preview' && renderPreviewTab()}
+                    </div>
+                )}
+            </TabPanel>
         </div>
     );
 };

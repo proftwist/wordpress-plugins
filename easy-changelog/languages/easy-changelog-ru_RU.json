@@ -1,31 +1,24 @@
 {
-  "translation-revision-date": "2024-11-18 21:38+0000",
-  "generator": "WP-CLI/2.8.1",
-  "source": "build/index.js",
   "domain": "easy-changelog",
   "locale_data": {
     "easy-changelog": {
       "": {
         "domain": "easy-changelog",
-        "plural-forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);",
+        "plural_forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);",
         "lang": "ru_RU"
       },
-      "Easy Changelog": ["Легкий Чейнджлог"],
-      "Display a beautiful changelog with JSON data": ["Отображение красивого чейнджлога с данными JSON"],
-      "Changelog": ["История изменений"],
-      "Added": ["Добавлено"],
-      "JSON Editor": ["Редактор JSON"],
-      "Preview": ["Предпросмотр"],
-      "Changelog JSON": ["JSON чейнджлога"],
-      "Enter valid JSON array with version, date, and added fields": ["Введите валидный массив JSON с полями version, date и added"],
-      "Invalid JSON format": ["Неверный формат JSON"],
-      "JSON must be an array": ["JSON должен быть массивом"],
-      "Fix JSON errors to see preview": ["Исправьте ошибки JSON для просмотра"],
-      "No changelog data to display": ["Нет данных чейнджлога для отображения"],
-      "Changelog Settings": ["Настройки чейнджлога"],
-      "Use the JSON Editor tab to input your changelog data in JSON format.": ["Используйте вкладку редактора JSON для ввода данных чейнджлога в формате JSON."],
-      "Invalid changelog data": ["Неверные данные чейнджлога"],
-      "No changelog data provided": ["Данные чейнджлога не предоставлены"]
+      "Easy Changelog": ["Easy Changelog"],
+      "Блок для отображения changelog с редактором JSON и предпросмотром": ["Блок для отображения changelog с редактором JSON и предпросмотром"],
+      "Редактор JSON": ["Редактор JSON"],
+      "Предпросмотр": ["Предпросмотр"],
+      "Данные Changelog (JSON)": ["Данные Changelog (JSON)"],
+      "Введите данные в формате JSON. Каждый релиз должен содержать version, date и added.": ["Введите данные в формате JSON. Каждый релиз должен содержать version, date и added."],
+      "Ошибка:": ["Ошибка:"],
+      "Некорректный JSON формат": ["Некорректный JSON формат"],
+      "Данные должны быть массивом": ["Данные должны быть массивом"],
+      "Невозможно отобразить предпросмотр из-за ошибок в JSON": ["Невозможно отобразить предпросмотр из-за ошибок в JSON"],
+      "Некорректный формат данных changelog": ["Некорректный формат данных changelog"],
+      "История изменений": ["История изменений"]
     }
   }
 }
