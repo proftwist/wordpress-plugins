@@ -18,6 +18,7 @@
             this.container = containerElement;
             this.siteUrl = this.container.dataset.siteUrl;
             this.containerId = this.container.dataset.containerId;
+            this.selectedYear = this.container.dataset.selectedYear || 'last12';
             this.loadingElement = this.container.querySelector('.postwall-loading');
 
             // Получаем данные из data-атрибутов
@@ -54,6 +55,13 @@
                     const dateString = target.getAttribute('data-date');
                     this.navigateToDateArchive(dateString);
                 }
+
+                // Проверяем, что клик был по ссылке месяца
+                if (target.classList.contains('month-link')) {
+                    event.preventDefault();
+                    const monthUrl = target.getAttribute('href');
+                    window.open(monthUrl, '_blank');
+                }
             });
         }
 
@@ -85,17 +93,29 @@
         }
 
         /**
+         * Сгенерировать URL для страницы архива месяца
+         * @param {number} year - Год
+         * @param {number} month - Месяц (1-12)
+         * @return {string} URL архива месяца
+         */
+        generateMonthArchiveUrl(year, month) {
+            // Формируем URL для архивной страницы месяца
+            // Формат: /YYYY/MM/
+            return `${this.siteUrl}/${year}/${month.toString().padStart(2, '0')}/`;
+        }
+
+        /**
          * Получить данные о постах через AJAX
          */
         fetchPostData() {
-
             $.ajax({
                 url: postwallSettings.ajaxUrl,
                 method: 'POST',
                 data: {
                     action: 'postwall_get_post_data',
                     nonce: postwallSettings.nonce,
-                    site_url: this.siteUrl
+                    site_url: this.siteUrl,
+                    selected_year: this.selectedYear
                 },
                 success: (response) => {
                     if (response.success && response.data) {
@@ -154,17 +174,30 @@
                 this.translate('Oct'), this.translate('Nov'), this.translate('Dec')
             ];
 
-            // Сгенерировать 12 месяцев от текущего назад до 12 месяцев назад
-            for (let i = 11; i >= 0; i--) {
-                const monthDate = new Date(now);
-                monthDate.setMonth(now.getMonth() - i);
+            // Определяем диапазон месяцев для отображения
+            let monthsToShow = [];
+            if (this.selectedYear === 'last12') {
+                // Последние 12 месяцев от текущего
+                for (let i = 11; i >= 0; i--) {
+                    const monthDate = new Date(now);
+                    monthDate.setMonth(now.getMonth() - i);
+                    monthDate.setDate(1);
+                    monthsToShow.push(monthDate);
+                }
+            } else {
+                // Все месяцы выбранного года
+                const year = parseInt(this.selectedYear);
+                for (let month = 0; month < 12; month++) {
+                    const monthDate = new Date(year, month, 1);
+                    monthsToShow.push(monthDate);
+                }
+            }
 
-                // Устанавливаем дату на первый день месяца для правильного расчета
-                monthDate.setDate(1);
-
+            // Создаем месяцы
+            monthsToShow.forEach(monthDate => {
                 const monthDiv = this.createMonth(monthDate);
                 monthsContainer.appendChild(monthDiv);
-            }
+            });
 
             wrapper.appendChild(monthsContainer);
             this.container.appendChild(wrapper);
@@ -206,11 +239,20 @@
                 return this.translate(this.baseTitle);
             }
 
-            // Простой способ - создаем заголовок в зависимости от языка
-            if (this.getLocale().startsWith('ru')) {
-                return 'Посты сайта ' + this.domain + ' за последние 12 месяцев';
+            // Для последних 12 месяцев
+            if (this.selectedYear === 'last12') {
+                if (this.getLocale().startsWith('ru')) {
+                    return 'Посты сайта ' + this.domain + ' за последние 12 месяцев';
+                } else {
+                    return 'Posts from the site ' + this.domain + ' for the last 12 months';
+                }
             } else {
-                return 'Posts from the site ' + this.domain + ' for the last 12 months';
+                // Для конкретного года
+                if (this.getLocale().startsWith('ru')) {
+                    return 'Посты сайта ' + this.domain + ' за ' + this.selectedYear + ' год';
+                } else {
+                    return 'Posts from the site ' + this.domain + ' for the year ' + this.selectedYear;
+                }
             }
         }
 
@@ -287,10 +329,17 @@
 
            monthDiv.appendChild(monthGrid);
 
-           // Добавить метку месяца
+           // Добавить метку месяца с ссылкой
            const monthLabel = document.createElement('div');
            monthLabel.className = 'month-label';
-           monthLabel.textContent = this.getMonthName(month);
+
+           const monthLink = document.createElement('a');
+           monthLink.className = 'month-link';
+           monthLink.href = this.generateMonthArchiveUrl(year, month + 1);
+           monthLink.textContent = this.getMonthName(month);
+           monthLink.title = this.translate('View posts for') + ' ' + this.getMonthName(month) + ' ' + year;
+
+           monthLabel.appendChild(monthLink);
            monthDiv.appendChild(monthLabel);
 
            return monthDiv;
@@ -479,7 +528,10 @@
                     'Loading post wall...': 'Загрузка кафельной стенки...',
                     'Failed to load post data': 'Не удалось загрузить данные постов',
                     'Error loading data': 'Ошибка при загрузке данных',
-                    'posts': 'постов', // базовая форма для множественного числа
+                    'post': 'пост',
+                    'posts': 'постов',
+                    'View posts for': 'Просмотреть посты за',
+                    'Last 12 months': 'Последние 12 месяцев',
                     'Jan': 'янв', 'Feb': 'фев', 'Mar': 'мар', 'Apr': 'апр',
                     'May': 'май', 'Jun': 'июн', 'Jul': 'июл', 'Aug': 'авг',
                     'Sep': 'сен', 'Oct': 'окт', 'Nov': 'ноя', 'Dec': 'дек'

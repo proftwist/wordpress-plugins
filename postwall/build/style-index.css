@@ -99,6 +99,18 @@
     color: #555;
 }
 
+/* Стили для ссылок месяцев */
+.month-link {
+    color: #555;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.month-link:hover {
+    color: #1a73e8;
+    text-decoration: underline;
+}
+
 
 /* Responsive design */
 @media (max-width: 900px) {
@@ -126,5 +138,13 @@
 
     .postwall-months {
         color: #ccc;
+    }
+
+    .month-link {
+        color: #ccc;
+    }
+
+    .month-link:hover {
+        color: #8ab4f8;
     }
 }

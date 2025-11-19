@@ -31,6 +31,10 @@
             headingTag: {
                 type: 'string',
                 default: 'h3'
+            },
+            selectedYear: {
+                type: 'string',
+                default: 'last12'
             }
         },
 
@@ -46,6 +50,21 @@
             // Получаем значения из атрибутов блока
             var siteUrl = attributes.siteUrl || '';
             var headingTag = attributes.headingTag || 'h3';
+            var selectedYear = attributes.selectedYear || 'last12';
+
+            // Генерируем опции для выбора года
+            var yearOptions = [
+                { label: __('Last 12 months', 'postwall'), value: 'last12' }
+            ];
+
+            // Добавляем доступные годы (от текущего до 2010)
+            var currentYear = new Date().getFullYear();
+            for (var year = currentYear; year >= 2010; year--) {
+                yearOptions.push({
+                    label: year.toString(),
+                    value: year.toString()
+                });
+            }
 
             return el(
                 'div',
@@ -60,7 +79,7 @@
                     null,
                     el(
                         PanelBody,
-                        { title: __('Настройки Post Wall', 'postwall'), initialOpen: true },
+                        { title: __('Post Wall Settings', 'postwall'), initialOpen: true },
                         el(TextControl, {
                             label: __('Site URL', 'postwall'),
                             value: siteUrl,
@@ -68,6 +87,14 @@
                                 setAttributes({ siteUrl: value });
                             },
                             placeholder: __('https://example.com', 'postwall')
+                        }),
+                        el(SelectControl, {
+                            label: __('Year', 'postwall'),
+                            value: selectedYear,
+                            options: yearOptions,
+                            onChange: function (value) {
+                                setAttributes({ selectedYear: value });
+                            }
                         }),
                         el(SelectControl, {
                             label: __('Heading Tag', 'postwall'),

@@ -1,146 +1,70 @@
-# Copyright (C) 2025 Владимир Бычко
-# This file is distributed under the same license as the Post Wall plugin.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Post Wall 1.0.1\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/postwall\n"
+"Project-Id-Version: Post Wall 2.2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-19 17:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-17T01:22:00+00:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: postwall\n"
 
-#. Plugin Name of the plugin
-#: postwall.php
-msgid "Post Wall"
-msgstr ""
-
-#. Description of the plugin
-#: postwall.php
-msgid "Displays post wall charts as Gutenberg blocks or shortcodes"
-msgstr ""
-
-#. Author of the plugin
-#: postwall.php
-msgid "Владимир Бычко"
-msgstr ""
-
-#: includes/block-registration.php:68
+#: includes/block-registration.php:161
 msgid "Posts from the site for the last 12 months"
 msgstr ""
 
-#: includes/block-registration.php:69
-msgid "Posts from the site {{domain}} for the last 12 months"
-msgstr ""
-
-#: includes/block-registration.php:70
+#: includes/block-registration.php:162
 msgid "Loading post wall..."
 msgstr ""
 
-#: includes/class-ajax-handler.php:74
+#: includes/block-registration.php:75
+msgid "Last 12 months"
+msgstr ""
+
+#: includes/block-registration.php:204
+msgid "Posts from the site {{domain}} for the year {{year}}"
+msgstr ""
+
+#: includes/class-ajax-handler.php:511
 msgid "Security check failed"
 msgstr ""
 
-#: includes/class-ajax-handler.php:124
+#: includes/class-ajax-handler.php:562
 msgid "Site URL is required"
 msgstr ""
 
-#: includes/class-ajax-handler.php:129
+#: includes/class-ajax-handler.php:567
 msgid "Invalid site URL format"
 msgstr ""
 
-#: build/frontend.js:58
+#: includes/class-ajax-handler.php:572
+msgid "Invalid year format"
+msgstr ""
+
+#: includes/class-ajax-handler.php:1599
 msgid "Failed to load post data"
 msgstr ""
 
-#: build/frontend.js:63
+#: includes/class-ajax-handler.php:1601
 msgid "Error loading data"
 msgstr ""
 
-#: build/frontend.js:180
-msgid "post"
+#: build/frontend.js:215
+msgid "View posts for"
 msgstr ""
 
-#: build/frontend.js:180
-msgid "posts"
+#: build/index.js:93
+msgid "Year"
 msgstr ""
 
-#: build/index.js:50
-msgid "Post wall"
-msgstr ""
-
-#: build/index.js:59
-msgid "Site URL"
-msgstr ""
-
-#: build/frontend.js:105
-msgid "Jan"
-msgstr ""
-
-#: build/frontend.js:105
-msgid "Feb"
-msgstr ""
-
-#: build/frontend.js:105
-msgid "Mar"
-msgstr ""
-
-#: build/frontend.js:106
-msgid "Apr"
-msgstr ""
-
-#: build/frontend.js:106
-msgid "May"
-msgstr ""
-
-#: build/frontend.js:106
-msgid "Jun"
-msgstr ""
-
-#: build/frontend.js:107
-msgid "Jul"
-msgstr ""
-
-#: build/frontend.js:107
-msgid "Aug"
-msgstr ""
-
-#: build/frontend.js:107
-msgid "Sep"
-msgstr ""
-
-#: build/frontend.js:108
-msgid "Oct"
-msgstr ""
-
-#: build/frontend.js:108
-msgid "Nov"
-msgstr ""
-
-#: build/frontend.js:108
-msgid "Dec"
-msgstr ""
-
-#: build/index.js:76
-msgid "Heading Tag"
-msgstr ""
-
-#: build/index.js:81
-msgid "H2"
-msgstr ""
-
-#: build/index.js:82
-msgid "H3"
-msgstr ""
-
-#: build/index.js:83
-msgid "H4"
-msgstr ""
-
-#: build/index.js:84
-msgid "Plain Text"
+#: build/index.js:95
+msgid "Last 12 months"
 msgstr ""

@@ -1,9 +1,90 @@
+/* Post Wall Editor Styles */
+
 .postwall-placeholder {
-    padding: 20px;
-    text-align: center;
     background: #f0f0f0;
-    border: 1px dashed #ccc;
-    border-radius: 4px;
-    color: #666;
+    border: 2px dashed #ccc;
+    padding: 40px 20px;
+    text-align: center;
     font-style: italic;
+    color: #666;
+    border-radius: 4px;
+}
+
+.postwall-block-editor {
+    max-width: 100%;
+}
+
+/* Стили для блока в редакторе */
+.wp-block-postwall-post-wall .postwall-container {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 100%;
+}
+
+/* Heatmap styles for editor */
+.wp-block-postwall-post-wall .heatmap-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 100%;
+}
+
+.wp-block-postwall-post-wall .months {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: nowrap;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.wp-block-postwall-post-wall .month {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.wp-block-postwall-post-wall .month-grid {
+    display: grid;
+    grid-template-rows: repeat(7, 12px);
+    grid-auto-flow: column;
+    grid-auto-columns: 12px;
+    gap: 2px;
+}
+
+.wp-block-postwall-post-wall .day {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.wp-block-postwall-post-wall .empty {
+    background: transparent;
+    border: none;
+}
+
+.wp-block-postwall-post-wall .lvl-0 { background: #f0f9f0; }
+.wp-block-postwall-post-wall .lvl-1 { background: #9be69b; }
+.wp-block-postwall-post-wall .lvl-2 { background: #4ade80; }
+.wp-block-postwall-post-wall .lvl-3 { background: #22c55e; }
+.wp-block-postwall-post-wall .lvl-4 { background: #16a34a; }
+
+.wp-block-postwall-post-wall .month-label {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
+/* Стили для ссылок месяцев в редакторе */
+.wp-block-postwall-post-wall .month-link {
+    color: #555;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.wp-block-postwall-post-wall .month-link:hover {
+    color: #1a73e8;
+    text-decoration: underline;
 }

@@ -34,6 +34,10 @@ function postwall_register_block() {
             'headingTag' => array(
                 'type' => 'string',    // Тип данных атрибута
                 'default' => 'h3'      // Значение по умолчанию (h3)
+            ),
+            'selectedYear' => array(
+                'type' => 'string',    // Новый атрибут для выбора года
+                'default' => 'last12'  // Значение по умолчанию - последние 12 месяцев
             )
         )
     ));
@@ -85,6 +89,11 @@ function postwall_render_block($attributes, $content) {
                        sanitize_text_field($attributes['siteUrl']) :
                        '';
 
+    // Получаем выбранный год
+    $selected_year = !empty($attributes['selectedYear']) ?
+                            sanitize_text_field($attributes['selectedYear']) :
+                            'last12';
+
     // Извлекаем домен для заголовка
     $domain = postwall_extract_domain($site_url);
 
@@ -98,20 +107,21 @@ function postwall_render_block($attributes, $content) {
 
     // Формируем data-атрибуты для передачи данных в JavaScript
     // Безопасно экранируем значения функцией esc_attr
-    $data_attributes = 'data-site-url="' . esc_attr($site_url) . '" data-container-id="' . esc_attr($unique_id) . '" data-heading-tag="' . esc_attr($heading_tag) . '"';
+    $data_attributes = 'data-site-url="' . esc_attr($site_url) . '" data-container-id="' . esc_attr($unique_id) . '" data-heading-tag="' . esc_attr($heading_tag) . '" data-selected-year="' . esc_attr($selected_year) . '"';
 
     // Передаем отдельно домен и базовые тексты
     $base_title = __('Posts from the site for the last 12 months', 'postwall');
     $loading_text = __('Loading post wall...', 'postwall');
 
     // Генерируем заголовок с соответствующим тегом
-    $title_html = '<' . esc_attr($heading_tag) . ' class="postwall-title">' . esc_html(generate_title_with_domain($base_title, $domain)) . '</' . esc_attr($heading_tag) . '>';
+    $title_html = '<' . esc_attr($heading_tag) . ' class="postwall-title">' . esc_html(generate_title_with_domain($base_title, $domain, $selected_year)) . '</' . esc_attr($heading_tag) . '>';
 
     // Возвращаем HTML контейнер для диаграммы с data-атрибутами
     return '<div class="postwall-container" id="' . esc_attr($unique_id) . '" ' . $data_attributes . '
                 data-base-title="' . esc_attr($base_title) . '"
                 data-loading-text="' . esc_attr($loading_text) . '"
-                data-domain="' . esc_attr($domain) . '">
+                data-domain="' . esc_attr($domain) . '"
+                data-selected-year="' . esc_attr($selected_year) . '">
                 ' . $title_html . '
                 <div class="postwall-loading">' . esc_html($loading_text) . '</div>
             </div>';
@@ -122,21 +132,33 @@ function postwall_render_block($attributes, $content) {
  *
  * @param string $base_title Базовый заголовок
  * @param string $domain Домен сайта
+ * @param string $selected_year Выбранный год
  * @return string Заголовок с доменом
  * @since 2.0.0
  */
-function generate_title_with_domain($base_title, $domain) {
+function generate_title_with_domain($base_title, $domain, $selected_year = 'last12') {
     if (empty($domain)) {
         return $base_title;
     }
 
-    // Для русского языка
-    if (get_locale() === 'ru_RU') {
-        return 'Посты сайта ' . $domain . ' за последние 12 месяцев';
-    }
+    // Для последних 12 месяцев используем старую логику
+    if ($selected_year === 'last12') {
+        // Для русского языка
+        if (get_locale() === 'ru_RU') {
+            return 'Посты сайта ' . $domain . ' за последние 12 месяцев';
+        }
 
-    // Для английского и других языков
-    return 'Posts from the site ' . $domain . ' for the last 12 months';
+        // Для английского и других языков
+        return 'Posts from the site ' . $domain . ' for the last 12 months';
+    } else {
+        // Для конкретного года
+        if (get_locale() === 'ru_RU') {
+            return 'Посты сайта ' . $domain . ' за ' . $selected_year . ' год';
+        }
+
+        // Для английского и других языков
+        return 'Posts from the site ' . $domain . ' for the year ' . $selected_year;
+    }
 }
 
 // Регистрируем блок при инициализации

@@ -1,14 +1,14 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Post Wall 1.0.0\n"
+"Project-Id-Version: Post Wall 2.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/postwall\n"
 "Last-Translator: Vladimir Bychko <bychko@ya.ru>\n"
 "Language-Team: English <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-17T01:22:00+00:00\n"
-"PO-Revision-Date: 2025-11-17T01:22:00+00:00\n"
+"POT-Creation-Date: 2025-11-19T15:17:00+00:00\n"
+"PO-Revision-Date: 2025-11-19T15:17:00+00:00\n"
 "Language: en_US\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: postwall\n"
@@ -29,37 +29,49 @@ msgstr "Displays post wall charts as Gutenberg blocks or shortcodes"
 msgid "Владимир Бычко"
 msgstr "Vladimir Bychko"
 
-#: includes/block-registration.php:68
+#: includes/block-registration.php:161
 msgid "Posts from the site for the last 12 months"
 msgstr "Posts from the site for the last 12 months"
 
-#: includes/block-registration.php:69
-msgid "Posts from the site {{domain}} for the last 12 months"
-msgstr "Posts from the site {{domain}} for the last 12 months"
-
-#: includes/block-registration.php:70
+#: includes/block-registration.php:162
 msgid "Loading post wall..."
 msgstr "Loading post wall..."
 
-#: includes/class-ajax-handler.php:74
+#: includes/block-registration.php:75
+msgid "Last 12 months"
+msgstr "Last 12 months"
+
+#: includes/block-registration.php:204
+msgid "Posts from the site {{domain}} for the year {{year}}"
+msgstr "Posts from the site {{domain}} for the year {{year}}"
+
+#: includes/class-ajax-handler.php:511
 msgid "Security check failed"
 msgstr "Security check failed"
 
-#: includes/class-ajax-handler.php:124
+#: includes/class-ajax-handler.php:562
 msgid "Site URL is required"
 msgstr "Site URL is required"
 
-#: includes/class-ajax-handler.php:129
+#: includes/class-ajax-handler.php:567
 msgid "Invalid site URL format"
 msgstr "Invalid site URL format"
 
-#: build/frontend.js:58
+#: includes/class-ajax-handler.php:572
+msgid "Invalid year format"
+msgstr "Invalid year format"
+
+#: includes/class-ajax-handler.php:1599
 msgid "Failed to load post data"
 msgstr "Failed to load post data"
 
-#: build/frontend.js:63
+#: includes/class-ajax-handler.php:1601
 msgid "Error loading data"
 msgstr "Error loading data"
+
+#: build/frontend.js:215
+msgid "View posts for"
+msgstr "View posts for"
 
 #: build/frontend.js:180
 msgid "post"
@@ -76,6 +88,14 @@ msgstr "Post wall"
 #: build/index.js:59
 msgid "Site URL"
 msgstr "Site URL"
+
+#: build/index.js:93
+msgid "Year"
+msgstr "Year"
+
+#: build/index.js:95
+msgid "Last 12 months"
+msgstr "Last 12 months"
 
 #: build/index.js:76
 msgid "Heading Tag"

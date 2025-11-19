@@ -54,15 +54,20 @@ class PostWall_Ajax_Handler {
         // Получаем и очищаем URL сайта
         $site_url = sanitize_text_field($_POST['site_url']);
 
+        // Получаем выбранный год
+        $selected_year = !empty($_POST['selected_year']) ?
+                                sanitize_text_field($_POST['selected_year']) :
+                                'last12';
+
         // Валидация входных данных
-        $validation_errors = self::validate_request_data($site_url);
+        $validation_errors = self::validate_request_data($site_url, $selected_year);
         if (!empty($validation_errors)) {
             wp_send_json_error(implode(' ', $validation_errors));
             return;
         }
 
         // Получаем статистику постов через API
-        $stats = PostWall_API::get_post_stats($site_url);
+        $stats = PostWall_API::get_post_stats($site_url, $selected_year);
 
         // Обрабатываем ошибки API
         if (is_wp_error($stats)) {
@@ -84,10 +89,11 @@ class PostWall_Ajax_Handler {
      * Валидация входных данных для AJAX запроса
      *
      * @param string $site_url URL сайта
+     * @param string $selected_year Выбранный год
      * @return array Массив ошибок валидации
      * @since 2.0.0
      */
-    private static function validate_request_data($site_url) {
+    private static function validate_request_data($site_url, $selected_year) {
         $errors = array();
 
         // Проверяем обязательность поля URL сайта
@@ -98,6 +104,11 @@ class PostWall_Ajax_Handler {
         // Проверяем формат URL
         if (!empty($site_url) && !filter_var($site_url, FILTER_VALIDATE_URL)) {
             $errors[] = __('Invalid site URL format', 'postwall');
+        }
+
+        // Проверяем формат года
+        if ($selected_year !== 'last12' && !preg_match('/^\d{4}$/', $selected_year)) {
+            $errors[] = __('Invalid year format', 'postwall');
         }
 
         return $errors;

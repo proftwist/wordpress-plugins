@@ -1,14 +1,14 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Post Wall 1.0.0\n"
+"Project-Id-Version: Post Wall 2.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/postwall\n"
 "Last-Translator: Владимир Бычко <bychko@ya.ru>\n"
 "Language-Team: Russian <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-17T01:22:00+00:00\n"
-"PO-Revision-Date: 2025-11-17T01:22:00+00:00\n"
+"POT-Creation-Date: 2025-11-19T15:17:00+00:00\n"
+"PO-Revision-Date: 2025-11-19T15:17:00+00:00\n"
 "Language: ru_RU\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: postwall\n"
@@ -29,37 +29,49 @@ msgstr "Отображает кафельные стенки постов как
 msgid "Владимир Бычко"
 msgstr "Владимир Бычко"
 
-#: includes/block-registration.php:68
+#: includes/block-registration.php:161
 msgid "Posts from the site for the last 12 months"
 msgstr "Посты сайта за последние 12 месяцев"
 
-#: includes/block-registration.php:69
-msgid "Posts from the site {{domain}} for the last 12 months"
-msgstr "Посты сайта {{domain}} за последние 12 месяцев"
-
-#: includes/block-registration.php:70
+#: includes/block-registration.php:162
 msgid "Loading post wall..."
 msgstr "Загрузка кафельной стенки..."
 
-#: includes/class-ajax-handler.php:74
+#: includes/block-registration.php:75
+msgid "Last 12 months"
+msgstr "Последние 12 месяцев"
+
+#: includes/block-registration.php:204
+msgid "Posts from the site {{domain}} for the year {{year}}"
+msgstr "Посты сайта {{domain}} за {{year}} год"
+
+#: includes/class-ajax-handler.php:511
 msgid "Security check failed"
 msgstr "Проверка безопасности не пройдена"
 
-#: includes/class-ajax-handler.php:124
+#: includes/class-ajax-handler.php:562
 msgid "Site URL is required"
 msgstr "Требуется адрес сайта"
 
-#: includes/class-ajax-handler.php:129
+#: includes/class-ajax-handler.php:567
 msgid "Invalid site URL format"
 msgstr "Неверный формат адреса сайта"
 
-#: build/frontend.js:58
+#: includes/class-ajax-handler.php:572
+msgid "Invalid year format"
+msgstr "Неверный формат года"
+
+#: includes/class-ajax-handler.php:1599
 msgid "Failed to load post data"
 msgstr "Не удалось загрузить данные постов"
 
-#: build/frontend.js:63
+#: includes/class-ajax-handler.php:1601
 msgid "Error loading data"
 msgstr "Ошибка при загрузке данных"
+
+#: build/frontend.js:215
+msgid "View posts for"
+msgstr "Просмотреть посты за"
 
 #: build/frontend.js:180
 msgid "post"
@@ -77,6 +89,13 @@ msgstr "Кафельная стенка постов"
 msgid "Site URL"
 msgstr "Адрес сайта"
 
+#: build/index.js:93
+msgid "Year"
+msgstr "Год"
+
+#: build/index.js:95
+msgid "Last 12 months"
+msgstr "Последние 12 месяцев"
 
 #: build/frontend.js:105
 msgid "Jan"
