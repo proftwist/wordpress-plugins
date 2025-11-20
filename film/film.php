@@ -4,7 +4,7 @@
  * Description: Гутенберговский блок для создания галереи изображений в стиле классической фотоплёнки с горизонтальной прокруткой
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
- * Version: 1.0.4
+ * Version: 1.0.5
  * Text Domain: film
  * Domain Path: /languages
  * Requires at least: 5.0
