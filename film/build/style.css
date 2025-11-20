@@ -1,4 +1,4 @@
-/* Основной контейнер блока фотоплёнки в редакторе */
+/* Основной контейнер блока фотоплёнки */
 .wp-block-film-film-gallery {
     background: #000;
     border-radius: 8px;
@@ -8,6 +8,7 @@
     position: relative;
 }
 
+/* Стили для широкого выравнивания */
 .wp-block-film-film-gallery.alignwide {
     margin-left: auto;
     margin-right: auto;
@@ -15,6 +16,7 @@
     width: 100%;
 }
 
+/* Стили для полного выравнивания */
 .wp-block-film-film-gallery.alignfull {
     margin-left: 0;
     margin-right: 0;
@@ -22,9 +24,14 @@
     width: 100%;
 }
 
-/* Перфорация */
+/* Верхняя перфорация */
 .wp-block-film-film-gallery:before {
     top: 0;
+}
+
+/* Верхняя и нижняя перфорация */
+.wp-block-film-film-gallery:after,
+.wp-block-film-film-gallery:before {
     background: repeating-linear-gradient(90deg, transparent, transparent 10px, #333 0, #333 20px);
     content: "";
     height: 20px;
@@ -33,14 +40,9 @@
     right: 0;
 }
 
+/* Нижняя перфорация */
 .wp-block-film-film-gallery:after {
     bottom: 0;
-    background: repeating-linear-gradient(90deg, transparent, transparent 10px, #333 0, #333 20px);
-    content: "";
-    height: 20px;
-    left: 0;
-    position: absolute;
-    right: 0;
 }
 
 /* Контейнер для горизонтальной прокрутки изображений */
@@ -51,8 +53,11 @@
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0 10px;
+    scrollbar-color: #666 #000;
+    scrollbar-width: thin;
 }
 
+/* Стилизация скроллбара для Webkit браузеров */
 .film-strip::-webkit-scrollbar {
     height: 8px;
 }
@@ -66,7 +71,7 @@
     border-radius: 4px;
 }
 
-/* Отдельный кадр фотоплёнки */
+/* Отдельный кадр фотоплёнки - УБРАНЫ ВСЕ HOVER ЭФФЕКТЫ */
 .film-frame {
     background: #fff;
     border-radius: 2px;
@@ -74,10 +79,17 @@
     height: 100%;
     padding: 5px;
     position: relative;
+    /* Убраны все transition и transform */
 }
 
+/* Верхняя перфорация кадра */
 .film-frame:before {
     top: -15px;
+}
+
+/* Верхняя и нижняя перфорация кадра */
+.film-frame:after,
+.film-frame:before {
     background: repeating-linear-gradient(90deg, #000, #000 10px, #333 0, #333 20px);
     content: "";
     height: 15px;
@@ -86,25 +98,100 @@
     right: 0;
 }
 
+/* Нижняя перфорация кадра */
 .film-frame:after {
     bottom: -15px;
-    background: repeating-linear-gradient(90deg, #000, #000 10px, #333 0, #333 20px);
-    content: "";
-    height: 15px;
-    left: 0;
-    position: absolute;
-    right: 0;
 }
 
-/* Стили самого изображения в редакторе */
-.film-frame img {
+/* Обёртка для изображения с белой рамкой */
+.film-image-wrapper {
+    background: #fff;
+    border: 8px solid #fff;
+    border-bottom: 12px solid #fff; /* Увеличенная нижняя рамка */
+    box-sizing: border-box;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Стили самого изображения - УБРАНЫ ВСЕ HOVER ЭФФЕКТЫ */
+.film-image-wrapper img {
     display: block;
     height: 100%;
     object-fit: cover;
     width: auto;
+    /* Убраны все transition и transform */
 }
 
-/* Контейнер редактора */
+/* Ссылка на изображение - УБРАНЫ ВСЕ HOVER ЭФФЕКТЫ */
+.film-image-link {
+    display: block;
+    height: 100%;
+    text-decoration: none;
+    /* Убраны все hover эффекты */
+}
+
+/* ПРИНУДИТЕЛЬНОЕ ОТКЛЮЧЕНИЕ ВСЕХ HOVER ЭФФЕКТОВ */
+.film-frame:hover,
+.film-frame:focus,
+.film-frame:active {
+    transform: none !important;
+    scale: none !important;
+    z-index: auto !important;
+}
+
+.film-image-wrapper:hover,
+.film-image-wrapper:focus,
+.film-image-wrapper:active {
+    transform: none !important;
+    scale: none !important;
+}
+
+.film-image-wrapper img:hover,
+.film-image-wrapper img:focus,
+.film-image-wrapper img:active {
+    transform: none !important;
+    scale: none !important;
+}
+
+.film-image-link:hover .film-frame,
+.film-image-link:focus .film-frame,
+.film-image-link:active .film-frame {
+    transform: none !important;
+    scale: none !important;
+}
+
+.film-image-link:hover .film-image-wrapper,
+.film-image-link:focus .film-image-wrapper,
+.film-image-link:active .film-image-wrapper {
+    transform: none !important;
+    scale: none !important;
+}
+
+/* Отключение любых анимаций и переходов */
+.film-frame,
+.film-image-wrapper,
+.film-image-wrapper img,
+.film-image-link,
+.film-image-link * {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    scale: none !important;
+}
+
+/* Принудительное отключение hover состояний */
+.film-frame:hover {
+    background: #fff !important;
+    border-color: #fff !important;
+}
+
+.film-image-link:hover {
+    text-decoration: none !important;
+    background: transparent !important;
+}
+
+/* Стили для редактора - УБРАНЫ HOVER ЭФФЕКТЫ */
 .film-gallery-editor {
     background: #000;
     border: 1px dashed #ccc;
@@ -133,6 +220,31 @@
     justify-content: center;
     margin-top: 15px;
     padding: 0 10px;
+}
+
+/* ПРИНУДИТЕЛЬНОЕ ОТКЛЮЧЕНИЕ HOVER ЭФФЕКТОВ В РЕДАКТОРЕ */
+.film-frame:hover,
+.film-frame:focus,
+.film-frame:active {
+    transform: none !important;
+    scale: none !important;
+    z-index: auto !important;
+}
+
+.film-frame img:hover,
+.film-frame img:focus,
+.film-frame img:active {
+    transform: none !important;
+    scale: none !important;
+}
+
+/* Отключение любых анимаций в редакторе */
+.film-frame,
+.film-frame img {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    scale: none !important;
 }
 
 /* Стили для модального окна редактирования галереи */

@@ -124,6 +124,33 @@ function film_register_block() {
     ));
 }
 
+// Добавим этот хук после film_register_block() функции
+add_action('wp_head', 'film_disable_hover_effects');
+function film_disable_hover_effects() {
+    echo '
+    <style>
+    /* Принудительное отключение всех hover эффектов для фотоплёнки */
+    .film-frame *,
+    .film-image-wrapper *,
+    .film-image-link * {
+        transition: none !important;
+        transform: none !important;
+        scale: none !important;
+        animation: none !important;
+    }
+
+    .film-frame:hover,
+    .film-image-wrapper:hover,
+    .film-image-link:hover,
+    .film-frame:hover *,
+    .film-image-wrapper:hover *,
+    .film-image-link:hover * {
+        transform: none !important;
+        scale: none !important;
+    }
+    </style>
+    ';
+}
 /**
  * Функция рендеринга блока на фронтенде
  *
