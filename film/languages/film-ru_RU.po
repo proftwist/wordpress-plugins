@@ -1,10 +1,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Film Gallery\n"
-"Language: ru_RU\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Vladimir Bychko <your@email.com>\n"
+"Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-11-20T12:52:11+00:00\n"
+"PO-Revision-Date: 2025-11-20T12:52:11+00:00\n"
+"Language: ru_RU\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 3.0.1\n"
 
 msgid "Фотоплёнка"
 msgstr "Фотоплёнка"
@@ -36,11 +43,14 @@ msgstr "Ссылка на файл"
 msgid "Страница вложения"
 msgstr "Страница вложения"
 
+msgid "Сортировка изображений"
+msgstr "Сортировка изображений"
+
 msgid "Добавьте изображения в фотоплёнку"
 msgstr "Добавьте изображения в фотоплёнку"
 
-msgid "Сортировка изображений"
-msgstr "Сортировка изображений"
+msgid "Добавить/Заменить изображения"
+msgstr "Добавить/Заменить изображения"
 
 msgid "Поднять выше"
 msgstr "Поднять выше"
@@ -57,11 +67,5 @@ msgstr "Удалить изображение"
 msgid "Добавить/Изменить изображения"
 msgstr "Добавить/Изменить изображения"
 
-msgid "Добавить/Заменить изображения"
-msgstr "Добавить/Заменить изображения"
-
 msgid "Выберите изображения для фотоплёнки"
 msgstr "Выберите изображения для фотоплёнки"
-
-msgid "Этот плагин требует WordPress версии 5.0 или выше с поддержкой Гутенберга."
-msgstr "Этот плагин требует WordPress версии 5.0 или выше с поддержкой Гутенберга."

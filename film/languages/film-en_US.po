@@ -1,67 +1,71 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Film Gallery\n"
-"Language: en_US\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Vladimir Bychko <your@email.com>\n"
+"Language-Team: English\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-11-20T12:52:11+00:00\n"
+"PO-Revision-Date: 2025-11-20T12:52:11+00:00\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
 
 msgid "Фотоплёнка"
 msgstr "Film Strip"
 
 msgid "Галерея в стиле фотоплёнки с горизонтальной прокруткой"
-msgstr "Gallery in film strip style with horizontal scrolling"
+msgstr "Film strip gallery with horizontal scrolling"
 
 msgid "Выберите изображения"
-msgstr "Select Images"
+msgstr "Select images"
 
 msgid "Использовать выбранные изображения"
-msgstr "Use Selected Images"
+msgstr "Use selected images"
 
 msgid "Настройки фотоплёнки"
-msgstr "Film Strip Settings"
+msgstr "Film strip settings"
 
 msgid "Высота плёнки"
-msgstr "Film Height"
+msgstr "Film height"
 
 msgid "Ссылки на изображения"
-msgstr "Image Links"
+msgstr "Image links"
 
 msgid "Без ссылки"
-msgstr "No Link"
+msgstr "No link"
 
 msgid "Ссылка на файл"
-msgstr "Link to File"
+msgstr "Media file link"
 
 msgid "Страница вложения"
-msgstr "Attachment Page"
-
-msgid "Добавить изображения в фотоплёнку"
-msgstr "Add images to film strip"
+msgstr "Attachment page"
 
 msgid "Сортировка изображений"
-msgstr "Image Sorting"
+msgstr "Sort images"
 
-msgid "Поднять выше"
-msgstr "Move Up"
-
-msgid "Опустить ниже"
-msgstr "Move Down"
-
-msgid "Удалить"
-msgstr "Delete"
-
-msgid "Удалить изображение"
-msgstr "Remove Image"
-
-msgid "Добавить/Изменить изображения"
-msgstr "Add/Change Images"
+msgid "Добавьте изображения в фотоплёнку"
+msgstr "Add images to film strip"
 
 msgid "Добавить/Заменить изображения"
-msgstr "Add/Replace Images"
+msgstr "Add/Replace images"
+
+msgid "Поднять выше"
+msgstr "Move up"
+
+msgid "Опустить ниже"
+msgstr "Move down"
+
+msgid "Удалить"
+msgstr "Remove"
+
+msgid "Удалить изображение"
+msgstr "Remove image"
+
+msgid "Добавить/Изменить изображения"
+msgstr "Add/Edit images"
 
 msgid "Выберите изображения для фотоплёнки"
 msgstr "Select images for film strip"
-
-msgid "Этот плагин требует WordPress версии 5.0 или выше с поддержкой Гутенберга."
-msgstr "This plugin requires WordPress version 5.0 or higher with Gutenberg support."

@@ -1,0 +1,35 @@
+# Copyright (C) 2025 Владимир Бычко
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Фотоплёнка 1.0.3\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/film\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-11-20T13:02:41+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: film\n"
+
+#. Plugin Name of the plugin
+#: film.php
+msgid "Фотоплёнка"
+msgstr ""
+
+#. Description of the plugin
+#: film.php
+msgid "Гутенберговский блок для создания галереи изображений в стиле классической фотоплёнки с горизонтальной прокруткой"
+msgstr ""
+
+#. Author of the plugin
+#: film.php
+msgid "Владимир Бычко"
+msgstr ""
+
+#. Author URI of the plugin
+#: film.php
+msgid "http://bychko.ru"
+msgstr ""

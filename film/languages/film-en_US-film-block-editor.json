@@ -1,0 +1,70 @@
+{
+  "translation-revision-date": "2025-11-20T13:03:00+00:00",
+  "generator": "WP-CLI 2.12.0",
+  "source": "build/index.js",
+  "domain": "film",
+  "locale_data": {
+    "": {
+      "domain": "film",
+      "lang": "en_US",
+      "plural-forms": "nplurals=2; plural=(n != 1);"
+    },
+    "Фотоплёнка": [
+      "Film Strip"
+    ],
+    "Галерея в стиле фотоплёнки с горизонтальной прокруткой": [
+      "Film strip gallery with horizontal scrolling"
+    ],
+    "Выберите изображения": [
+      "Select images"
+    ],
+    "Использовать выбранные изображения": [
+      "Use selected images"
+    ],
+    "Настройки фотоплёнки": [
+      "Film strip settings"
+    ],
+    "Высота плёнки": [
+      "Film height"
+    ],
+    "Ссылки на изображения": [
+      "Image links"
+    ],
+    "Без ссылки": [
+      "No link"
+    ],
+    "Ссылка на файл": [
+      "Media file link"
+    ],
+    "Страница вложения": [
+      "Attachment page"
+    ],
+    "Сортировка изображений": [
+      "Sort images"
+    ],
+    "Добавьте изображения в фотоплёнку": [
+      "Add images to film strip"
+    ],
+    "Добавить/Заменить изображения": [
+      "Add/Replace images"
+    ],
+    "Поднять выше": [
+      "Move up"
+    ],
+    "Опустить ниже": [
+      "Move down"
+    ],
+    "Удалить": [
+      "Remove"
+    ],
+    "Удалить изображение": [
+      "Remove image"
+    ],
+    "Добавить/Изменить изображения": [
+      "Add/Edit images"
+    ],
+    "Выберите изображения для фотоплёнки": [
+      "Select images for film strip"
+    ]
+  }
+}

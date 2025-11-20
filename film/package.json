@@ -6,7 +6,12 @@
     "scripts": {
         "build": "wp-scripts build",
         "start": "wp-scripts start",
-        "packages-update": "wp-scripts packages-update"
+        "packages-update": "wp-scripts packages-update",
+        "i18n": "npm run make-pot && npm run make-json",
+        "make-pot": "wp i18n make-pot . languages/film.pot --include=\"src\" --slug=\"film\"",
+        "make-json": "wp i18n make-json languages --pretty-print",
+        "check-translations": "node bin/check-translations.js",
+        "build-all": "npm run build && npm run i18n && npm run check-translations"
     },
     "devDependencies": {
         "@wordpress/scripts": "^24.0.0"
