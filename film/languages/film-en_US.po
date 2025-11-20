@@ -1,0 +1,67 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Film Gallery\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Фотоплёнка"
+msgstr "Film Strip"
+
+msgid "Галерея в стиле фотоплёнки с горизонтальной прокруткой"
+msgstr "Gallery in film strip style with horizontal scrolling"
+
+msgid "Выберите изображения"
+msgstr "Select Images"
+
+msgid "Использовать выбранные изображения"
+msgstr "Use Selected Images"
+
+msgid "Настройки фотоплёнки"
+msgstr "Film Strip Settings"
+
+msgid "Высота плёнки"
+msgstr "Film Height"
+
+msgid "Ссылки на изображения"
+msgstr "Image Links"
+
+msgid "Без ссылки"
+msgstr "No Link"
+
+msgid "Ссылка на файл"
+msgstr "Link to File"
+
+msgid "Страница вложения"
+msgstr "Attachment Page"
+
+msgid "Добавить изображения в фотоплёнку"
+msgstr "Add images to film strip"
+
+msgid "Сортировка изображений"
+msgstr "Image Sorting"
+
+msgid "Поднять выше"
+msgstr "Move Up"
+
+msgid "Опустить ниже"
+msgstr "Move Down"
+
+msgid "Удалить"
+msgstr "Delete"
+
+msgid "Удалить изображение"
+msgstr "Remove Image"
+
+msgid "Добавить/Изменить изображения"
+msgstr "Add/Change Images"
+
+msgid "Добавить/Заменить изображения"
+msgstr "Add/Replace Images"
+
+msgid "Выберите изображения для фотоплёнки"
+msgstr "Select images for film strip"
+
+msgid "Этот плагин требует WordPress версии 5.0 или выше с поддержкой Гутенберга."
+msgstr "This plugin requires WordPress version 5.0 or higher with Gutenberg support."
