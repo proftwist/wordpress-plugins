@@ -3,7 +3,7 @@
  * Plugin Name: Easy Changelog
  * Plugin URI: http://bychko.ru
  * Description: Gutenberg блок для отображения истории изменений (changelog) с встроенным редактором JSON и предпросмотром в реальном времени.
- * Version: 1.1.0
+ * Version: 1.2.1
  * Author: Владимир Бычко
  * License: GPL v2 or later
  * Text Domain: easy-changelog
@@ -85,7 +85,7 @@ class EasyChangelog {
                 'jsonEditor' => __('Редактор JSON', 'easy-changelog'),
                 'preview' => __('Предпросмотр', 'easy-changelog'),
                 'changelogData' => __('Данные Changelog (JSON)', 'easy-changelog'),
-                'jsonHelp' => __('Введите данные в формате JSON. Каждый релиз должен содержать version, date и added.', 'easy-changelog'),
+                'jsonHelp' => __('Введите данные в формате JSON. Каждый релиз должен содержать version, date, added и fixed.', 'easy-changelog'),
                 'error' => __('Ошибка:', 'easy-changelog'),
                 'invalidJson' => __('Некорректный JSON формат', 'easy-changelog'),
                 'mustBeArray' => __('Данные должны быть массивом', 'easy-changelog'),
@@ -132,12 +132,14 @@ class EasyChangelog {
   {
     "version": "1.0.0",
     "date": "19.11.2025",
-    "added": ["Первоначальный релиз плагина", "Базовая функциональность блоков"]
+    "added": ["Первоначальный релиз плагина", "Базовая функциональность блоков"],
+    "fixed": ["Исправлена ошибка валидации JSON", "Улучшена обработка дат"]
   },
   {
     "version": "0.9.0",
     "date": "15.11.2025",
-    "added": ["Бета-версия плагина", "Тестирование функциональности"]
+    "added": ["Бета-версия плагина", "Тестирование функциональности"],
+    "fixed": ["Устранены проблемы с локализацией"]
   }
 ]'
                 )
@@ -152,42 +154,42 @@ class EasyChangelog {
      * @return string HTML разметка блока
      */
     public function render_block($attributes) {
-        // Распарсиваем JSON данные
         $changelog_data = json_decode($attributes['changelogData'], true);
 
-        // Проверяем корректность JSON данных
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($changelog_data)) {
             return '<div class="easy-changelog-error">' .
                    __('Некорректный формат данных changelog', 'easy-changelog') .
                    '</div>';
         }
 
-        // Начинаем буферизацию вывода
         ob_start();
         ?>
         <div class="easy-changelog-block">
-            <!-- Заголовок блока -->
             <h2 class="easy-changelog-title"><?php echo __('История изменений', 'easy-changelog'); ?></h2>
 
-            <!-- Отображение релизов -->
             <?php foreach ($changelog_data as $release): ?>
                 <div class="easy-changelog-release">
-                    <!-- Версия релиза -->
                     <div class="easy-changelog-version">
                         <strong><?php echo esc_html($release['version'] ?? ''); ?></strong>
                     </div>
 
-                    <!-- Дата релиза -->
                     <div class="easy-changelog-date">
                         <?php echo esc_html($release['date'] ?? ''); ?>
                     </div>
 
-                    <!-- Список изменений -->
-                    <div class="easy-changelog-added">
+                    <div class="easy-changelog-content">
                         <?php if (isset($release['added']) && is_array($release['added'])): ?>
-                            <ul>
+                            <ul class="easy-changelog-added">
                                 <?php foreach ($release['added'] as $item): ?>
-                                    <li><?php echo esc_html($item); ?></li>
+                                    <li class="easy-changelog-item easy-changelog-item-added"><?php echo esc_html($item); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+
+                        <?php if (isset($release['fixed']) && is_array($release['fixed'])): ?>
+                            <ul class="easy-changelog-fixed">
+                                <?php foreach ($release['fixed'] as $item): ?>
+                                    <li class="easy-changelog-item easy-changelog-item-fixed"><?php echo esc_html($item); ?></li>
                                 <?php endforeach; ?>
                             </ul>
                         <?php endif; ?>
@@ -196,7 +198,6 @@ class EasyChangelog {
             <?php endforeach; ?>
         </div>
         <?php
-        // Возвращаем буферизованный контент
         return ob_get_clean();
     }
 
@@ -211,7 +212,7 @@ class EasyChangelog {
                 'easy-changelog-frontend-style',
                 plugins_url('build/style-index.css', __FILE__),
                 array(),
-                '1.1.0'
+                '1.2.1'
             );
         }
     }
