@@ -1,0 +1,251 @@
+/* Easy Changelog - Frontend Styles */
+
+.easy-changelog-block {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.easy-changelog-title {
+    color: #2c3e50;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3498db;
+}
+
+.easy-changelog-release {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+.easy-changelog-version {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.easy-changelog-date {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-bottom: 15px;
+    font-style: italic;
+}
+
+.easy-changelog-content {
+    margin-top: 10px;
+}
+
+.easy-changelog-added,
+.easy-changelog-fixed {
+    margin: 0;
+    padding: 0;
+}
+
+.easy-changelog-item {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 4px;
+    position: relative;
+    list-style: none;
+}
+
+/* Added items - Green */
+.easy-changelog-item-added {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-left: 4px solid #28a745;
+    color: #155724;
+}
+
+.easy-changelog-item-added::before {
+    content: "✓";
+    color: #28a745;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+/* Fixed items - Blue */
+.easy-changelog-item-fixed {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border-left: 4px solid #17a2b8;
+    color: #0c5460;
+}
+
+.easy-changelog-item-fixed::before {
+    content: "🔧";
+    margin-right: 8px;
+}
+
+/* Error state */
+.easy-changelog-error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #f5c6cb;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Empty state */
+.easy-changelog-empty {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+    font-style: italic;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px dashed #d1d5db;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .easy-changelog-block {
+        background: #2c3e50;
+        border-color: #34495e;
+        color: #ecf0f1;
+    }
+
+    .easy-changelog-title {
+        color: #ecf0f1;
+        border-bottom-color: #3498db;
+    }
+
+    .easy-changelog-release {
+        background: #34495e;
+        border-left-color: #3498db;
+    }
+
+    .easy-changelog-version {
+        color: #ecf0f1;
+    }
+
+    .easy-changelog-date {
+        color: #bdc3c7;
+    }
+
+    .easy-changelog-item-added {
+        background: linear-gradient(135deg, #2d5a2d 0%, #1e4d1e 100%);
+        color: #a8e6a8;
+    }
+
+    .easy-changelog-item-fixed {
+        background: linear-gradient(135deg, #2c5a6c 0%, #1e4d5a 100%);
+        color: #a8d0e6;
+    }
+
+    .easy-changelog-error {
+        background: #5a2d2d;
+        color: #ffb3b3;
+        border-color: #8b3a3a;
+    }
+
+    .easy-changelog-empty {
+        background: #2c2c2c;
+        color: #b8b8b8;
+        border-color: #4a4a4a;
+    }
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+    .easy-changelog-block {
+        border-width: 2px;
+        border-color: #000;
+    }
+
+    .easy-changelog-title {
+        border-bottom-width: 3px;
+    }
+
+    .easy-changelog-item-added {
+        border: 2px solid #000;
+        background: #fff;
+        color: #000;
+    }
+
+    .easy-changelog-item-fixed {
+        border: 2px solid #000;
+        background: #fff;
+        color: #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .easy-changelog-block {
+        transition: none;
+    }
+
+    .easy-changelog-release {
+        transition: none;
+    }
+
+    .easy-changelog-item {
+        transition: none;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .easy-changelog-block {
+        padding: 15px;
+        margin: 15px 0;
+    }
+
+    .easy-changelog-title {
+        font-size: 20px;
+    }
+
+    .easy-changelog-release {
+        padding: 12px;
+    }
+
+    .easy-changelog-version {
+        font-size: 16px;
+    }
+
+    .easy-changelog-date {
+        font-size: 13px;
+    }
+
+    .easy-changelog-item {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .easy-changelog-block {
+        box-shadow: none;
+        border: 1px solid #000;
+        background: white;
+    }
+
+    .easy-changelog-title {
+        color: #000;
+        border-bottom-color: #000;
+    }
+
+    .easy-changelog-item-added {
+        background: white;
+        border: 1px solid #000;
+        color: #000;
+    }
+
+    .easy-changelog-item-fixed {
+        background: white;
+        border: 1px solid #000;
+        color: #000;
+    }
+}
