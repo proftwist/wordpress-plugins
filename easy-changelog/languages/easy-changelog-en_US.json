@@ -11,14 +11,26 @@
       "Блок для отображения changelog с редактором JSON и предпросмотром": ["Block for displaying changelog with JSON editor and preview"],
       "Редактор JSON": ["JSON Editor"],
       "Предпросмотр": ["Preview"],
+      "Внешний JSON": ["External JSON"],
       "Данные Changelog (JSON)": ["Changelog Data (JSON)"],
-      "Введите данные в формате JSON. Каждый релиз должен содержать version, date и added.": ["Enter data in JSON format. Each release should contain version, date and added."],
+      "URL внешнего JSON файла": ["External JSON File URL"],
+      "Введите данные в формате JSON. Каждый релиз должен содержать version, date, added и fixed.": ["Enter data in JSON format. Each release should contain version, date, added and fixed."],
+      "Укажите прямую ссылку на JSON файл в GitHub или другом хранилище": ["Specify direct link to JSON file in GitHub or other storage"],
+      "Как получить ссылку на GitHub:": ["How to get GitHub link:"],
+      "1. Перейдите в репозиторий на GitHub → 2. Выберите ветку → 3. Найдите файл → 4. Нажмите \"Raw\" → 5. Скопируйте URL из адресной строки": ["1. Go to repository on GitHub → 2. Select branch → 3. Find file → 4. Click \"Raw\" → 5. Copy URL from address bar"],
+      "Пример: https://raw.githubusercontent.com/username/repo/main/changelog.json": ["Example: https://raw.githubusercontent.com/username/repo/main/changelog.json"],
       "Ошибка:": ["Error:"],
       "Некорректный JSON формат": ["Invalid JSON format"],
       "Данные должны быть массивом": ["Data must be an array"],
       "Невозможно отобразить предпросмотр из-за ошибок в JSON": ["Cannot display preview due to JSON errors"],
       "Некорректный формат данных changelog": ["Invalid changelog data format"],
-      "История изменений": ["Changelog"]
+      "История изменений": ["Changelog"],
+      "Ошибка загрузки внешнего JSON": ["External JSON loading error"],
+      "Данные успешно загружены": ["Data successfully loaded"],
+      "Загрузить из URL": ["Load from URL"],
+      "Использовать внешний JSON": ["Use external JSON"],
+      "Введите URL для загрузки": ["Enter URL to load"],
+      "Не удалось загрузить данные из указанного URL": ["Failed to load data from specified URL"]
     }
   }
 }

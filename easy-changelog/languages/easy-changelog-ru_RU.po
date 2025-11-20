@@ -24,11 +24,29 @@ msgstr "Редактор JSON"
 msgid "Предпросмотр"
 msgstr "Предпросмотр"
 
+msgid "Внешний JSON"
+msgstr "Внешний JSON"
+
 msgid "Данные Changelog (JSON)"
 msgstr "Данные Changelog (JSON)"
 
-msgid "Введите данные в формате JSON. Каждый релиз должен содержать version, date и added."
-msgstr "Введите данные в формате JSON. Каждый релиз должен содержать version, date и added."
+msgid "URL внешнего JSON файла"
+msgstr "URL внешнего JSON файла"
+
+msgid "Введите данные в формате JSON. Каждый релиз должен содержать version, date, added и fixed."
+msgstr "Введите данные в формате JSON. Каждый релиз должен содержать version, date, added и fixed."
+
+msgid "Укажите прямую ссылку на JSON файл в GitHub или другом хранилище"
+msgstr "Укажите прямую ссылку на JSON файл в GitHub или другом хранилище"
+
+msgid "Как получить ссылку на GitHub:"
+msgstr "Как получить ссылку на GitHub:"
+
+msgid "1. Перейдите в репозиторий на GitHub → 2. Выберите ветку → 3. Найдите файл → 4. Нажмите \"Raw\" → 5. Скопируйте URL из адресной строки"
+msgstr "1. Перейдите в репозиторий на GitHub → 2. Выберите ветку → 3. Найдите файл → 4. Нажмите \"Raw\" → 5. Скопируйте URL из адресной строки"
+
+msgid "Пример: https://raw.githubusercontent.com/username/repo/main/changelog.json"
+msgstr "Пример: https://raw.githubusercontent.com/username/repo/main/changelog.json"
 
 msgid "Ошибка:"
 msgstr "Ошибка:"
@@ -47,3 +65,21 @@ msgstr "Некорректный формат данных changelog"
 
 msgid "История изменений"
 msgstr "История изменений"
+
+msgid "Ошибка загрузки внешнего JSON"
+msgstr "Ошибка загрузки внешнего JSON"
+
+msgid "Данные успешно загружены"
+msgstr "Данные успешно загружены"
+
+msgid "Загрузить из URL"
+msgstr "Загрузить из URL"
+
+msgid "Использовать внешний JSON"
+msgstr "Использовать внешний JSON"
+
+msgid "Введите URL для загрузки"
+msgstr "Введите URL для загрузки"
+
+msgid "Не удалось загрузить данные из указанного URL"
+msgstr "Не удалось загрузить данные из указанного URL"

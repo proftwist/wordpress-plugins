@@ -24,11 +24,29 @@ msgstr "JSON Editor"
 msgid "Предпросмотр"
 msgstr "Preview"
 
+msgid "Внешний JSON"
+msgstr "External JSON"
+
 msgid "Данные Changelog (JSON)"
 msgstr "Changelog Data (JSON)"
 
-msgid "Введите данные в формате JSON. Каждый релиз должен содержать version, date и added."
-msgstr "Enter data in JSON format. Each release should contain version, date and added."
+msgid "URL внешнего JSON файла"
+msgstr "External JSON File URL"
+
+msgid "Введите данные в формате JSON. Каждый релиз должен содержать version, date, added и fixed."
+msgstr "Enter data in JSON format. Each release should contain version, date, added and fixed."
+
+msgid "Укажите прямую ссылку на JSON файл в GitHub или другом хранилище"
+msgstr "Specify direct link to JSON file in GitHub or other storage"
+
+msgid "Как получить ссылку на GitHub:"
+msgstr "How to get GitHub link:"
+
+msgid "1. Перейдите в репозиторий на GitHub → 2. Выберите ветку → 3. Найдите файл → 4. Нажмите \"Raw\" → 5. Скопируйте URL из адресной строки"
+msgstr "1. Go to repository on GitHub → 2. Select branch → 3. Find file → 4. Click \"Raw\" → 5. Copy URL from address bar"
+
+msgid "Пример: https://raw.githubusercontent.com/username/repo/main/changelog.json"
+msgstr "Example: https://raw.githubusercontent.com/username/repo/main/changelog.json"
 
 msgid "Ошибка:"
 msgstr "Error:"
@@ -47,3 +65,21 @@ msgstr "Invalid changelog data format"
 
 msgid "История изменений"
 msgstr "Changelog"
+
+msgid "Ошибка загрузки внешнего JSON"
+msgstr "External JSON loading error"
+
+msgid "Данные успешно загружены"
+msgstr "Data successfully loaded"
+
+msgid "Загрузить из URL"
+msgstr "Load from URL"
+
+msgid "Использовать внешний JSON"
+msgstr "Use external JSON"
+
+msgid "Введите URL для загрузки"
+msgstr "Enter URL to load"
+
+msgid "Не удалось загрузить данные из указанного URL"
+msgstr "Failed to load data from specified URL"

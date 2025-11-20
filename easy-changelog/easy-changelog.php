@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Easy Changelog
  * Plugin URI: http://bychko.ru
- * Description: Gutenberg блок для отображения истории изменений (changelog) с встроенным редактором JSON и предпросмотром в реальном времени.
- * Version: 1.2.1
+ * Description: Gutenberg блок для отображения истории изменений (changelog) с поддержкой внешних JSON из GitHub.
+ * Version: 1.3.0
  * Author: Владимир Бычко
  * License: GPL v2 or later
  * Text Domain: easy-changelog
@@ -36,6 +36,9 @@ class EasyChangelog {
 
         // Подключение локализации для редактора блоков
         add_action('enqueue_block_editor_assets', array($this, 'enqueue_block_editor_assets'));
+
+        // Регистрация REST API для внешних JSON
+        add_action('rest_api_init', array($this, 'register_rest_routes'));
 
         // Добавление категории блоков в редактор
         add_filter('block_categories_all', array($this, 'add_block_category'), 10, 2);
@@ -84,13 +87,22 @@ class EasyChangelog {
                 'description' => __('Блок для отображения changelog с редактором JSON и предпросмотром', 'easy-changelog'),
                 'jsonEditor' => __('Редактор JSON', 'easy-changelog'),
                 'preview' => __('Предпросмотр', 'easy-changelog'),
+                'externalJson' => __('Внешний JSON', 'easy-changelog'),
                 'changelogData' => __('Данные Changelog (JSON)', 'easy-changelog'),
+                'jsonUrl' => __('URL внешнего JSON файла', 'easy-changelog'),
                 'jsonHelp' => __('Введите данные в формате JSON. Каждый релиз должен содержать version, date, added и fixed.', 'easy-changelog'),
+                'urlHelp' => __('Укажите прямую ссылку на JSON файл в GitHub или другом хранилище', 'easy-changelog'),
+                'githubHelp' => __('Как получить ссылку на GitHub:', 'easy-changelog'),
+                'githubInstructions' => __('1. Перейдите в репозиторий на GitHub → 2. Выберите ветку → 3. Найдите файл → 4. Нажмите "Raw" → 5. Скопируйте URL из адресной строки', 'easy-changelog'),
+                'exampleUrl' => __('Пример: https://raw.githubusercontent.com/username/repo/main/changelog.json', 'easy-changelog'),
                 'error' => __('Ошибка:', 'easy-changelog'),
                 'invalidJson' => __('Некорректный JSON формат', 'easy-changelog'),
                 'mustBeArray' => __('Данные должны быть массивом', 'easy-changelog'),
                 'cannotPreview' => __('Невозможно отобразить предпросмотр из-за ошибок в JSON', 'easy-changelog'),
                 'changelogTitle' => __('История изменений', 'easy-changelog'),
+                'fetchError' => __('Ошибка загрузки внешнего JSON', 'easy-changelog'),
+                'fetchSuccess' => __('Данные успешно загружены', 'easy-changelog'),
+                'loadFromUrl' => __('Загрузить из URL', 'easy-changelog'),
             )
         );
     }
@@ -142,9 +154,60 @@ class EasyChangelog {
     "fixed": ["Устранены проблемы с локализацией"]
   }
 ]'
+                ),
+                'jsonUrl' => array(
+                    'type' => 'string',
+                    'default' => ''
+                ),
+                'useExternalUrl' => array(
+                    'type' => 'boolean',
+                    'default' => false
                 )
             )
         ));
+    }
+
+    /**
+     * Загрузка внешнего JSON с кешированием
+     */
+    private function fetch_external_json($url) {
+        if (empty($url)) {
+            return false;
+        }
+
+        $transient_key = 'easy_changelog_' . md5($url);
+        $cached_data = get_transient($transient_key);
+
+        // Кешируем на 1 час
+        if ($cached_data !== false) {
+            return $cached_data;
+        }
+
+        $response = wp_remote_get($url, array(
+            'timeout' => 10,
+            'headers' => array(
+                'User-Agent' => 'Easy-Changelog-WordPress-Plugin/1.3.0'
+            )
+        ));
+
+        if (is_wp_error($response)) {
+            return false;
+        }
+
+        $response_code = wp_remote_retrieve_response_code($response);
+        if ($response_code !== 200) {
+            return false;
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+            set_transient($transient_key, $data, HOUR_IN_SECONDS);
+            return $data;
+        }
+
+        return false;
     }
 
     /**
@@ -154,8 +217,23 @@ class EasyChangelog {
      * @return string HTML разметка блока
      */
     public function render_block($attributes) {
-        $changelog_data = json_decode($attributes['changelogData'], true);
+        $changelog_data = array();
 
+        // Если используется внешний URL - загружаем оттуда
+        if (!empty($attributes['useExternalUrl']) && !empty($attributes['jsonUrl'])) {
+            $external_data = $this->fetch_external_json($attributes['jsonUrl']);
+            if ($external_data !== false) {
+                $changelog_data = $external_data;
+            } else {
+                // Fallback на локальные данные при ошибке загрузки
+                $changelog_data = json_decode($attributes['changelogData'], true);
+            }
+        } else {
+            // Используем локальные данные
+            $changelog_data = json_decode($attributes['changelogData'], true);
+        }
+
+        // Проверяем корректность данных
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($changelog_data)) {
             return '<div class="easy-changelog-error">' .
                    __('Некорректный формат данных changelog', 'easy-changelog') .
@@ -212,9 +290,51 @@ class EasyChangelog {
                 'easy-changelog-frontend-style',
                 plugins_url('build/style-index.css', __FILE__),
                 array(),
-                '1.2.1'
+                '1.3.0'
             );
         }
+    }
+
+    /**
+     * Регистрация REST API для загрузки внешних данных
+     */
+    public function register_rest_routes() {
+        register_rest_route('easy-changelog/v1', '/fetch-external', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'handle_external_fetch'),
+            'permission_callback' => function() {
+                return current_user_can('edit_posts');
+            },
+            'args' => array(
+                'url' => array(
+                    'required' => true,
+                    'validate_callback' => function($param) {
+                        return filter_var($param, FILTER_VALIDATE_URL) !== false;
+                    }
+                ),
+            ),
+        ));
+    }
+
+    /**
+     * Обработчик REST API для загрузки внешнего JSON
+     */
+    public function handle_external_fetch($request) {
+        $url = $request->get_param('url');
+        $data = $this->fetch_external_json($url);
+
+        if ($data === false) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'message' => __('Не удалось загрузить данные из указанного URL', 'easy-changelog')
+            ), 400);
+        }
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'data' => $data,
+            'message' => __('Данные успешно загружены', 'easy-changelog')
+        ));
     }
 
     /**
