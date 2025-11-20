@@ -416,17 +416,40 @@ class EasyChangelog {
      * Обновление данных блока
      */
     private function update_block_data($post_id, $block_id, $json_url) {
+        $this->log_webhook('🔄 UPDATE_BLOCK_DATA_START', array(
+            'post_id' => $post_id,
+            'block_id' => $block_id,
+            'json_url' => $json_url
+        ));
+
         $post = get_post($post_id);
-        if (!$post) return;
+        if (!$post) {
+            $this->log_webhook('❌ POST_NOT_FOUND', $post_id);
+            return;
+        }
+
+        $this->log_webhook('📄 POST_CONTENT_BEFORE', 'Post content length: ' . strlen($post->post_content));
 
         $blocks = parse_blocks($post->post_content);
         $updated = $this->update_block_content($blocks, $block_id, $json_url);
 
+        $this->log_webhook('🔄 UPDATE_RESULT', array(
+            'updated' => $updated,
+            'blocks_processed' => count($blocks)
+        ));
+
         if ($updated) {
             $updated_content = serialize_blocks($blocks);
-            wp_update_post(array(
+            $result = wp_update_post(array(
                 'ID' => $post_id,
                 'post_content' => $updated_content
+            ));
+
+            $this->log_webhook('💾 POST_UPDATED', array(
+                'post_id' => $post_id,
+                'result' => $result,
+                'has_errors' => is_wp_error($result),
+                'new_content_length' => strlen($updated_content)
             ));
 
             // Обновляем время последнего обновления
@@ -439,11 +462,24 @@ class EasyChangelog {
                 array('%s'),
                 array('%d', '%s')
             );
+
+            $this->log_webhook('✅ UPDATE_COMPLETE', 'Block data successfully updated');
+        } else {
+            $this->log_webhook('⚠️ NO_UPDATE', 'Block content was not updated - possible issue');
         }
     }
 
     /**
-     * Обновление контента блока
+     * Логирование webhook активности
+     */
+    private function log_webhook($action, $data) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('Easy Changelog Webhook: ' . $action . ' - ' . print_r($data, true));
+        }
+    }
+
+    /**
+     * Обновление контента блока - ВСЕГДА обновляем при изменении внешних данных
      */
     private function update_block_content(&$blocks, $block_id, $json_url) {
         $updated = false;
@@ -453,9 +489,21 @@ class EasyChangelog {
                 $block['attrs']['blockId'] === $block_id) {
 
                 $new_data = $this->fetch_external_json($json_url, false);
+
                 if ($new_data !== false) {
-                    $block['attrs']['changelogData'] = json_encode($new_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                    $new_json_data = json_encode($new_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+                    // ВСЕГДА обновляем, даже если данные пустые
+                    $block['attrs']['changelogData'] = $new_json_data;
                     $updated = true;
+
+                    $this->log_webhook('🔄 BLOCK_DATA_UPDATED', array(
+                        'block_id' => $block_id,
+                        'data_length' => strlen($new_json_data),
+                        'items_count' => count($new_data)
+                    ));
+                } else {
+                    $this->log_webhook('❌ FETCH_FAILED', 'Could not fetch data from: ' . $json_url);
                 }
             }
 
@@ -574,9 +622,8 @@ class EasyChangelog {
     public function render_block($attributes) {
         $changelog_data = array();
 
-        // Всегда загружаем свежие данные для фронтенда
         if (!empty($attributes['useExternalUrl']) && !empty($attributes['jsonUrl'])) {
-            $external_data = $this->fetch_external_json($attributes['jsonUrl'], true); // Используем кеш 5 минут
+            $external_data = $this->fetch_external_json($attributes['jsonUrl'], true);
             if ($external_data !== false) {
                 $changelog_data = $external_data;
             } else {
@@ -584,13 +631,20 @@ class EasyChangelog {
                 $changelog_data = json_decode($attributes['changelogData'], true);
             }
         } else {
-            // Локальные данные
             $changelog_data = json_decode($attributes['changelogData'], true);
         }
 
+        // Проверяем корректность данных
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($changelog_data)) {
             return '<div class="easy-changelog-error">' .
                    __('Некорректный формат данных changelog', 'easy-changelog') .
+                   '</div>';
+        }
+
+        // Если данных нет - показываем сообщение
+        if (empty($changelog_data)) {
+            return '<div class="easy-changelog-empty">' .
+                   __('История изменений пока пуста', 'easy-changelog') .
                    '</div>';
         }
 
@@ -610,7 +664,7 @@ class EasyChangelog {
                     </div>
 
                     <div class="easy-changelog-content">
-                        <?php if (isset($release['added']) && is_array($release['added'])): ?>
+                        <?php if (isset($release['added']) && is_array($release['added']) && !empty($release['added'])): ?>
                             <ul class="easy-changelog-added">
                                 <?php foreach ($release['added'] as $item): ?>
                                     <li class="easy-changelog-item easy-changelog-item-added"><?php echo esc_html($item); ?></li>
@@ -618,7 +672,7 @@ class EasyChangelog {
                             </ul>
                         <?php endif; ?>
 
-                        <?php if (isset($release['fixed']) && is_array($release['fixed'])): ?>
+                        <?php if (isset($release['fixed']) && is_array($release['fixed']) && !empty($release['fixed'])): ?>
                             <ul class="easy-changelog-fixed">
                                 <?php foreach ($release['fixed'] as $item): ?>
                                     <li class="easy-changelog-item easy-changelog-item-fixed"><?php echo esc_html($item); ?></li>
