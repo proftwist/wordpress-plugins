@@ -1,6 +1,6 @@
 {
   "name": "easy-changelog",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Easy Changelog Gutenberg Block with GitHub webhook auto-sync",
   "main": "build/index.js",
   "scripts": {

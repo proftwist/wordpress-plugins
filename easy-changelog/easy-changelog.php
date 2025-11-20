@@ -3,7 +3,7 @@
  * Plugin Name: Easy Changelog
  * Plugin URI: http://bychko.ru
  * Description: Gutenberg блок для отображения истории изменений (changelog) с автоматической синхронизацией из GitHub.
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: Владимир Бычко
  * License: GPL v2 or later
  * Text Domain: easy-changelog
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
  */
 class EasyChangelog {
 
-    private $version = '2.0.0';
+    private $version = '2.0.1';
 
     public function __construct() {
         add_action('init', array($this, 'init'));
@@ -29,22 +29,28 @@ class EasyChangelog {
         add_action('rest_api_init', array($this, 'register_rest_routes'));
         add_filter('block_categories_all', array($this, 'add_block_category'), 10, 2);
 
-        // Инициализация миграции БД
-        register_activation_hook(__FILE__, array($this, 'activate'));
-
         // Ежедневная очистка устаревших записей
         add_action('easy_changelog_cleanup', array($this, 'cleanup_old_records'));
-        if (!wp_next_scheduled('easy_changelog_cleanup')) {
-            wp_schedule_event(time(), 'daily', 'easy_changelog_cleanup');
-        }
+
+        // Проверяем нужно ли обновить БД
+        add_action('plugins_loaded', array($this, 'check_db_version'));
     }
 
     /**
-     * Активация плагина - создание таблиц БД
+     * Проверка и создание БД при необходимости
      */
-    public function activate() {
-        $this->create_tables();
-        $this->schedule_cleanup();
+    public function check_db_version() {
+        $current_db_version = get_option('easy_changelog_db_version', '0');
+
+        if (version_compare($current_db_version, $this->version, '<')) {
+            $this->create_tables();
+            update_option('easy_changelog_db_version', $this->version);
+        }
+
+        // Планируем очистку если не запланирована
+        if (!wp_next_scheduled('easy_changelog_cleanup')) {
+            wp_schedule_event(time(), 'daily', 'easy_changelog_cleanup');
+        }
     }
 
     /**
@@ -71,15 +77,9 @@ class EasyChangelog {
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
-    }
 
-    /**
-     * Планирование очистки
-     */
-    private function schedule_cleanup() {
-        if (!wp_next_scheduled('easy_changelog_cleanup')) {
-            wp_schedule_event(time(), 'daily', 'easy_changelog_cleanup');
-        }
+        // Логируем создание таблицы
+        error_log('Easy Changelog: Database table created - ' . $table_name);
     }
 
     public function init() {
@@ -199,7 +199,19 @@ class EasyChangelog {
         if (wp_is_post_revision($post_id)) return;
         if (!current_user_can('edit_post', $post_id)) return;
 
+        error_log('Easy Changelog: Tracking blocks for post ' . $post_id);
+
         $blocks = parse_blocks($post->post_content);
+        $changelog_blocks = 0;
+
+        foreach ($blocks as $block) {
+            if ($block['blockName'] === 'easy-changelog/changelog') {
+                $changelog_blocks++;
+            }
+        }
+
+        error_log('Easy Changelog: Found ' . $changelog_blocks . ' changelog blocks');
+
         $this->process_blocks_for_tracking($post_id, $blocks);
     }
 
@@ -645,4 +657,21 @@ class EasyChangelog {
     }
 }
 
+/**
+ * Функции активации/деактивации ВНЕ класса
+ */
+function easy_changelog_activate() {
+    $plugin = new EasyChangelog();
+    $plugin->check_db_version();
+}
+
+function easy_changelog_deactivate() {
+    wp_clear_scheduled_hook('easy_changelog_cleanup');
+}
+
+// Регистрируем хуки активации/деактивации
+register_activation_hook(__FILE__, 'easy_changelog_activate');
+register_deactivation_hook(__FILE__, 'easy_changelog_deactivate');
+
+// Инициализируем плагин
 new EasyChangelog();
