@@ -17,37 +17,53 @@ if (!defined('ABSPATH')) {
 
 /**
  * Основной класс плагина Easy Changelog
+ * Отвечает за регистрацию блока, обработку webhook'ов и автоматическую синхронизацию данных
  */
 class EasyChangelog {
 
     private $version = '2.0.1';
 
+    /**
+     * Конструктор класса
+     * Регистрирует все необходимые WordPress хуки и действия
+     */
     public function __construct() {
+        // Инициализация блока и локализация
         add_action('init', array($this, 'init'));
+
+        // Подключение frontend стилей
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
+
+        // Подключение редакторских скриптов и стилей
         add_action('enqueue_block_editor_assets', array($this, 'enqueue_block_editor_assets'));
+
+        // Регистрация REST API endpoints
         add_action('rest_api_init', array($this, 'register_rest_routes'));
+
+        // Добавление категории блоков
         add_filter('block_categories_all', array($this, 'add_block_category'), 10, 2);
 
         // Ежедневная очистка устаревших записей
         add_action('easy_changelog_cleanup', array($this, 'cleanup_old_records'));
 
-        // Проверяем нужно ли обновить БД
+        // Проверяем нужно ли обновить БД при загрузке плагина
         add_action('plugins_loaded', array($this, 'check_db_version'));
     }
 
     /**
      * Проверка и создание БД при необходимости
+     * Вызывается при загрузке плагина для проверки необходимости обновления структуры БД
      */
     public function check_db_version() {
         $current_db_version = get_option('easy_changelog_db_version', '0');
 
+        // Если версия БД устарела, создаем новые таблицы
         if (version_compare($current_db_version, $this->version, '<')) {
             $this->create_tables();
             update_option('easy_changelog_db_version', $this->version);
         }
 
-        // Планируем очистку если не запланирована
+        // Планируем ежедневную очистку устаревших записей если еще не запланирована
         if (!wp_next_scheduled('easy_changelog_cleanup')) {
             wp_schedule_event(time(), 'daily', 'easy_changelog_cleanup');
         }
@@ -55,6 +71,7 @@ class EasyChangelog {
 
     /**
      * Создание таблиц БД для отслеживания блоков
+     * Создает таблицу для хранения информации об отслеживаемых блоках с внешними URL
      */
     private function create_tables() {
         global $wpdb;
@@ -62,6 +79,7 @@ class EasyChangelog {
         $table_name = $wpdb->prefix . 'easy_changelog_blocks';
         $charset_collate = $wpdb->get_charset_collate();
 
+        // SQL для создания таблицы отслеживания блоков
         $sql = "CREATE TABLE $table_name (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             post_id bigint(20) NOT NULL,
@@ -77,9 +95,6 @@ class EasyChangelog {
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
-
-        // Логируем создание таблицы
-        error_log('Easy Changelog: Database table created - ' . $table_name);
     }
 
     public function init() {
@@ -193,25 +208,28 @@ class EasyChangelog {
 
     /**
      * Отслеживание блоков changelog при сохранении поста
+     * Автоматически вызывается при сохранении поста для регистрации блоков с внешними URL
      */
     public function track_changelog_blocks($post_id, $post, $update) {
+        // Пропускаем автосохранения
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+        // Пропускаем ревизии
         if (wp_is_post_revision($post_id)) return;
+        // Проверяем права пользователя
         if (!current_user_can('edit_post', $post_id)) return;
 
-        error_log('Easy Changelog: Tracking blocks for post ' . $post_id);
-
+        // Парсим блоки из контента поста
         $blocks = parse_blocks($post->post_content);
         $changelog_blocks = 0;
 
+        // Подсчитываем количество блоков changelog
         foreach ($blocks as $block) {
             if ($block['blockName'] === 'easy-changelog/changelog') {
                 $changelog_blocks++;
             }
         }
 
-        error_log('Easy Changelog: Found ' . $changelog_blocks . ' changelog blocks');
-
+        // Обрабатываем блоки для отслеживания
         $this->process_blocks_for_tracking($post_id, $blocks);
     }
 
@@ -414,45 +432,28 @@ class EasyChangelog {
 
     /**
      * Обновление данных блока
+     * Вызывается из webhook'а для обновления конкретного блока новыми данными из JSON
      */
     private function update_block_data($post_id, $block_id, $json_url) {
-        $this->log_webhook('🔄 UPDATE_BLOCK_DATA_START', array(
-            'post_id' => $post_id,
-            'block_id' => $block_id,
-            'json_url' => $json_url
-        ));
-
+        // Получаем пост для обновления
         $post = get_post($post_id);
         if (!$post) {
-            $this->log_webhook('❌ POST_NOT_FOUND', $post_id);
             return;
         }
 
-        $this->log_webhook('📄 POST_CONTENT_BEFORE', 'Post content length: ' . strlen($post->post_content));
-
+        // Парсим блоки из контента поста
         $blocks = parse_blocks($post->post_content);
         $updated = $this->update_block_content($blocks, $block_id, $json_url);
 
-        $this->log_webhook('🔄 UPDATE_RESULT', array(
-            'updated' => $updated,
-            'blocks_processed' => count($blocks)
-        ));
-
+        // Если блок был обновлен, сохраняем изменения
         if ($updated) {
             $updated_content = serialize_blocks($blocks);
-            $result = wp_update_post(array(
+            wp_update_post(array(
                 'ID' => $post_id,
                 'post_content' => $updated_content
             ));
 
-            $this->log_webhook('💾 POST_UPDATED', array(
-                'post_id' => $post_id,
-                'result' => $result,
-                'has_errors' => is_wp_error($result),
-                'new_content_length' => strlen($updated_content)
-            ));
-
-            // Обновляем время последнего обновления
+            // Обновляем время последнего обновления в БД
             global $wpdb;
             $table_name = $wpdb->prefix . 'easy_changelog_blocks';
             $wpdb->update(
@@ -462,63 +463,12 @@ class EasyChangelog {
                 array('%s'),
                 array('%d', '%s')
             );
-
-            $this->log_webhook('✅ UPDATE_COMPLETE', 'Block data successfully updated');
-        } else {
-            $this->log_webhook('⚠️ NO_UPDATE', 'Block content was not updated - possible issue');
         }
     }
 
     /**
-     * Логирование webhook активности
-     */
-    private function log_webhook($action, $data) {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('Easy Changelog Webhook: ' . $action . ' - ' . print_r($data, true));
-        }
-    }
-
-    /**
-     * Обновление контента блока - ВСЕГДА обновляем при изменении внешних данных
-     */
-    private function update_block_content(&$blocks, $block_id, $json_url) {
-        $updated = false;
-
-        foreach ($blocks as &$block) {
-            if ($block['blockName'] === 'easy-changelog/changelog' &&
-                $block['attrs']['blockId'] === $block_id) {
-
-                $new_data = $this->fetch_external_json($json_url, false);
-
-                if ($new_data !== false) {
-                    $new_json_data = json_encode($new_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-                    // ВСЕГДА обновляем, даже если данные пустые
-                    $block['attrs']['changelogData'] = $new_json_data;
-                    $updated = true;
-
-                    $this->log_webhook('🔄 BLOCK_DATA_UPDATED', array(
-                        'block_id' => $block_id,
-                        'data_length' => strlen($new_json_data),
-                        'items_count' => count($new_data)
-                    ));
-                } else {
-                    $this->log_webhook('❌ FETCH_FAILED', 'Could not fetch data from: ' . $json_url);
-                }
-            }
-
-            if (!empty($block['innerBlocks'])) {
-                if ($this->update_block_content($block['innerBlocks'], $block_id, $json_url)) {
-                    $updated = true;
-                }
-            }
-        }
-
-        return $updated;
-    }
-
-    /**
-     * Загрузка внешнего JSON
+     * Загрузка внешнего JSON из указанного URL
+     * Поддерживает кеширование и принудительное обновление для GitHub URLs
      */
     private function fetch_external_json($url, $use_cache = true) {
         if (empty($url)) return false;
@@ -530,11 +480,13 @@ class EasyChangelog {
 
         $transient_key = 'easy_changelog_' . md5($url);
 
+        // Проверяем кеш если разрешен
         if ($use_cache) {
             $cached_data = get_transient($transient_key);
             if ($cached_data !== false) return $cached_data;
         }
 
+        // Выполняем HTTP запрос
         $response = wp_remote_get($url, array(
             'timeout' => 10,
             'headers' => array(
@@ -556,7 +508,8 @@ class EasyChangelog {
 
         if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
             if ($use_cache) {
-                set_transient($transient_key, $data, 5 * MINUTE_IN_SECONDS); // 5 минут кеш
+                // Кешируем на 5 минут для лучшей производительности
+                set_transient($transient_key, $data, 5 * MINUTE_IN_SECONDS);
             }
             return $data;
         }
@@ -565,7 +518,43 @@ class EasyChangelog {
     }
 
     /**
+     * Обновление контента блока - ВСЕГДА обновляем при изменении внешних данных
+     * Критически важно: даже при пустых данных мы обновляем пост для корректного отображения
+     */
+    private function update_block_content(&$blocks, $block_id, $json_url) {
+        $updated = false;
+
+        foreach ($blocks as &$block) {
+            // Ищем нужный блок по имени и ID
+            if ($block['blockName'] === 'easy-changelog/changelog' &&
+                $block['attrs']['blockId'] === $block_id) {
+
+                // Загружаем новые данные из внешнего JSON
+                $new_data = $this->fetch_external_json($json_url, false);
+
+                if ($new_data !== false) {
+                    $new_json_data = json_encode($new_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+                    // ВСЕГДА обновляем, даже если данные пустые (для корректной работы при удалении)
+                    $block['attrs']['changelogData'] = $new_json_data;
+                    $updated = true;
+                }
+            }
+
+            // Рекурсивно обрабатываем вложенные блоки
+            if (!empty($block['innerBlocks'])) {
+                if ($this->update_block_content($block['innerBlocks'], $block_id, $json_url)) {
+                    $updated = true;
+                }
+            }
+        }
+
+        return $updated;
+    }
+
+    /**
      * Обновление GitHub URL для избежания кеширования
+     * Добавляет timestamp к GitHub raw URLs для принудительного обновления кеша
      */
     private function refreshGitHubUrl($url) {
         if (strpos($url, 'raw.githubusercontent.com') !== false) {
