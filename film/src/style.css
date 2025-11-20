@@ -1,4 +1,4 @@
-/* Основной контейнер блока фотоплёнки */
+/* Основной контейнер блока фотоплёнки в редакторе */
 .wp-block-film-film-gallery {
     background: #000;
     border-radius: 8px;
@@ -79,6 +79,13 @@
     height: 100%;
     padding: 5px;
     position: relative;
+    transition: transform 0.2s ease;
+}
+
+/* Эффект при наведении в редакторе */
+.film-frame:hover {
+    transform: scale(1.05);
+    z-index: 10;
 }
 
 /* Верхняя перфорация кадра */
@@ -102,28 +109,33 @@
     bottom: -15px;
 }
 
-/* Обёртка для изображения с белой рамкой */
-.film-image-wrapper {
-    background: #fff;
-    border: 8px solid #fff;
-    border-bottom: 12px solid #fff; /* Увеличенная нижняя рамка */
-    box-sizing: border-box;
-    height: 100%;
-    overflow: hidden;
-    position: relative;
-}
-
-/* Стили самого изображения */
-.film-image-wrapper img {
+/* Стили самого изображения в редакторе */
+.film-frame img {
     display: block;
     height: 100%;
     object-fit: cover;
     width: auto;
 }
 
-/* Ссылка на изображение */
-.film-image-link {
-    display: block;
+/* Контейнер редактора */
+.film-gallery-editor {
+    background: #000;
+    border: 1px dashed #ccc;
+    position: relative;
+}
+
+/* Заполнитель когда нет изображений */
+.film-placeholder {
+    align-items: center;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     height: 100%;
-    text-decoration: none;
+    justify-content: center;
+}
+
+.film-placeholder p {
+    color: #ccc;
+    margin: 0;
 }

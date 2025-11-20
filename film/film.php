@@ -4,7 +4,7 @@
  * Description: Гутенберговский блок для создания галереи изображений в стиле классической фотоплёнки с горизонтальной прокруткой
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
- * Version: 1.0.3
+ * Version: 1.0.4
  * Text Domain: film
  * Domain Path: /languages
  * Requires at least: 5.0
@@ -30,32 +30,14 @@ function film_load_textdomain() {
     load_plugin_textdomain('film', false, dirname(plugin_basename(__FILE__)) . '/languages');
 }
 
-// Отладочная информация для проверки переводов
-add_action('admin_notices', 'film_debug_translations');
-function film_debug_translations() {
-    if (!current_user_can('manage_options')) return;
-
-    $locale = determine_locale();
-    $script_handle = 'film-block-editor';
-
-    echo '<div class="notice notice-info">';
-    echo '<p><strong>Film Translations Debug:</strong></p>';
-    echo '<p>Current locale: ' . $locale . '</p>';
-    echo '<p>Script handle: ' . $script_handle . '</p>';
-    echo '<p>Text domain loaded: ' . (is_textdomain_loaded('film') ? 'YES' : 'NO') . '</p>';
-
-    // Проверяем существование JSON файлов
-    $json_files = glob(plugin_dir_path(__FILE__) . 'languages/film-*.json');
-    echo '<p>JSON files found: ' . count($json_files) . '</p>';
-    foreach ($json_files as $file) {
-        echo '<p>→ ' . basename($file) . '</p>';
-    }
-
-    echo '</div>';
-}
-
-// Загрузка переводов JavaScript - ДО регистрации скрипта!
+// Загрузка переводов JavaScript
 add_action('init', 'film_set_script_translations', 100);
+
+/**
+ * Устанавливает переводы для JavaScript файлов
+ *
+ * @return void
+ */
 function film_set_script_translations() {
     // Регистрируем переводы для скрипта
     if (function_exists('wp_set_script_translations')) {
@@ -97,10 +79,6 @@ function film_register_block() {
         true // load in footer
     );
 
-    // Ещё раз устанавливаем переводы после регистрации скрипта
-    if (function_exists('wp_set_script_translations')) {
-        wp_set_script_translations('film-block-editor', 'film', plugin_dir_path(__FILE__) . 'languages');
-    }
 
     // Регистрируем CSS стили для редактора
     wp_register_style(
@@ -209,7 +187,9 @@ function film_render_callback($attributes, $content) {
 
         // Создаём кадр для изображения
         $output .= '<div class="film-frame">';
+        $output .= '<div class="film-image-wrapper">';
         $output .= '<img src="' . esc_url($img_url) . '" alt="' . esc_attr($img_alt) . '" />';
+        $output .= '</div>';
         $output .= '</div>';
 
         // Закрываем ссылку
