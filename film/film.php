@@ -4,7 +4,7 @@
  * Description: Гутенберговский блок для создания галереи изображений в стиле классической фотоплёнки с горизонтальной прокруткой
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
- * Version: 1.0.5
+ * Version: 1.1.0
  * Text Domain: film
  * Domain Path: /languages
  * Requires at least: 5.0
@@ -124,33 +124,6 @@ function film_register_block() {
     ));
 }
 
-// Добавим этот хук после film_register_block() функции
-add_action('wp_head', 'film_disable_hover_effects');
-function film_disable_hover_effects() {
-    echo '
-    <style>
-    /* Принудительное отключение всех hover эффектов для фотоплёнки */
-    .film-frame *,
-    .film-image-wrapper *,
-    .film-image-link * {
-        transition: none !important;
-        transform: none !important;
-        scale: none !important;
-        animation: none !important;
-    }
-
-    .film-frame:hover,
-    .film-image-wrapper:hover,
-    .film-image-link:hover,
-    .film-frame:hover *,
-    .film-image-wrapper:hover *,
-    .film-image-link:hover * {
-        transform: none !important;
-        scale: none !important;
-    }
-    </style>
-    ';
-}
 /**
  * Функция рендеринга блока на фронтенде
  *

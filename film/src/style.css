@@ -71,7 +71,7 @@
     border-radius: 4px;
 }
 
-/* Отдельный кадр фотоплёнки - УБРАНЫ ВСЕ HOVER ЭФФЕКТЫ */
+/* Уменьшаем размер картинок в редакторе как на фронтенде */
 .film-frame {
     background: #fff;
     border-radius: 2px;
@@ -79,7 +79,21 @@
     height: 100%;
     padding: 5px;
     position: relative;
-    /* Убраны все transition и transform */
+}
+
+/* Добавляем обёртку с белой рамкой как на фронтенде */
+.film-frame::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    background: #fff;
+    border: 8px solid #fff;
+    border-bottom: 12px solid #fff;
+    box-sizing: border-box;
+    z-index: 1;
 }
 
 /* Верхняя перфорация кадра */
@@ -103,6 +117,16 @@
     bottom: -15px;
 }
 
+/* Картинка внутри рамки */
+.film-frame img {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: auto;
+    position: relative;
+    z-index: 2;
+}
+
 /* Обёртка для изображения с белой рамкой */
 .film-image-wrapper {
     background: #fff;
@@ -114,88 +138,27 @@
     position: relative;
 }
 
-/* Стили самого изображения - УБРАНЫ ВСЕ HOVER ЭФФЕКТЫ */
+/* Стили самого изображения - БЕЗ HOVER, НО С МАСШТАБИРОВАНИЕМ */
 .film-image-wrapper img {
     display: block;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* МАСШТАБИРОВАНИЕ СОХРАНЕНО */
     width: auto;
-    /* Убраны все transition и transform */
 }
 
-/* Ссылка на изображение - УБРАНЫ ВСЕ HOVER ЭФФЕКТЫ */
+/* Ссылка на изображение */
 .film-image-link {
     display: block;
     height: 100%;
     text-decoration: none;
-    /* Убраны все hover эффекты */
 }
 
-/* ПРИНУДИТЕЛЬНОЕ ОТКЛЮЧЕНИЕ ВСЕХ HOVER ЭФФЕКТОВ */
-.film-frame:hover,
-.film-frame:focus,
-.film-frame:active {
-    transform: none !important;
-    scale: none !important;
-    z-index: auto !important;
-}
-
-.film-image-wrapper:hover,
-.film-image-wrapper:focus,
-.film-image-wrapper:active {
-    transform: none !important;
-    scale: none !important;
-}
-
-.film-image-wrapper img:hover,
-.film-image-wrapper img:focus,
-.film-image-wrapper img:active {
-    transform: none !important;
-    scale: none !important;
-}
-
-.film-image-link:hover .film-frame,
-.film-image-link:focus .film-frame,
-.film-image-link:active .film-frame {
-    transform: none !important;
-    scale: none !important;
-}
-
-.film-image-link:hover .film-image-wrapper,
-.film-image-link:focus .film-image-wrapper,
-.film-image-link:active .film-image-wrapper {
-    transform: none !important;
-    scale: none !important;
-}
-
-/* Отключение любых анимаций и переходов */
-.film-frame,
-.film-image-wrapper,
-.film-image-wrapper img,
-.film-image-link,
-.film-image-link * {
-    transition: none !important;
-    animation: none !important;
-    transform: none !important;
-    scale: none !important;
-}
-
-/* Принудительное отключение hover состояний */
-.film-frame:hover {
-    background: #fff !important;
-    border-color: #fff !important;
-}
-
-.film-image-link:hover {
-    text-decoration: none !important;
-    background: transparent !important;
-}
-
-/* Стили для редактора - УБРАНЫ HOVER ЭФФЕКТЫ */
+/* Уменьшаем высоту плёнки в редакторе */
 .film-gallery-editor {
     background: #000;
     border: 1px dashed #ccc;
     position: relative;
+    height: 300px !important;
 }
 
 /* Заполнитель когда нет изображений */
@@ -220,31 +183,6 @@
     justify-content: center;
     margin-top: 15px;
     padding: 0 10px;
-}
-
-/* ПРИНУДИТЕЛЬНОЕ ОТКЛЮЧЕНИЕ HOVER ЭФФЕКТОВ В РЕДАКТОРЕ */
-.film-frame:hover,
-.film-frame:focus,
-.film-frame:active {
-    transform: none !important;
-    scale: none !important;
-    z-index: auto !important;
-}
-
-.film-frame img:hover,
-.film-frame img:focus,
-.film-frame img:active {
-    transform: none !important;
-    scale: none !important;
-}
-
-/* Отключение любых анимаций в редакторе */
-.film-frame,
-.film-frame img {
-    transition: none !important;
-    animation: none !important;
-    transform: none !important;
-    scale: none !important;
 }
 
 /* Стили для модального окна редактирования галереи */
