@@ -83,3 +83,24 @@ msgstr "Введите URL для загрузки"
 
 msgid "Не удалось загрузить данные из указанного URL"
 msgstr "Не удалось загрузить данные из указанного URL"
+
+msgid "Блок для отображения changelog с автоматической синхронизацией из GitHub"
+msgstr "Блок для отображения changelog с автоматической синхронизацией из GitHub"
+
+msgid "Webhook URL для автоматического обновления"
+msgstr "Webhook URL для автоматического обновления"
+
+msgid "Добавьте этот URL как webhook в настройках вашего GitHub репозитория для автоматического обновления"
+msgstr "Добавьте этот URL как webhook в настройках вашего GitHub репозитория для автоматического обновления"
+
+msgid "Для автоматического обновления: Settings → Webhooks → Add webhook → Payload URL → выберите \"Just the push event\""
+msgstr "Для автоматического обновления: Settings → Webhooks → Add webhook → Payload URL → выберите \"Just the push event\""
+
+msgid "Автосинхронизация включена"
+msgstr "Автосинхронизация включена"
+
+msgid "Скопировать Webhook URL"
+msgstr "Скопировать Webhook URL"
+
+msgid "Webhook URL скопирован в буфер обмена"
+msgstr "Webhook URL скопирован в буфер обмена"

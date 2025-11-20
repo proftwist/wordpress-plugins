@@ -30,7 +30,14 @@
       "Загрузить из URL": ["Load from URL"],
       "Использовать внешний JSON": ["Use external JSON"],
       "Введите URL для загрузки": ["Enter URL to load"],
-      "Не удалось загрузить данные из указанного URL": ["Failed to load data from specified URL"]
+      "Не удалось загрузить данные из указанного URL": ["Failed to load data from specified URL"],
+      "Блок для отображения changelog с автоматической синхронизацией из GitHub": ["Block for displaying changelog with automatic GitHub synchronization"],
+      "Webhook URL для автоматического обновления": ["Webhook URL for automatic updates"],
+      "Добавьте этот URL как webhook в настройках вашего GitHub репозитория для автоматического обновления": ["Add this URL as webhook in your GitHub repository settings for automatic updates"],
+      "Для автоматического обновления: Settings → Webhooks → Add webhook → Payload URL → выберите \"Just the push event\"": ["For automatic updates: Settings → Webhooks → Add webhook → Payload URL → select \"Just the push event\""],
+      "Автосинхронизация включена": ["Auto-sync enabled"],
+      "Скопировать Webhook URL": ["Copy Webhook URL"],
+      "Webhook URL скопирован в буфер обмена": ["Webhook URL copied to clipboard"]
     }
   }
 }
