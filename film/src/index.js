@@ -5,7 +5,7 @@
     const { React } = window;
     const { registerBlockType } = window.wp.blocks;
     const { useBlockProps, BlockControls, InspectorControls } = window.wp.blockEditor;
-    const { ToolbarGroup, Button, PanelBody, RangeControl, SelectControl } = window.wp.components;
+    const { ToolbarGroup, Button, PanelBody, RangeControl, SelectControl, Modal, Dashicon } = window.wp.components;
     const { __ } = window.wp.i18n;
     const { SVG, Path } = window.wp.primitives;
 
@@ -17,6 +17,329 @@
             clipRule: "evenodd"
         })
     );
+
+    // Компонент редактирования блока
+    const FilmGalleryEdit = ({ attributes, setAttributes }) => {
+        const { images, height, linkTo, align } = attributes;
+        const blockProps = useBlockProps();
+
+        // Состояние для модального окна редактирования галереи
+        const [isEditingGallery, setIsEditingGallery] = React.useState(false);
+
+        /**
+         * Открывает медиабиблиотеку для добавления новых изображений
+         */
+        const openMediaLibrary = () => {
+            // Проверяем доступность wp.media
+            if (!wp.media) {
+                console.error('wp.media is not available');
+                return;
+            }
+
+            const frame = wp.media({
+                title: __('Выберите изображения для добавления в галерею', 'film'),
+                multiple: true,
+                library: {
+                    type: 'image'
+                },
+                button: {
+                    text: __('Добавить в галерею', 'film')
+                }
+            });
+
+            // Обработчик выбора изображений
+            frame.on('select', function() {
+                const selection = frame.state().get('selection');
+                const selectedImages = selection.map(function(attachment) {
+                    attachment = attachment.toJSON();
+                    return {
+                        id: attachment.id,
+                        url: attachment.url,
+                        alt: attachment.alt || '',
+                        caption: attachment.caption,
+                        title: attachment.title
+                    };
+                });
+
+                // Добавляем новые изображения к существующим
+                const updatedImages = [...images, ...selectedImages];
+                setAttributes({ images: updatedImages });
+            });
+
+            frame.open();
+        };
+
+        /**
+         * Открывает интерфейс редактирования галереи
+         */
+        const openGalleryEditor = () => {
+            setIsEditingGallery(true);
+        };
+
+        /**
+         * Закрывает интерфейс редактирования галереи
+         */
+        const closeGalleryEditor = () => {
+            setIsEditingGallery(false);
+        };
+
+        /**
+         * Удаляет изображение из галереи
+         * @param {number} index - Индекс удаляемого изображения
+         */
+        const removeImage = (index) => {
+            const updatedImages = images.filter((_, i) => i !== index);
+            setAttributes({ images: updatedImages });
+        };
+
+        /**
+         * Перемещает изображение вверх по списку
+         * @param {number} index - Индекс перемещаемого изображения
+         */
+        const moveImageUp = (index) => {
+            if (index === 0) return;
+            const updatedImages = [...images];
+            [updatedImages[index - 1], updatedImages[index]] = [updatedImages[index], updatedImages[index - 1]];
+            setAttributes({ images: updatedImages });
+        };
+
+        /**
+         * Перемещает изображение вниз по списку
+         * @param {number} index - Индекс перемещаемого изображения
+         */
+        const moveImageDown = (index) => {
+            if (index === images.length - 1) return;
+            const updatedImages = [...images];
+            [updatedImages[index], updatedImages[index + 1]] = [updatedImages[index + 1], updatedImages[index]];
+            setAttributes({ images: updatedImages });
+        };
+
+        /**
+         * Очищает всю галерею
+         */
+        const clearGallery = () => {
+            if (confirm(__('Вы уверены, что хотите удалить все изображения из галереи?', 'film'))) {
+                setAttributes({ images: [] });
+                setIsEditingGallery(false);
+            }
+        };
+
+        return React.createElement(React.Fragment, null,
+            // Панель инструментов блока
+            React.createElement(BlockControls, null,
+                React.createElement(ToolbarGroup, null,
+                    // Кнопка редактирования галереи (только если есть изображения)
+                    images.length > 0 && React.createElement(Button, {
+                        icon: 'edit',
+                        label: __('Редактировать галерею', 'film'),
+                        onClick: openGalleryEditor
+                    }),
+                    // Кнопка добавления изображений
+                    React.createElement(Button, {
+                        icon: 'plus',
+                        label: __('Добавить изображения', 'film'),
+                        onClick: openMediaLibrary
+                    })
+                )
+            ),
+
+            // Панель инспектора с настройками
+            React.createElement(InspectorControls, null,
+                React.createElement(PanelBody, {
+                    title: __('Настройки фотоплёнки', 'film'),
+                    initialOpen: true
+                },
+                    React.createElement(RangeControl, {
+                        label: __('Высота плёнки', 'film'),
+                        value: height,
+                        onChange: (value) => setAttributes({ height: value }),
+                        min: 100,
+                        max: 1000,
+                        step: 10
+                    }),
+                    React.createElement(SelectControl, {
+                        label: __('Ссылки на изображения', 'film'),
+                        value: linkTo,
+                        options: [
+                            { label: __('Без ссылки', 'film'), value: 'none' },
+                            { label: __('Ссылка на файл', 'film'), value: 'media' },
+                            { label: __('Страница вложения', 'film'), value: 'attachment' }
+                        ],
+                        onChange: (value) => setAttributes({ linkTo: value })
+                    })
+                ),
+
+                // Панель управления галереей
+                images.length > 0 && React.createElement(PanelBody, {
+                    title: __('Управление галереей', 'film'),
+                    initialOpen: false
+                },
+                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+                        React.createElement(Button, {
+                            isSecondary: true,
+                            onClick: openGalleryEditor
+                        }, __('Редактировать галерею', 'film')),
+                        React.createElement(Button, {
+                            isSecondary: true,
+                            onClick: openMediaLibrary
+                        }, __('Добавить изображения', 'film')),
+                        images.length > 0 && React.createElement(Button, {
+                            isDestructive: true,
+                            onClick: clearGallery
+                        }, __('Очистить галерею', 'film'))
+                    )
+                )
+            ),
+
+            // Модальное окно редактирования галереи
+            isEditingGallery && React.createElement(Modal, {
+                title: __('Редактирование галереи', 'film'),
+                onRequestClose: closeGalleryEditor,
+                className: 'film-gallery-editor-modal',
+                style: { maxWidth: '800px' }
+            },
+                React.createElement('div', { className: 'film-gallery-editor-content' },
+                    // Заголовок и кнопка добавления
+                    React.createElement('div', { className: 'film-gallery-editor-header' },
+                        React.createElement('h2', null, __('Изображения в галерее', 'film')),
+                        React.createElement(Button, {
+                            isPrimary: true,
+                            onClick: openMediaLibrary
+                        }, __('Добавить в галерею', 'film'))
+                    ),
+
+                    // Список изображений для редактирования
+                    React.createElement('div', { className: 'film-gallery-edit-list' },
+                        images.length === 0
+                            ? React.createElement('div', { className: 'film-gallery-empty' },
+                                React.createElement(Dashicon, { icon: 'format-gallery', size: 60 }),
+                                React.createElement('p', null, __('В галерее пока нет изображений', 'film')),
+                                React.createElement(Button, {
+                                    isPrimary: true,
+                                    onClick: openMediaLibrary
+                                }, __('Добавить изображения', 'film'))
+                            )
+                            : images.map((image, index) =>
+                                React.createElement('div', {
+                                    key: index,
+                                    className: 'film-gallery-edit-item'
+                                },
+                                    React.createElement('div', { className: 'film-gallery-edit-preview' },
+                                        React.createElement('img', {
+                                            src: image.url,
+                                            alt: image.alt,
+                                            className: 'film-gallery-edit-image'
+                                        }),
+                                        React.createElement('div', { className: 'film-gallery-edit-number' },
+                                            index + 1
+                                        )
+                                    ),
+                                    React.createElement('div', { className: 'film-gallery-edit-details' },
+                                        React.createElement('div', { className: 'film-gallery-edit-filename' },
+                                            image.url.split('/').pop()
+                                        ),
+                                        React.createElement('div', { className: 'film-gallery-edit-title' },
+                                            image.title || __('Без названия', 'film')
+                                        ),
+                                        React.createElement('div', { className: 'film-gallery-edit-meta' },
+                                            new Date().toLocaleDateString('ru-RU'), ' • ',
+                                            '890 KB • ',
+                                            '2000×1413'
+                                        )
+                                    ),
+                                    React.createElement('div', { className: 'film-gallery-edit-actions' },
+                                        React.createElement(Button, {
+                                            icon: 'arrow-up-alt2',
+                                            isSmall: true,
+                                            onClick: () => moveImageUp(index),
+                                            disabled: index === 0,
+                                            label: __('Поднять выше', 'film')
+                                        }),
+                                        React.createElement(Button, {
+                                            icon: 'arrow-down-alt2',
+                                            isSmall: true,
+                                            onClick: () => moveImageDown(index),
+                                            disabled: index === images.length - 1,
+                                            label: __('Опустить ниже', 'film')
+                                        }),
+                                        React.createElement(Button, {
+                                            icon: 'trash',
+                                            isSmall: true,
+                                            isDestructive: true,
+                                            onClick: () => removeImage(index),
+                                            label: __('Удалить', 'film')
+                                        })
+                                    )
+                                )
+                            )
+                    ),
+
+                    // Кнопки управления внизу
+                    images.length > 0 && React.createElement('div', { className: 'film-gallery-editor-footer' },
+                        React.createElement('div', { className: 'film-gallery-stats' },
+                            __('Всего изображений:', 'film'), ' ', images.length
+                        ),
+                        React.createElement('div', { className: 'film-gallery-footer-actions' },
+                            React.createElement(Button, {
+                                isSecondary: true,
+                                onClick: openMediaLibrary,
+                                style: { marginRight: '10px' }
+                            }, __('Добавить ещё', 'film')),
+                            React.createElement(Button, {
+                                isPrimary: true,
+                                onClick: closeGalleryEditor
+                            }, __('Готово', 'film'))
+                        )
+                    )
+                )
+            ),
+
+            // Основной интерфейс блока
+            React.createElement('div', blockProps,
+                React.createElement('div', {
+                    className: 'film-gallery-editor',
+                    style: { height: height + 'px' }
+                },
+                    images.length === 0
+                        ? React.createElement('div', { className: 'film-placeholder' },
+                            React.createElement('p', null, __('Добавьте изображения в фотоплёнку', 'film')),
+                            React.createElement(Button, {
+                                isPrimary: true,
+                                onClick: openMediaLibrary
+                            }, __('Выберите изображения', 'film'))
+                        )
+                        : React.createElement(React.Fragment, null,
+                            React.createElement('div', { className: 'film-strip' },
+                                images.map((image, index) =>
+                                    React.createElement('div', {
+                                        key: index,
+                                        className: 'film-frame'
+                                    },
+                                        React.createElement('img', {
+                                            src: image.url,
+                                            alt: image.alt
+                                        })
+                                    )
+                                )
+                            ),
+                            React.createElement('div', {
+                                className: 'film-gallery-actions'
+                            },
+                                React.createElement(Button, {
+                                    isSecondary: true,
+                                    onClick: openGalleryEditor,
+                                    style: { marginRight: '10px' }
+                                }, __('Редактировать галерею', 'film')),
+                                React.createElement(Button, {
+                                    isSecondary: true,
+                                    onClick: openMediaLibrary
+                                }, __('Добавить изображения', 'film'))
+                            )
+                        )
+                )
+            )
+        );
+    };
 
     // Регистрация блока фотоплёнки
     registerBlockType('film/film-gallery', {
@@ -51,155 +374,11 @@
         },
 
         // Функция редактирования блока
-        edit: function({ attributes, setAttributes }) {
-            const { images, height, linkTo, align } = attributes;
-            const blockProps = useBlockProps();
-
-            /**
-             * Открывает медиабиблиотеку для выбора изображений
-             */
-            const openMediaLibrary = () => {
-                // Используем стандартный медиазагрузчик WordPress
-                const frame = wp.media({
-                    title: __('Выберите изображения', 'film'),
-                    multiple: true,
-                    library: {
-                        type: 'image'
-                    },
-                    button: {
-                        text: __('Использовать выбранные изображения', 'film')
-                    }
-                });
-
-                // Обработчик выбора изображений
-                frame.on('select', function() {
-                    const selectedImages = frame.state().get('selection').toJSON().map(image => ({
-                        id: image.id,
-                        url: image.url,
-                        alt: image.alt || '',
-                        caption: image.caption
-                    }));
-                    setAttributes({ images: selectedImages });
-                });
-
-                frame.open();
-            };
-
-            /**
-             * Удаляет изображение из галереи
-             * @param {number} index - Индекс удаляемого изображения
-             */
-            const removeImage = (index) => {
-                const updatedImages = images.filter((_, i) => i !== index);
-                setAttributes({ images: updatedImages });
-            };
-
-            /**
-             * Перемещает изображение вверх по списку
-             * @param {number} index - Индекс перемещаемого изображения
-             */
-            const moveImageUp = (index) => {
-                if (index === 0) return;
-                const updatedImages = [...images];
-                [updatedImages[index - 1], updatedImages[index]] = [updatedImages[index], updatedImages[index - 1]];
-                setAttributes({ images: updatedImages });
-            };
-
-            /**
-             * Перемещает изображение вниз по списку
-             * @param {number} index - Индекс перемещаемого изображения
-             */
-            const moveImageDown = (index) => {
-                if (index === images.length - 1) return;
-                const updatedImages = [...images];
-                [updatedImages[index], updatedImages[index + 1]] = [updatedImages[index + 1], updatedImages[index]];
-                setAttributes({ images: updatedImages });
-            };
-
-            return React.createElement(React.Fragment, null,
-                // Панель инструментов блока
-                React.createElement(BlockControls, null,
-                    React.createElement(ToolbarGroup, null,
-                        React.createElement(Button, {
-                            icon: blockIcon,
-                            label: __('Добавить/Изменить изображения', 'film'),
-                            onClick: openMediaLibrary
-                        })
-                    )
-                ),
-
-                // Панель инспектора с настройками
-                React.createElement(InspectorControls, null,
-                    React.createElement(PanelBody, {
-                        title: __('Настройки фотоплёнки', 'film'),
-                        initialOpen: true
-                    },
-                        React.createElement(RangeControl, {
-                            label: __('Высота плёнки', 'film'),
-                            value: height,
-                            onChange: (value) => setAttributes({ height: value }),
-                            min: 100,
-                            max: 1000,
-                            step: 10
-                        }),
-                        React.createElement(SelectControl, {
-                            label: __('Ссылки на изображения', 'film'),
-                            value: linkTo,
-                            options: [
-                                { label: __('Без ссылки', 'film'), value: 'none' },
-                                { label: __('Ссылка на файл', 'film'), value: 'media' },
-                                { label: __('Страница вложения', 'film'), value: 'attachment' }
-                            ],
-                            onChange: (value) => setAttributes({ linkTo: value })
-                        })
-                    )
-                ),
-
-                // Основной интерфейс блока
-                React.createElement('div', blockProps,
-                    React.createElement('div', {
-                        className: 'film-gallery-editor',
-                        style: { height: height + 'px' }
-                    },
-                        images.length === 0
-                            ? React.createElement('div', { className: 'film-placeholder' },
-                                React.createElement('p', null, __('Добавьте изображения в фотоплёнку', 'film')),
-                                React.createElement(Button, {
-                                    isPrimary: true,
-                                    onClick: openMediaLibrary
-                                }, __('Выберите изображения', 'film'))
-                            )
-                            : React.createElement(React.Fragment, null,
-                                React.createElement('div', { className: 'film-strip' },
-                                    images.map((image, index) =>
-                                        React.createElement('div', {
-                                            key: index,
-                                            className: 'film-frame'
-                                        },
-                                            React.createElement('img', {
-                                                src: image.url,
-                                                alt: image.alt
-                                            })
-                                        )
-                                    )
-                                ),
-                                React.createElement('div', {
-                                    style: { marginTop: '10px', textAlign: 'center' }
-                                },
-                                    React.createElement(Button, {
-                                        isSecondary: true,
-                                        onClick: openMediaLibrary
-                                    }, __('Добавить/Заменить изображения', 'film'))
-                                )
-                            )
-                    )
-                )
-            );
-        },
+        edit: FilmGalleryEdit,
 
         // Функция сохранения блока (рендеринг на сервере)
         save: function() {
-            return null; // Рендеринг на сервере через PHP
+            return null;
         }
     });
 

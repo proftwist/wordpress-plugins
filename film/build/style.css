@@ -8,7 +8,6 @@
     position: relative;
 }
 
-/* Стили для широкого выравнивания */
 .wp-block-film-film-gallery.alignwide {
     margin-left: auto;
     margin-right: auto;
@@ -16,7 +15,6 @@
     width: 100%;
 }
 
-/* Стили для полного выравнивания */
 .wp-block-film-film-gallery.alignfull {
     margin-left: 0;
     margin-right: 0;
@@ -24,14 +22,9 @@
     width: 100%;
 }
 
-/* Верхняя перфорация */
+/* Перфорация */
 .wp-block-film-film-gallery:before {
     top: 0;
-}
-
-/* Верхняя и нижняя перфорация */
-.wp-block-film-film-gallery:after,
-.wp-block-film-film-gallery:before {
     background: repeating-linear-gradient(90deg, transparent, transparent 10px, #333 0, #333 20px);
     content: "";
     height: 20px;
@@ -40,9 +33,14 @@
     right: 0;
 }
 
-/* Нижняя перфорация */
 .wp-block-film-film-gallery:after {
     bottom: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 10px, #333 0, #333 20px);
+    content: "";
+    height: 20px;
+    left: 0;
+    position: absolute;
+    right: 0;
 }
 
 /* Контейнер для горизонтальной прокрутки изображений */
@@ -53,11 +51,8 @@
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0 10px;
-    scrollbar-color: #666 #000;
-    scrollbar-width: thin;
 }
 
-/* Стилизация скроллбара для Webkit браузеров */
 .film-strip::-webkit-scrollbar {
     height: 8px;
 }
@@ -79,23 +74,10 @@
     height: 100%;
     padding: 5px;
     position: relative;
-    transition: transform 0.2s ease;
 }
 
-/* Эффект при наведении в редакторе */
-.film-frame:hover {
-    transform: scale(1.05);
-    z-index: 10;
-}
-
-/* Верхняя перфорация кадра */
 .film-frame:before {
     top: -15px;
-}
-
-/* Верхняя и нижняя перфорация кадра */
-.film-frame:after,
-.film-frame:before {
     background: repeating-linear-gradient(90deg, #000, #000 10px, #333 0, #333 20px);
     content: "";
     height: 15px;
@@ -104,9 +86,14 @@
     right: 0;
 }
 
-/* Нижняя перфорация кадра */
 .film-frame:after {
     bottom: -15px;
+    background: repeating-linear-gradient(90deg, #000, #000 10px, #333 0, #333 20px);
+    content: "";
+    height: 15px;
+    left: 0;
+    position: absolute;
+    right: 0;
 }
 
 /* Стили самого изображения в редакторе */
@@ -138,4 +125,167 @@
 .film-placeholder p {
     color: #ccc;
     margin: 0;
+}
+
+/* Кнопки действий под галереей */
+.film-gallery-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    padding: 0 10px;
+}
+
+/* Стили для модального окна редактирования галереи */
+.film-gallery-editor-modal .components-modal__content {
+    padding: 0;
+}
+
+.film-gallery-editor-content {
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+}
+
+/* Заголовок модального окна */
+.film-gallery-editor-header {
+    align-items: center;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 20px;
+}
+
+.film-gallery-editor-header h2 {
+    color: #1e1e1e;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Список изображений */
+.film-gallery-edit-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Состояние пустой галереи */
+.film-gallery-empty {
+    align-items: center;
+    color: #757575;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.film-gallery-empty p {
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Элемент изображения в редакторе */
+.film-gallery-edit-item {
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    gap: 12px;
+    padding: 12px 20px;
+}
+
+.film-gallery-edit-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Превью изображения */
+.film-gallery-edit-preview {
+    flex-shrink: 0;
+    position: relative;
+    width: 60px;
+}
+
+.film-gallery-edit-image {
+    border-radius: 4px;
+    display: block;
+    height: 45px;
+    object-fit: cover;
+    width: 60px;
+}
+
+.film-gallery-edit-number {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    font-size: 10px;
+    height: 20px;
+    justify-content: center;
+    position: absolute;
+    right: -5px;
+    top: -5px;
+    width: 20px;
+}
+
+/* Детали изображения */
+.film-gallery-edit-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.film-gallery-edit-filename {
+    color: #1e1e1e;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.film-gallery-edit-title {
+    color: #757575;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.film-gallery-edit-meta {
+    color: #949494;
+    font-size: 11px;
+}
+
+/* Действия с изображением */
+.film-gallery-edit-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.film-gallery-edit-actions .components-button {
+    height: 28px;
+    min-width: 28px;
+    padding: 0;
+}
+
+/* Футер модального окна */
+.film-gallery-editor-footer {
+    align-items: center;
+    background: #f8f9fa;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 20px;
+}
+
+.film-gallery-stats {
+    color: #757575;
+    font-size: 13px;
+}
+
+.film-gallery-footer-actions {
+    display: flex;
+    gap: 8px;
 }
