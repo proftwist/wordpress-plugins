@@ -30,9 +30,9 @@ jsonFiles.forEach(file => {
 const assetFile = path.join(buildPath, 'index.asset.php');
 if (fs.existsSync(assetFile)) {
     console.log('✅ Asset file exists');
-    const asset = require(assetFile);
-    console.log('📦 Dependencies:', asset.dependencies);
-    console.log('🔢 Version:', asset.version);
+    // Читаем файл как текст, так как это PHP файл
+    const content = fs.readFileSync(assetFile, 'utf8');
+    console.log('📦 Asset file content preview:', content.substring(0, 100));
 } else {
     console.log('❌ Asset file missing');
 }

@@ -1,3 +1,7 @@
+// Импорт стилей
+import './style.css';
+import './style-frontend.css';
+
 (function() {
     'use strict';
 

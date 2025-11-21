@@ -2,20 +2,21 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Фотоплёнка 1.0.3\n"
+"Project-Id-Version: Фотоплёнка 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/film\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-20T13:02:41+00:00\n"
+"POT-Creation-Date: 2025-11-21T09:14:30+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: film\n"
 
 #. Plugin Name of the plugin
 #: film.php
+#: src/index.js:350
 msgid "Фотоплёнка"
 msgstr ""
 
@@ -32,4 +33,114 @@ msgstr ""
 #. Author URI of the plugin
 #: film.php
 msgid "http://bychko.ru"
+msgstr ""
+
+#: src/index.js:44
+msgid "Выберите изображения для добавления в галерею"
+msgstr ""
+
+#: src/index.js:50
+#: src/index.js:212
+msgid "Добавить в галерею"
+msgstr ""
+
+#: src/index.js:125
+msgid "Вы уверены, что хотите удалить все изображения из галереи?"
+msgstr ""
+
+#: src/index.js:138
+#: src/index.js:185
+#: src/index.js:336
+msgid "Редактировать галерею"
+msgstr ""
+
+#: src/index.js:144
+#: src/index.js:189
+#: src/index.js:224
+#: src/index.js:340
+msgid "Добавить изображения"
+msgstr ""
+
+#: src/index.js:153
+msgid "Настройки фотоплёнки"
+msgstr ""
+
+#: src/index.js:157
+msgid "Высота плёнки"
+msgstr ""
+
+#: src/index.js:165
+msgid "Ссылки на изображения"
+msgstr ""
+
+#: src/index.js:168
+msgid "Без ссылки"
+msgstr ""
+
+#: src/index.js:169
+msgid "Ссылка на файл"
+msgstr ""
+
+#: src/index.js:170
+msgid "Страница вложения"
+msgstr ""
+
+#: src/index.js:178
+msgid "Управление галереей"
+msgstr ""
+
+#: src/index.js:193
+msgid "Очистить галерею"
+msgstr ""
+
+#: src/index.js:200
+msgid "Редактирование галереи"
+msgstr ""
+
+#: src/index.js:208
+msgid "Изображения в галерее"
+msgstr ""
+
+#: src/index.js:220
+msgid "В галерее пока нет изображений"
+msgstr ""
+
+#: src/index.js:246
+msgid "Без названия"
+msgstr ""
+
+#: src/index.js:260
+msgid "Поднять выше"
+msgstr ""
+
+#: src/index.js:267
+msgid "Опустить ниже"
+msgstr ""
+
+#: src/index.js:274
+msgid "Удалить"
+msgstr ""
+
+#: src/index.js:284
+msgid "Всего изображений:"
+msgstr ""
+
+#: src/index.js:291
+msgid "Добавить ещё"
+msgstr ""
+
+#: src/index.js:295
+msgid "Готово"
+msgstr ""
+
+#: src/index.js:309
+msgid "Добавьте изображения в фотоплёнку"
+msgstr ""
+
+#: src/index.js:313
+msgid "Выберите изображения"
+msgstr ""
+
+#: src/index.js:351
+msgid "Галерея в стиле фотоплёнки с горизонтальной прокруткой"
 msgstr ""

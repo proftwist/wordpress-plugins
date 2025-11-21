@@ -83,17 +83,17 @@ function film_register_block() {
     // Регистрируем CSS стили для редактора
     wp_register_style(
         'film-block-editor',
-        plugins_url('build/style.css', __FILE__),
+        plugins_url('build/index.css', __FILE__),
         array(),
-        filemtime(plugin_dir_path(__FILE__) . 'build/style.css')
+        filemtime(plugin_dir_path(__FILE__) . 'build/index.css')
     );
 
     // Регистрируем CSS стили для фронтенда
     wp_register_style(
         'film-block-frontend',
-        plugins_url('build/style-frontend.css', __FILE__),
+        plugins_url('build/style-index.css', __FILE__),
         array(),
-        filemtime(plugin_dir_path(__FILE__) . 'build/style-frontend.css')
+        filemtime(plugin_dir_path(__FILE__) . 'build/style-index.css')
     );
 
     // Регистрируем сам блок
