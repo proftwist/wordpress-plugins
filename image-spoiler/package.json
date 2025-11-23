@@ -1,6 +1,6 @@
 {
   "name": "image-spoiler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WordPress плагин для добавления спойлеров к изображениям в Gutenberg",
   "main": "build/index.js",
   "scripts": {

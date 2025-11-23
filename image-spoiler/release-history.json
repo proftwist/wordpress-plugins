@@ -1,6 +1,38 @@
 {
   "releases": [
     {
+      "version": "1.0.1",
+      "date": "2024-11-23",
+      "notes": {
+        "ru": {
+          "added": [],
+          "fixed": [
+            "Исправлена проблема с выравниванием изображений - теперь спойлер сохраняет исходное выравнивание блока",
+            "Исправлена работа размытия изображений - теперь эффект применяется через серверный рендеринг через PHP фильтр render_block",
+            "Упрощен JavaScript код - удалены избыточные фильтры модификации вывода"
+          ],
+          "changed": [
+            "Изменен механизм применения спойлера - теперь используется серверная обработка через PHP вместо только JavaScript",
+            "Оптимизированы CSS стили для лучшей совместимости с различными темами WordPress"
+          ],
+          "removed": []
+        },
+        "en": {
+          "added": [],
+          "fixed": [
+            "Fixed image alignment issue - spoiler now preserves original block alignment",
+            "Fixed blur effect not working - now applied through server-side rendering via PHP render_block filter",
+            "Simplified JavaScript code - removed redundant output modification filters"
+          ],
+          "changed": [
+            "Changed spoiler application mechanism - now uses server-side processing via PHP instead of JavaScript only",
+            "Optimized CSS styles for better compatibility with various WordPress themes"
+          ],
+          "removed": []
+        }
+      }
+    },
+    {
       "version": "1.0.0",
       "date": "2024-11-23",
       "notes": {

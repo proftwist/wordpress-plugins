@@ -3,11 +3,9 @@
  * Эффект спойлера для изображений
  */
 
-/* Обертка для спойлера */
-.image-spoiler-wrapper {
+/* Обертка для спойлера - сохраняем относительное позиционирование */
+.has-image-spoiler {
     position: relative;
-    display: inline-block;
-    line-height: 0;
 }
 
 /* Основной класс спойлера - размытие изображения */
@@ -17,9 +15,13 @@
     cursor: pointer;
 }
 
-/* Убираем размытие при наведении */
-.image-spoiler:hover,
-.image-spoiler-wrapper:hover .image-spoiler {
+/* Убираем размытие при наведении на изображение */
+.image-spoiler:hover {
+    filter: blur(0);
+}
+
+/* Убираем размытие при наведении на figure */
+.has-image-spoiler:hover .image-spoiler {
     filter: blur(0);
 }
 
@@ -46,9 +48,13 @@
     white-space: normal;
 }
 
-/* Скрываем текст при наведении */
-.image-spoiler:hover + .image-spoiler-text,
-.image-spoiler-wrapper:hover .image-spoiler-text {
+/* Скрываем текст при наведении на изображение */
+.image-spoiler:hover + .image-spoiler-text {
+    opacity: 0;
+}
+
+/* Скрываем текст при наведении на figure */
+.has-image-spoiler:hover .image-spoiler-text {
     opacity: 0;
 }
 
@@ -60,24 +66,5 @@
     }
 }
 
-/* Для блоков с выравниванием */
-.image-spoiler-wrapper.alignleft,
-.image-spoiler-wrapper.alignright,
-.image-spoiler-wrapper.aligncenter {
-    display: block;
-}
-
-.image-spoiler-wrapper.alignleft {
-    float: left;
-    margin-right: 1em;
-}
-
-.image-spoiler-wrapper.alignright {
-    float: right;
-    margin-left: 1em;
-}
-
-.image-spoiler-wrapper.aligncenter {
-    margin-left: auto;
-    margin-right: auto;
-}
+/* Важно: не переопределяем выравнивание блока */
+/* WordPress сам управляет выравниванием через классы alignleft, alignright, aligncenter и т.д. */

@@ -3,14 +3,9 @@
  * Визуальное отображение спойлера в редакторе
  */
 
-/* Обертка в редакторе */
-.editor-styles-wrapper .image-spoiler-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
 /* Индикатор спойлера в редакторе (легкое размытие) */
-.editor-styles-wrapper .image-spoiler {
+.editor-styles-wrapper .wp-block-image.has-image-spoiler img,
+.editor-styles-wrapper .has-image-spoiler img {
     filter: blur(5px);
     opacity: 0.8;
     border: 2px dashed #2271b1;
@@ -39,17 +34,25 @@
 }
 
 /* Стили для выделенного блока */
-.editor-styles-wrapper .image-spoiler-wrapper.is-selected .image-spoiler {
+.editor-styles-wrapper .wp-block-image.has-image-spoiler.is-selected img,
+.editor-styles-wrapper .has-image-spoiler.is-selected img {
     filter: blur(2px);
     opacity: 0.9;
 }
 
+/* Относительное позиционирование для figure */
+.editor-styles-wrapper .has-image-spoiler {
+    position: relative;
+}
+
 /* Подсказка в тулбаре */
-.components-toolbar-button[aria-label*="Спойлер"] svg {
+.components-toolbar-button[aria-label*="Спойлер"] svg,
+.components-toolbar-button[aria-label*="Spoiler"] svg {
     fill: currentColor;
 }
 
-.components-toolbar-button[aria-label*="Спойлер"].is-pressed {
+.components-toolbar-button[aria-label*="Спойлер"].is-pressed,
+.components-toolbar-button[aria-label*="Spoiler"].is-pressed {
     background-color: #2271b1;
     color: #fff;
 }
