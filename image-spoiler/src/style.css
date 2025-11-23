@@ -1,0 +1,70 @@
+/**
+ * Стили для фронтенда
+ * Эффект спойлера для изображений
+ */
+
+/* Обертка для спойлера - сохраняем относительное позиционирование */
+.has-image-spoiler {
+    position: relative;
+}
+
+/* Основной класс спойлера - размытие изображения */
+.image-spoiler {
+    filter: blur(20px);
+    transition: filter 0.3s ease;
+    cursor: pointer;
+}
+
+/* Убираем размытие при наведении на изображение */
+.image-spoiler:hover {
+    filter: blur(0);
+}
+
+/* Убираем размытие при наведении на figure */
+.has-image-spoiler:hover .image-spoiler {
+    filter: blur(0);
+}
+
+/* Текст спойлера поверх изображения */
+.image-spoiler-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    pointer-events: none;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    max-width: 90%;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+/* Скрываем текст при наведении на изображение */
+.image-spoiler:hover + .image-spoiler-text {
+    opacity: 0;
+}
+
+/* Скрываем текст при наведении на figure */
+.has-image-spoiler:hover .image-spoiler-text {
+    opacity: 0;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .image-spoiler-text {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+}
+
+/* Важно: не переопределяем выравнивание блока */
+/* WordPress сам управляет выравниванием через классы alignleft, alignright, aligncenter и т.д. */

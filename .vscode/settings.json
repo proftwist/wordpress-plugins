@@ -1,3 +1,4 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "editor.fontFamily": "'PT Mono', Menlo, Monaco, 'Courier New', monospace"
 }
