@@ -1,0 +1,37 @@
+# English translation for Image Spoiler
+# Copyright (C) 2024 Vladimir Bychko
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Image Spoiler 1.0.0\n"
+"Report-Msgid-Bugs-To: http://bychko.ru\n"
+"POT-Creation-Date: 2024-01-01 00:00:00+00:00\n"
+"PO-Revision-Date: 2024-01-01 00:00:00+00:00\n"
+"Last-Translator: Vladimir Bychko <vladimir@bychko.ru>\n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit\n"
+
+#: src/index.js
+msgid "Потенциально неприемлемый контент"
+msgstr "Potentially sensitive content"
+
+#: src/index.js
+msgid "Спойлер"
+msgstr "Spoiler"
+
+#: src/index.js
+msgid "Настройки спойлера"
+msgstr "Spoiler Settings"
+
+#: src/index.js
+msgid "Текст спойлера"
+msgstr "Spoiler Text"
+
+#: src/index.js
+msgid "Текст, который будет отображаться поверх размытого изображения"
+msgstr "Text that will be displayed over the blurred image"

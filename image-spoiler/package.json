@@ -1,0 +1,23 @@
+{
+  "name": "image-spoiler",
+  "version": "1.0.0",
+  "description": "WordPress плагин для добавления спойлеров к изображениям в Gutenberg",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "packages-update": "wp-scripts packages-update"
+  },
+  "keywords": [
+    "wordpress",
+    "gutenberg",
+    "block",
+    "image",
+    "spoiler"
+  ],
+  "author": "Владимир Бычко",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "@wordpress/scripts": "^27.0.0"
+  }
+}

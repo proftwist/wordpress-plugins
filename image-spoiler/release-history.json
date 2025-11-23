@@ -1,0 +1,40 @@
+{
+  "releases": [
+    {
+      "version": "1.0.0",
+      "date": "2024-11-23",
+      "notes": {
+        "ru": {
+          "added": [
+            "Кнопка 'Спойлер' в панели инструментов блока Image",
+            "Размытие изображения на фронтенде с плавным переходом при наведении",
+            "Поле 'Текст спойлера' в правой панели настроек",
+            "Отображение текста предупреждения поверх размытого изображения",
+            "Полная локализация на русский и английский языки",
+            "Визуальная индикация спойлера в редакторе Gutenberg",
+            "Поддержка всех вариантов выравнивания изображений",
+            "Адаптивный дизайн для мобильных устройств"
+          ],
+          "fixed": [],
+          "changed": [],
+          "removed": []
+        },
+        "en": {
+          "added": [
+            "Spoiler button in Image block toolbar",
+            "Image blur effect on frontend with smooth transition on hover",
+            "Spoiler text field in right panel settings",
+            "Warning text display over blurred image",
+            "Full localization in Russian and English",
+            "Visual spoiler indicator in Gutenberg editor",
+            "Support for all image alignment options",
+            "Responsive design for mobile devices"
+          ],
+          "fixed": [],
+          "changed": [],
+          "removed": []
+        }
+      }
+    }
+  ]
+}
