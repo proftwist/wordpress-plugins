@@ -29,25 +29,26 @@ class AlonePostRedirector {
      * Load plugin textdomain
      */
     public function load_textdomain() {
-        load_plugin_textdomain('alone-post-redirector', false, dirname(plugin_basename(__FILE__)) . '/languages');
+        // WordPress автоматически загружает переводы из /languages/
+        // load_plugin_textdomain('alone-post-redirector', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
 
     /**
      * Register plugin settings
      */
     public function register_settings() {
-        register_setting('alone_post_redirector_options', 'alone_post_redirector_settings');
+        register_setting('alone_post_redirector_options', 'alone_post_redirector_settings', array($this, 'sanitize_settings'));
 
         add_settings_section(
             'alone_post_redirector_section',
-            __('Redirect Settings', 'alone-post-redirector'),
+            esc_html__('Redirect Settings', 'alone-post-redirector'),
             array($this, 'settings_section_callback'),
             'alone_post_redirector'
         );
 
         add_settings_field(
             'redirect_categories',
-            __('Categories', 'alone-post-redirector'),
+            esc_html__('Categories', 'alone-post-redirector'),
             array($this, 'redirect_categories_callback'),
             'alone_post_redirector',
             'alone_post_redirector_section'
@@ -55,7 +56,7 @@ class AlonePostRedirector {
 
         add_settings_field(
             'redirect_tags',
-            __('Tags', 'alone-post-redirector'),
+            esc_html__('Tags', 'alone-post-redirector'),
             array($this, 'redirect_tags_callback'),
             'alone_post_redirector',
             'alone_post_redirector_section'
@@ -63,7 +64,7 @@ class AlonePostRedirector {
 
         add_settings_field(
             'redirect_dates',
-            __('Dates', 'alone-post-redirector'),
+            esc_html__('Dates', 'alone-post-redirector'),
             array($this, 'redirect_dates_callback'),
             'alone_post_redirector',
             'alone_post_redirector_section'
@@ -74,7 +75,7 @@ class AlonePostRedirector {
      * Settings section callback
      */
     public function settings_section_callback() {
-        echo '<p>' . __('Redirect to the single post when there is only one post in:', 'alone-post-redirector') . '</p>';
+        echo '<p>' . esc_html__('Redirect to the single post when there is only one post in:', 'alone-post-redirector') . '</p>';
     }
 
     /**
@@ -84,7 +85,7 @@ class AlonePostRedirector {
         $options = get_option('alone_post_redirector_settings');
         $checked = isset($options['redirect_categories']) ? $options['redirect_categories'] : 0;
         echo '<input type="checkbox" name="alone_post_redirector_settings[redirect_categories]" value="1" ' . checked(1, $checked, false) . ' />';
-        echo '<label for="alone_post_redirector_settings[redirect_categories]">' . __('Enable redirect for categories', 'alone-post-redirector') . '</label>';
+        echo '<label for="alone_post_redirector_settings[redirect_categories]">' . esc_html__('Enable redirect for categories', 'alone-post-redirector') . '</label>';
     }
 
     /**
@@ -94,7 +95,7 @@ class AlonePostRedirector {
         $options = get_option('alone_post_redirector_settings');
         $checked = isset($options['redirect_tags']) ? $options['redirect_tags'] : 0;
         echo '<input type="checkbox" name="alone_post_redirector_settings[redirect_tags]" value="1" ' . checked(1, $checked, false) . ' />';
-        echo '<label for="alone_post_redirector_settings[redirect_tags]">' . __('Enable redirect for tags', 'alone-post-redirector') . '</label>';
+        echo '<label for="alone_post_redirector_settings[redirect_tags]">' . esc_html__('Enable redirect for tags', 'alone-post-redirector') . '</label>';
     }
 
     /**
@@ -104,7 +105,7 @@ class AlonePostRedirector {
         $options = get_option('alone_post_redirector_settings');
         $checked = isset($options['redirect_dates']) ? $options['redirect_dates'] : 0;
         echo '<input type="checkbox" name="alone_post_redirector_settings[redirect_dates]" value="1" ' . checked(1, $checked, false) . ' />';
-        echo '<label for="alone_post_redirector_settings[redirect_dates]">' . __('Enable redirect for date archives', 'alone-post-redirector') . '</label>';
+        echo '<label for="alone_post_redirector_settings[redirect_dates]">' . esc_html__('Enable redirect for date archives', 'alone-post-redirector') . '</label>';
     }
 
     /**
@@ -112,8 +113,8 @@ class AlonePostRedirector {
      */
     public function add_admin_menu() {
         add_options_page(
-            __('Alone Post Redirector', 'alone-post-redirector'),
-            __('Alone Post Redirector', 'alone-post-redirector'),
+            esc_html__('Alone Post Redirector', 'alone-post-redirector'),
+            esc_html__('Alone Post Redirector', 'alone-post-redirector'),
             'manage_options',
             'alone_post_redirector',
             array($this, 'options_page')
@@ -126,7 +127,7 @@ class AlonePostRedirector {
     public function options_page() {
         ?>
         <div class="wrap">
-            <h1><?php _e('Alone Post Redirector Settings', 'alone-post-redirector'); ?></h1>
+            <h1><?php esc_html_e('Alone Post Redirector Settings', 'alone-post-redirector'); ?></h1>
             <form action="options.php" method="post">
                 <?php
                 settings_fields('alone_post_redirector_options');
@@ -136,6 +137,27 @@ class AlonePostRedirector {
             </form>
         </div>
         <?php
+    }
+
+    /**
+     * Sanitize settings
+     */
+    public function sanitize_settings($input) {
+        $sanitized = array();
+
+        if (isset($input['redirect_categories'])) {
+            $sanitized['redirect_categories'] = $input['redirect_categories'] ? 1 : 0;
+        }
+
+        if (isset($input['redirect_tags'])) {
+            $sanitized['redirect_tags'] = $input['redirect_tags'] ? 1 : 0;
+        }
+
+        if (isset($input['redirect_dates'])) {
+            $sanitized['redirect_dates'] = $input['redirect_dates'] ? 1 : 0;
+        }
+
+        return $sanitized;
     }
 
     /**
@@ -175,7 +197,7 @@ class AlonePostRedirector {
                 }
 
                 if ($should_redirect) {
-                    wp_redirect($redirect_url, 301);
+                    wp_safe_redirect($redirect_url, 301);
                     exit;
                 }
             }

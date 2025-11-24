@@ -1,15 +1,15 @@
 === Alone Post Redirector ===
 Contributors: proftwist
 Donate link: https://www.tbank.ru/cf/8wiyPH9vAqH
-Tags: redirect, post redirect, single post, archive, 301 redirect, category redirect, tag redirect, date archive
-Requires at least: 4.6
-Tested up to: 6.4
-Requires PHP: 5.6
+Tags: redirect, post redirect, single post, archive, 301 redirect
+Requires at least: 5.0
+Tested up to: 6.8
+Requires PHP: 7.0
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Automatically redirects to the single post when there's only one post in categories, tags, or date archives.
+Redirect to single post when only one post exists in archives, categories, tags, or date archives.
 
 == Description ==
 
