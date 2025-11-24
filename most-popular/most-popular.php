@@ -82,32 +82,42 @@ function most_popular_render_block( $attributes ) {
 
 	$post_views_table = $wpdb->prefix . 'post_views';
 
-	// SQL-запрос для получения популярных постов.
-	// Используем COALESCE, чтобы посты без просмотров имели 0, а не NULL.
-	// Для текущего года суммируем дневные просмотры (type = 1),
-	// так как годовая статистика (type = 3) может быть еще не сгенерирована.
-	// Для прошлых лет используем готовую годовую статистику (type = 3).
-	$period_type = ( (string) $year_for_sql === date( 'Y' ) ) ? 1 : 3;
-	$period_sql  = ( 1 === $period_type ) ? $wpdb->prepare( 'LIKE %s', $year_for_sql . '%' ) : $wpdb->prepare( '= %s', $year_for_sql );
-
-	$query = $wpdb->prepare(
-		"SELECT p.ID, p.post_title, COALESCE(v.view_count, 0) AS view_count
-		 FROM {$wpdb->posts} p
-		 LEFT JOIN (
-			 SELECT id, SUM(count) AS view_count
-			 FROM {$post_views_table}
-			 WHERE type = %d AND period {$period_sql}
-			 GROUP BY id
-		 ) v ON p.ID = v.id
-		 WHERE p.post_type = 'post'
-		   AND p.post_status = 'publish'
-		   AND YEAR(p.post_date) = %d
-		 ORDER BY view_count DESC
-		 LIMIT %d",
-		$period_type,
-		$year_for_sql,
-		$number_of_posts
-	);
+	if ( (string) $year_for_sql === date( 'Y' ) ) {
+		// Для текущего года суммируем ежемесячные просмотры (type = 2).
+		$query = $wpdb->prepare(
+			"SELECT p.ID, p.post_title, COALESCE(v.view_count, 0) AS view_count
+			 FROM {$wpdb->posts} p
+			 LEFT JOIN (
+				 SELECT id, SUM(count) AS view_count
+				 FROM {$post_views_table}
+				 WHERE type = 2 AND period LIKE %s
+				 GROUP BY id
+			 ) v ON p.ID = v.id
+			 WHERE p.post_type = 'post'
+			   AND p.post_status = 'publish'
+			   AND YEAR(p.post_date) = %d
+			 ORDER BY view_count DESC
+			 LIMIT %d",
+			$year_for_sql . '%',
+			$year_for_sql,
+			$number_of_posts
+		);
+	} else {
+		// Для прошлых лет используем готовую годовую статистику (type = 3).
+		$query = $wpdb->prepare(
+			"SELECT p.ID, p.post_title, COALESCE(pvc.count, 0) AS view_count
+			 FROM {$wpdb->posts} p
+			 LEFT JOIN {$post_views_table} pvc ON p.ID = pvc.id AND pvc.type = 3 AND pvc.period = %s
+			 WHERE p.post_type = 'post'
+			   AND p.post_status = 'publish'
+			   AND YEAR(p.post_date) = %d
+			 ORDER BY view_count DESC
+			 LIMIT %d",
+			$year_for_sql,
+			$year_for_sql,
+			$number_of_posts
+		);
+	}
 
 	$popular_posts = $wpdb->get_results( $query );
 
