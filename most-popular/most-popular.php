@@ -4,7 +4,7 @@
  * Description:       Добавляет гутенберговский блок для отображения самых популярных постов за определённый год.
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Владимир Бычко
  * Author URI:        http://bychko.ru
  * License:           GPL-2.0-or-later
@@ -82,42 +82,23 @@ function most_popular_render_block( $attributes ) {
 
 	$post_views_table = $wpdb->prefix . 'post_views';
 
-	if ( (string) $year_for_sql === date( 'Y' ) ) {
-		// Для текущего года суммируем ежемесячные просмотры (type = 2).
-		$query = $wpdb->prepare(
-			"SELECT p.ID, p.post_title, COALESCE(v.view_count, 0) AS view_count
-			 FROM {$wpdb->posts} p
-			 LEFT JOIN (
-				 SELECT id, SUM(count) AS view_count
-				 FROM {$post_views_table}
-				 WHERE type = 2 AND period LIKE %s
-				 GROUP BY id
-			 ) v ON p.ID = v.id
-			 WHERE p.post_type = 'post'
-			   AND p.post_status = 'publish'
-			   AND YEAR(p.post_date) = %d
-			 ORDER BY view_count DESC
-			 LIMIT %d",
-			$year_for_sql . '%',
-			$year_for_sql,
-			$number_of_posts
-		);
-	} else {
-		// Для прошлых лет используем готовую годовую статистику (type = 3).
-		$query = $wpdb->prepare(
-			"SELECT p.ID, p.post_title, COALESCE(pvc.count, 0) AS view_count
-			 FROM {$wpdb->posts} p
-			 LEFT JOIN {$post_views_table} pvc ON p.ID = pvc.id AND pvc.type = 3 AND pvc.period = %s
-			 WHERE p.post_type = 'post'
-			   AND p.post_status = 'publish'
-			   AND YEAR(p.post_date) = %d
-			 ORDER BY view_count DESC
-			 LIMIT %d",
-			$year_for_sql,
-			$year_for_sql,
-			$number_of_posts
-		);
-	}
+	// Исправленный запрос с использованием LIKE для поиска по началу периода
+	$period_pattern = $year_for_sql . '%';
+	
+	$query = $wpdb->prepare(
+		"SELECT p.ID, p.post_title, COALESCE(SUM(v.count), 0) AS view_count
+		 FROM {$wpdb->posts} p
+		 LEFT JOIN {$post_views_table} v ON p.ID = v.id AND v.type = 0 AND v.period LIKE %s
+		 WHERE p.post_type = 'post'
+		   AND p.post_status = 'publish'
+		   AND YEAR(p.post_date) = %d
+		 GROUP BY p.ID
+		 ORDER BY view_count DESC
+		 LIMIT %d",
+		$period_pattern,
+		$year_for_sql,
+		$number_of_posts
+	);
 
 	$popular_posts = $wpdb->get_results( $query );
 
