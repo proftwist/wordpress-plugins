@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "most-popular/most-popular",
+  "version": "1.0.0",
+  "title": "Популярные посты за год",
+  "category": "widgets",
+  "icon": "star-filled",
+  "description": "Отображает список самых популярных постов за выбранный год.",
+  "supports": {
+    "html": false
+  },
+  "attributes": {
+    "numberOfPosts": {
+      "type": "number",
+      "default": 10
+    },
+    "year": {
+      "type": "string",
+      "default": "current"
+    }
+  },
+  "textdomain": "most-popular",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style.css"
+}
