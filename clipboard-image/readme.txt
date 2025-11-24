@@ -1,15 +1,15 @@
 === Clipboard Image ===
 Contributors: proftwist
 Donate link: https://www.tbank.ru/cf/8wiyPH9vAqH
-Tags: clipboard, image paste, editor, media, upload, gutenberg, tinymce, screenshots, paste image
+Tags: clipboard, image, editor, upload, gutenberg
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Allows pasting images from clipboard directly into WordPress editor. Supports both classic and block editors.
+Paste images directly from clipboard into WordPress editor. Supports both classic and block editors.
 
 == Description ==
 
@@ -61,6 +61,14 @@ No configuration is required. The plugin works immediately after activation and 
 Yes, the plugin includes proper security measures including nonce verification, user permission checks, and file type validation.
 
 == Changelog ==
+
+= 1.0.1 (24.11.2025): =
+* Fixed security issue with $_FILES['image'] sanitization
+* Added isset() check before using $_FILES variables
+* Updated WordPress compatibility to version 6.8
+* Reduced tags to 5 per WordPress.org requirements
+* Enhanced file validation and error handling
+* Updated POT translation file with latest strings
 
 = 1.0.0 (19.11.2025): =
 * Clipboard image paste functionality
