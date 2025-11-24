@@ -3,7 +3,7 @@
  */
 import { registerBlockType } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
-import { InspectorControls } from '@wordpress/block-editor';
+import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import { useState, useEffect } from '@wordpress/element';
@@ -42,6 +42,7 @@ const Edit = ( { attributes, setAttributes } ) => {
 	const { numberOfPosts, year } = attributes;
 	const [ availableYears, setAvailableYears ] = useState( [] );
 	const [ isLoading, setIsLoading ] = useState( true );
+	const blockProps = useBlockProps();
 
 	// Загружаем доступные года с помощью REST API.
 	useEffect( () => {
@@ -69,7 +70,7 @@ const Edit = ( { attributes, setAttributes } ) => {
 	}
 
 	return (
-		<>
+		<div { ...blockProps }>
 			<InspectorControls>
 				<PanelBody title={ __( 'Настройки блока', 'most-popular' ) }>
 					<SelectControl
@@ -97,7 +98,7 @@ const Edit = ( { attributes, setAttributes } ) => {
 				</PanelBody>
 			</InspectorControls>
 			<ServerSideRender block={ name } attributes={ attributes } />
-		</>
+		</div>
 	);
 };
 

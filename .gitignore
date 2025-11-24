@@ -2,4 +2,4 @@
 *.zip
 sol.md
 .vscode
-node_module
+node_modules

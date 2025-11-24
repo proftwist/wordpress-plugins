@@ -84,11 +84,11 @@ function most_popular_render_block( $attributes ) {
 
 	// SQL-запрос для получения популярных постов.
 	// Используем COALESCE, чтобы посты без просмотров имели 0, а не NULL.
-	// pvc.type = 4 означает общее количество просмотров (total).
+	// pvc.type = 3 означает годовую статистику.
 	$query = $wpdb->prepare(
 		"SELECT p.ID, p.post_title, COALESCE(pvc.count, 0) AS view_count
 		 FROM {$wpdb->posts} p
-		 LEFT JOIN {$post_views_table} pvc ON p.ID = pvc.id AND pvc.type = 4 AND pvc.period = %s
+		 LEFT JOIN {$post_views_table} pvc ON p.ID = pvc.id AND pvc.type = 3 AND pvc.period = %s
 		 WHERE p.post_type = 'post'
 		   AND p.post_status = 'publish'
 		   AND YEAR(p.post_date) = %d
@@ -126,7 +126,7 @@ function most_popular_render_block( $attributes ) {
 					<?php foreach ( $popular_posts as $post_item ) : ?>
 						<tr>
 							<td><a href="<?php echo esc_url( get_permalink( $post_item->ID ) ); ?>"><?php echo esc_html( $post_item->post_title ); ?></a></td>
-							<td><?php echo esc_html( number_format_i18n( $post_item->view_count ) ); ?></td>
+							<td style="text-align: right;"><?php echo esc_html( number_format_i18n( $post_item->view_count ) ); ?></td>
 						</tr>
 					<?php endforeach; ?>
 				</tbody>
