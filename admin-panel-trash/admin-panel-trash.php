@@ -4,7 +4,7 @@
  * Description: Управление элементами верхней панели WordPress
  * Version: 2.0.0
  * Author: Владимир Бычко
- * Author URL: https://bychko.ru
+ * Plugin URI: https://bychko.ru/admin-panel-trash/
  * License: GPLv2 or later
  * Text Domain: admin-panel-trash
  * Domain Path: /languages
