@@ -1,10 +1,10 @@
-# Copyright (C) 2024 Владимир Бычко
+# Copyright (C) 2025 Владимир Бычко
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Admin Panel Trash 1.0.0\n"
+"Project-Id-Version: Admin Panel Trash 2.0.0\n"
 "Report-Msgid-Bugs-To: https://bychko.ru\n"
-"POT-Creation-Date: 2024-01-01 12:00+00:00\n"
+"POT-Creation-Date: 2025-11-24 21:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,60 +14,84 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin-panel-trash.php:65
+#: admin-panel-trash.php:3
 msgid "Admin Panel Trash"
 msgstr ""
 
-#: admin-panel-trash.php:66
+#: admin-panel-trash.php:4
 msgid "Управление элементами верхней панели WordPress"
 msgstr ""
 
-#: admin-panel-trash.php:95
+#: admin-panel-trash.php:89
 msgid "Внимание: Файл functions.php вашей темы недоступен для записи. Плагин не сможет сохранять изменения."
 msgstr ""
 
-#: admin-panel-trash.php:102
+#: admin-panel-trash.php:97
 msgid "Проверка доступа к файлу"
 msgstr ""
 
-#: admin-panel-trash.php:103
+#: admin-panel-trash.php:98
 msgid "Проверьте, доступен ли файл functions.php текущей темы для записи:"
 msgstr ""
 
-#: admin-panel-trash.php:105
+#: admin-panel-trash.php:100
 msgid "Проверить доступ"
 msgstr ""
 
-#: admin-panel-trash.php:110
+#: admin-panel-trash.php:105
 msgid "Элементы админ-панели"
 msgstr ""
 
-#: admin-panel-trash.php:111
+#: admin-panel-trash.php:106
 msgid "Список всех элементов админ-панели. Вы можете временно отключать ненужные элементы."
 msgstr ""
 
-#: admin-panel-trash.php:114
+#: admin-panel-trash.php:109
 msgid "Обновить список"
 msgstr ""
 
-#: admin-panel-trash.php:118
+#: admin-panel-trash.php:114
 msgid "ID элемента"
 msgstr ""
 
-#: admin-panel-trash.php:119
+#: admin-panel-trash.php:115
 msgid "Название"
 msgstr ""
 
-#: admin-panel-trash.php:120
+#: admin-panel-trash.php:116
 msgid "Статус"
 msgstr ""
 
-#: admin-panel-trash.php:121
+#: admin-panel-trash.php:117
 msgid "Действия"
 msgstr ""
 
-#: admin-panel-trash.php:124
+#: admin-panel-trash.php:120
 msgid "Загрузка..."
+msgstr ""
+
+#: admin-panel-trash.php:166
+msgid "Не удалось подключить файловую систему WordPress"
+msgstr ""
+
+#: admin-panel-trash.php:176
+msgid "Invalid item ID"
+msgstr ""
+
+#: admin-panel-trash.php:198
+msgid "Failed to update functions.php file"
+msgstr ""
+
+#: admin-panel-trash.php:200
+msgid "Item enabled"
+msgstr ""
+
+#: admin-panel-trash.php:200
+msgid "Item disabled"
+msgstr ""
+
+#: admin-panel-trash.php:209
+msgid "Function cleaned up"
 msgstr ""
 
 #: includes/class-assets-manager.php:56
@@ -152,24 +176,4 @@ msgstr ""
 
 #: includes/class-assets-manager.php:77
 msgid "Ошибка при отключении элемента"
-msgstr ""
-
-#: admin-panel-trash.php:149
-msgid "Invalid item ID"
-msgstr ""
-
-#: admin-panel-trash.php:172
-msgid "Failed to update functions.php file"
-msgstr ""
-
-#: admin-panel-trash.php:186
-msgid "Item enabled"
-msgstr ""
-
-#: admin-panel-trash.php:186
-msgid "Item disabled"
-msgstr ""
-
-#: admin-panel-trash.php:199
-msgid "Function cleaned up"
 msgstr ""

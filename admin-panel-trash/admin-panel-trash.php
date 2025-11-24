@@ -5,6 +5,7 @@
  * Version: 2.0.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
+ * License: GPLv2 or later
  * Text Domain: admin-panel-trash
  * Domain Path: /languages
  *
@@ -35,7 +36,6 @@ class AdminPanelTrash {
 
     private function __construct() {
         add_action('init', array($this, 'init'));
-        add_action('plugins_loaded', array($this, 'load_textdomain'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
 
         // Регистрируем AJAX обработчики для авторизованных пользователей
@@ -63,13 +63,11 @@ class AdminPanelTrash {
      * Загрузка текстового домена для интернационализации
      *
      * Подключает файлы переводов из папки languages плагина.
+     * Начиная с WordPress 4.6, load_plugin_textdomain больше не требуется.
      */
     public function load_textdomain() {
-        load_plugin_textdomain(
-            'admin-panel-trash',
-            false,
-            dirname(plugin_basename(__FILE__)) . '/languages/'
-        );
+        // WordPress автоматически загружает переводы из /languages/
+        // load_plugin_textdomain('admin-panel-trash', false, dirname(plugin_basename(__FILE__)) . '/languages/');
     }
 
     /**
@@ -90,11 +88,15 @@ class AdminPanelTrash {
     public function admin_page() {
         // Проверяем права доступа к functions.php
         $functions_file = get_stylesheet_directory() . '/functions.php';
-        $is_writable = file_exists($functions_file) ? is_writable($functions_file) : is_writable(get_stylesheet_directory());
+        global $wp_filesystem;
+        if (! WP_Filesystem()) {
+            wp_die(esc_html__('Не удалось подключить файловую систему WordPress', 'admin-panel-trash'));
+        }
+        $is_writable = $wp_filesystem->exists($functions_file) ? $wp_filesystem->is_writable($functions_file) : $wp_filesystem->is_writable(get_stylesheet_directory());
 
         if (!$is_writable) {
             echo '<div class="notice notice-error"><p>';
-            _e('Внимание: Файл functions.php вашей темы недоступен для записи. Плагин не сможет сохранять изменения.', 'admin-panel-trash');
+            esc_html_e('Внимание: Файл functions.php вашей темы недоступен для записи. Плагин не сможет сохранять изменения.', 'admin-panel-trash');
             echo '</p></div>';
         }
 
@@ -102,37 +104,37 @@ class AdminPanelTrash {
         $items = $this->get_admin_bar_items_for_display();
         ?>
         <div class="wrap">
-            <h1><?php _e('Admin Panel Trash', 'admin-panel-trash'); ?></h1>
+            <h1><?php esc_html_e('Admin Panel Trash', 'admin-panel-trash'); ?></h1>
 
             <div class="card">
-                <h2><?php _e('Проверка доступа к файлу', 'admin-panel-trash'); ?></h2>
-                <p><?php _e('Проверьте, доступен ли файл functions.php текущей темы для записи:', 'admin-panel-trash'); ?></p>
+                <h2><?php esc_html_e('Проверка доступа к файлу', 'admin-panel-trash'); ?></h2>
+                <p><?php esc_html_e('Проверьте, доступен ли файл functions.php текущей темы для записи:', 'admin-panel-trash'); ?></p>
                 <button id="apt-check-access" class="button button-primary">
-                    <?php _e('Проверить доступ', 'admin-panel-trash'); ?>
+                    <?php esc_html_e('Проверить доступ', 'admin-panel-trash'); ?>
                 </button>
                 <div id="apt-access-result" style="margin-top: 10px;"></div>
             </div>
 
             <div class="card">
-                <h2><?php _e('Элементы админ-панели', 'admin-panel-trash'); ?></h2>
-                <p><?php _e('Список всех элементов админ-панели. Вы можете временно отключать ненужные элементы.', 'admin-panel-trash'); ?></p>
+                <h2><?php esc_html_e('Элементы админ-панели', 'admin-panel-trash'); ?></h2>
+                <p><?php esc_html_e('Список всех элементов админ-панели. Вы можете временно отключать ненужные элементы.', 'admin-panel-trash'); ?></p>
 
                 <button id="apt-refresh-items" class="button button-secondary">
-                    <?php _e('Обновить список', 'admin-panel-trash'); ?>
+                    <?php esc_html_e('Обновить список', 'admin-panel-trash'); ?>
                 </button>
 
                 <table class="wp-list-table widefat fixed striped" style="margin-top: 15px;">
                     <thead>
                         <tr>
-                            <th><?php _e('ID элемента', 'admin-panel-trash'); ?></th>
-                            <th><?php _e('Название', 'admin-panel-trash'); ?></th>
-                            <th><?php _e('Статус', 'admin-panel-trash'); ?></th>
-                            <th><?php _e('Действия', 'admin-panel-trash'); ?></th>
+                            <th><?php esc_html_e('ID элемента', 'admin-panel-trash'); ?></th>
+                            <th><?php esc_html_e('Название', 'admin-panel-trash'); ?></th>
+                            <th><?php esc_html_e('Статус', 'admin-panel-trash'); ?></th>
+                            <th><?php esc_html_e('Действия', 'admin-panel-trash'); ?></th>
                         </tr>
                     </thead>
                     <tbody id="apt-items-list">
                         <tr>
-                            <td colspan="4"><?php _e('Загрузка...', 'admin-panel-trash'); ?></td>
+                            <td colspan="4"><?php esc_html_e('Загрузка...', 'admin-panel-trash'); ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -153,12 +155,16 @@ class AdminPanelTrash {
         check_ajax_referer('admin_panel_trash_nonce', 'nonce');
 
         $file_path = get_stylesheet_directory() . '/functions.php';
+        global $wp_filesystem;
+        if (! WP_Filesystem()) {
+            wp_send_json_error(esc_html__('Не удалось подключить файловую систему WordPress', 'admin-panel-trash'));
+        }
 
         // Проверяем права доступа к файлу
         $response = array(
             'file_path' => $file_path,
-            'readable' => is_readable($file_path),
-            'writable' => is_writable($file_path)
+            'readable' => $wp_filesystem->exists($file_path) && $wp_filesystem->is_readable($file_path),
+            'writable' => $wp_filesystem->is_writable($file_path)
         );
 
         wp_send_json_success($response);
@@ -175,12 +181,12 @@ class AdminPanelTrash {
         check_ajax_referer('admin_panel_trash_nonce', 'nonce');
 
         // Получаем и валидируем входные данные
-        $item_id = sanitize_text_field($_POST['item_id'] ?? '');
-        $enable = $_POST['enable'] === 'true';
+        $item_id = isset($_POST['item_id']) ? sanitize_text_field(wp_unslash($_POST['item_id'])) : '';
+        $enable = isset($_POST['enable']) && $_POST['enable'] === 'true';
 
         // Проверяем корректность ID элемента
         if (empty($item_id)) {
-            wp_send_json_error(__('Invalid item ID', 'admin-panel-trash'));
+            wp_send_json_error(esc_html__('Invalid item ID', 'admin-panel-trash'));
         }
 
         // Получаем текущие настройки из базы данных
@@ -212,7 +218,7 @@ class AdminPanelTrash {
                 'message' => $enable ? __('Item enabled', 'admin-panel-trash') : __('Item disabled', 'admin-panel-trash')
             ));
         } else {
-            wp_send_json_error(__('Failed to update functions.php file', 'admin-panel-trash'));
+            wp_send_json_error(esc_html__('Failed to update functions.php file', 'admin-panel-trash'));
         }
     }
 
@@ -366,44 +372,31 @@ class AdminPanelTrash {
             );
         }
 
-        // Затем добавляем элементы из текущего контекста
+        // Получаем элементы из текущей админ-панели если она доступна
         global $wp_admin_bar;
-        $original_admin_bar = isset($wp_admin_bar) ? $wp_admin_bar : null;
+        if (isset($wp_admin_bar) && is_object($wp_admin_bar) && method_exists($wp_admin_bar, 'get_nodes')) {
+            $nodes = $wp_admin_bar->get_nodes();
+            if (!empty($nodes)) {
+                foreach ($nodes as $node) {
+                    // Проверяем, нет ли уже такого элемента
+                    $exists = false;
+                    foreach ($items as $existing_item) {
+                        if ($existing_item['id'] === $node->id) {
+                            $exists = true;
+                            break;
+                        }
+                    }
 
-        // Создаем временный admin bar для сбора элементов
-        require_once ABSPATH . WPINC . '/class-wp-admin-bar.php';
-        $wp_admin_bar = new WP_Admin_Bar();
-
-        // Собираем все возможные элементы
-        do_action('admin_bar_menu', $wp_admin_bar);
-        do_action('wp_before_admin_bar_render', $wp_admin_bar);
-
-        $nodes = $wp_admin_bar->get_nodes();
-        if (!empty($nodes)) {
-            foreach ($nodes as $node) {
-                // Проверяем, нет ли уже такого элемента
-                $exists = false;
-                foreach ($items as $existing_item) {
-                    if ($existing_item['id'] === $node->id) {
-                        $exists = true;
-                        break;
+                    if (!$exists) {
+                        $items[] = array(
+                            'id' => $node->id,
+                            'title' => wp_strip_all_tags($node->title) ?: $node->id,
+                            'href' => $node->href,
+                            'parent' => $node->parent
+                        );
                     }
                 }
-
-                if (!$exists) {
-                    $items[] = array(
-                        'id' => $node->id,
-                        'title' => wp_strip_all_tags($node->title) ?: $node->id,
-                        'href' => $node->href,
-                        'parent' => $node->parent
-                    );
-                }
             }
-        }
-
-        // Восстанавливаем исходный admin bar
-        if ($original_admin_bar) {
-            $wp_admin_bar = $original_admin_bar;
         }
 
         return $items;
@@ -435,13 +428,17 @@ class AdminPanelTrash {
      */
     private function get_disabled_items_from_file() {
         $file_path = get_stylesheet_directory() . '/functions.php';
-
-        // Проверяем доступность файла
-        if (!file_exists($file_path) || !is_readable($file_path)) {
+        global $wp_filesystem;
+        if (! WP_Filesystem()) {
             return array();
         }
 
-        $content = file_get_contents($file_path);
+        // Проверяем доступность файла
+        if (! $wp_filesystem->exists($file_path) || ! $wp_filesystem->is_readable($file_path)) {
+            return array();
+        }
+
+        $content = $wp_filesystem->get_contents($file_path);
         $disabled_items = array();
 
         // Ищем функцию remove_item_from_admin_bar с любым содержимым
@@ -468,21 +465,25 @@ class AdminPanelTrash {
      */
     private function update_functions_file($disabled_items) {
         $file_path = get_stylesheet_directory() . '/functions.php';
+        global $wp_filesystem;
+        if (! WP_Filesystem()) {
+            return false;
+        }
 
         // Проверяем права на запись
-        if (!is_writable($file_path) && !is_writable(dirname($file_path))) {
+        if (! $wp_filesystem->is_writable($file_path) && ! $wp_filesystem->is_writable(dirname($file_path))) {
             return false;
         }
 
         // Читаем существующий файл или создаем новый
-        $content = file_exists($file_path) ? file_get_contents($file_path) : "<?php\n";
+        $content = $wp_filesystem->exists($file_path) ? $wp_filesystem->get_contents($file_path) : "<?php\n";
 
         // Удаляем закрывающий тег PHP если присутствует
         $content = preg_replace('/\?>\s*$/', '', $content);
 
         // Удаляем существующие функции плагина
         $content = preg_replace('/\/\*\s*Admin Panel Trash Start\s*\*\/.*?\/\*\s*Admin Panel Trash End\s*\*\//s', '', $content);
-        $content = preg_replace('/function\s+remove_item_from_admin_bar\s*\([^)]*\)\s*\{[^}]+\}\s*add_action\s*\(\s*[\'"]wp_before_admin_bar_render[\'"]\s*,\s*[\'"]remove_item_from_admin_bar[\'"]\s*\)\s*;/s', '', $content);
+        $content = preg_replace('/function\s+remove_item_from_admin_bar\s*\([^)]*\)\s*\{[^}]+\}\s*add_action\s*\(\s*[\'"]admin_panel_trash_wp_before_admin_bar_render[\'"]\s*,\s*[\'"]remove_item_from_admin_bar[\'"]\s*\)\s*;/s', '', $content);
 
         // Очищаем лишние пустые строки
         $content = preg_replace('/\n\s*\n\s*\n/', "\n\n", $content);
@@ -498,7 +499,7 @@ class AdminPanelTrash {
         $content .= "\n?>";
 
         // Записываем файл
-        $result = file_put_contents($file_path, $content);
+        $result = $wp_filesystem->put_contents($file_path, $content);
 
         return $result !== false;
     }

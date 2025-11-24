@@ -1,15 +1,15 @@
 === Admin Panel Trash ===
 Contributors: proftwist
 Donate link: https://www.tbank.ru/cf/8wiyPH9vAqH
-Tags: admin bar, admin panel, admin interface, toolbar, admin menu, customize admin, remove elements, wp admin
+Tags: admin bar, admin panel, admin interface, toolbar, customize admin
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.8
 Requires PHP: 7.0
 Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A WordPress plugin for convenient management of admin bar elements. Allows temporarily disabling/enabling individual admin panel elements without the need to edit theme files.
+WordPress plugin for managing admin bar elements. Temporarily disable/enable admin panel elements without editing theme files.
 
 == Description ==
 
