@@ -1,0 +1,73 @@
+# English translation for Популярные посты за год
+# Copyright (C) 2025 Vladimir Bychko
+# This file is distributed under the same license as the Популярные посты за год package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Популярные посты за год 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/most-popular\n"
+"POT-Creation-Date: 2025-11-24 01:26+0000\n"
+"PO-Revision-Date: 2025-11-24 01:26+0000\n"
+"Last-Translator: Vladimir Bychko <support@bychko.ru>\n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.4.2\n"
+
+#: most-popular.php:32
+msgid "Популярные посты за год"
+msgstr "Popular posts for the year"
+
+#: most-popular.php:31
+#, php-format
+msgid "Плагин \"%s\" требует для работы плагин Post Views Counter. Пожалуйста, установите и активируйте его."
+msgstr "The \"%s\" plugin requires the Post Views Counter plugin to work. Please install and activate it."
+
+#: most-popular.php:48
+msgid "Для работы этого блока необходимо установить и активировать плагин Post Views Counter."
+msgstr "To use this block, you need to install and activate the Post Views Counter plugin."
+
+#: most-popular.php:121
+msgid "Пост"
+msgstr "Post"
+
+#: most-popular.php:122
+msgid "Количество просмотров"
+msgstr "Views"
+
+#: most-popular.php:134
+msgid "За выбранный год посты не найдены."
+msgstr "No posts found for the selected year."
+
+#: most-popular.php:182
+msgid "Класс WP_REST_Response не найден."
+msgstr "Class WP_REST_Response not found."
+
+#: src/index.js:65
+msgid "Текущий год"
+msgstr "Current year"
+
+#: src/index.js:77
+msgid "Настройки блока"
+msgstr "Block settings"
+
+#: src/index.js:79
+msgid "Количество постов"
+msgstr "Number of posts"
+
+#: src/index.js:86
+msgid "Год"
+msgstr "Year"
+
+#: src/index.js:91
+msgid "Загрузка доступных годов..."
+msgstr "Loading available years..."
+
+
+#: most-popular.php:113
+#, php-format
+msgid "Популярные посты за %s год"
+msgstr "Popular posts for %s"

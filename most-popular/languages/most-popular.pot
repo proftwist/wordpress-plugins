@@ -1,0 +1,98 @@
+# Copyright (C) 2025 Владимир Бычко
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Популярные посты за год 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/most-popular\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-11-24T01:29:41+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: most-popular\n"
+
+#. Plugin Name of the plugin
+#: most-popular.php
+#: most-popular.php:41
+msgid "Популярные посты за год"
+msgstr ""
+
+#. Description of the plugin
+#: most-popular.php
+msgid "Добавляет гутенберговский блок для отображения самых популярных постов за определённый год."
+msgstr ""
+
+#. Author of the plugin
+#: most-popular.php
+msgid "Владимир Бычко"
+msgstr ""
+
+#. Author URI of the plugin
+#: most-popular.php
+msgid "http://bychko.ru"
+msgstr ""
+
+#. translators: %s: Plugin name
+#: most-popular.php:40
+#, php-format
+msgid "Плагин \"%s\" требует для работы плагин Post Views Counter. Пожалуйста, установите и активируйте его."
+msgstr ""
+
+#: most-popular.php:60
+msgid "Для работы этого блока необходимо установить и активировать плагин Post Views Counter."
+msgstr ""
+
+#. translators: %s: Year
+#: most-popular.php:113
+#, php-format
+msgid "Популярные посты за %s год"
+msgstr ""
+
+#: most-popular.php:121
+msgid "Пост"
+msgstr ""
+
+#: most-popular.php:122
+msgid "Количество просмотров"
+msgstr ""
+
+#: most-popular.php:138
+msgid "За выбранный год посты не найдены."
+msgstr ""
+
+#: most-popular.php:191
+msgid "Класс WP_REST_Response не найден."
+msgstr ""
+
+#: src/index.js:62
+msgid "Текущий год"
+msgstr ""
+
+#: src/index.js:74
+msgid "Настройки блока"
+msgstr ""
+
+#: src/index.js:76
+msgid "Количество постов"
+msgstr ""
+
+#: src/index.js:84
+msgid "Год"
+msgstr ""
+
+#: src/index.js:90
+msgid "Загрузка доступных годов..."
+msgstr ""
+
+#: src/block.json
+msgctxt "block title"
+msgid "Популярные посты за год"
+msgstr ""
+
+#: src/block.json
+msgctxt "block description"
+msgid "Отображает список самых популярных постов за выбранный год."
+msgstr ""
