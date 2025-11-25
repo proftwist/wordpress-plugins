@@ -3,7 +3,7 @@
  * Plugin Name: Ограничитель размера файлов
  * Plugin URI: https://github.com/
  * Description: Добавляет опцию ограничения размера загружаемых файлов в Настройки → Медиафайлы. Размер указывается в мегабайтах.
- * Version: 1.1.1
+ * Version: 1.1.0
  * Author: Владимир Бычко
  * Text Domain: file-size-limit
  * Domain Path: /languages
@@ -39,11 +39,12 @@ class Dipsic_File_Size_Limit {
      * Инициализация админ-панели
      */
     public function admin_init() {
-        // Регистрируем настройку без принудительного типа
+        // Регистрируем настройку
         register_setting(
             'media',
             'dipsic_max_upload_size',
             array(
+                'type' => 'integer',
                 'sanitize_callback' => array($this, 'sanitize_max_upload_size'),
                 'default' => 0
             )
@@ -81,10 +82,7 @@ class Dipsic_File_Size_Limit {
     public function field_callback() {
         // Получаем сохраненное значение в байтах и переводим в мегабайты
         $saved_bytes = get_option('dipsic_max_upload_size', 0);
-        $current_value_mb = $saved_bytes > 0 ? ($saved_bytes / (1024 * 1024)) : 0;
-
-        // Отладочная информация
-        error_log("Saved bytes: " . $saved_bytes . " -> MB: " . $current_value_mb);
+        $current_value_mb = $saved_bytes > 0 ? round($saved_bytes / (1024 * 1024), 2) : 0;
 
         echo '<input type="number" name="dipsic_max_upload_size" value="' . esc_attr($current_value_mb) . '" class="small-text" min="0" step="0.1" />';
         echo ' <span class="description">' . __('МБ (мегабайт)', 'file-size-limit') . '</span>';
@@ -92,7 +90,7 @@ class Dipsic_File_Size_Limit {
 
         // Показываем текущие системные лимиты для справки
         $wp_max_size = wp_max_upload_size();
-        $wp_max_size_mb = $wp_max_size / (1024 * 1024);
+        $wp_max_size_mb = round($wp_max_size / (1024 * 1024), 2);
         echo '<p class="description">' . sprintf(
             __('Текущий лимит WordPress: %s МБ (%s)', 'file-size-limit'),
             $wp_max_size_mb,
@@ -104,8 +102,6 @@ class Dipsic_File_Size_Limit {
      * Валидация введенного значения
      */
     public function sanitize_max_upload_size($value) {
-        error_log("Input value: " . $value);
-
         // Получаем значение как число с плавающей точкой
         $value = floatval($value);
 
@@ -130,9 +126,7 @@ class Dipsic_File_Size_Limit {
         }
 
         // Конвертируем мегабайты в байты и сохраняем
-        $bytes = $value > 0 ? intval(round($value * 1024 * 1024)) : 0;
-
-        error_log("Converted to bytes: " . $bytes);
+        $bytes = $value > 0 ? intval($value * 1024 * 1024) : 0;
 
         return $bytes;
     }
