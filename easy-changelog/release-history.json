@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.0.3",
+    "date": "25.11.2025",
+    "added": [
+      "Исправлены все проблемы безопасности WordPress Plugin Check",
+      "Добавлено безопасное экранирование вывода через esc_html__() вместо __()",
+      "Добавлено кеширование запросов БД для улучшения производительности",
+      "Оптимизированы прямые запросы к базе данных с wp_cache_get/set",
+      "Добавлена обработка удаления кеша при обновлении данных блока",
+      "Улучшена производительность функции update_affected_blocks()",
+      "Кеширование результатов поиска блоков на 5 минут"
+    ],
+    "fixed": [
+      "ИСПРАВЛЕНО: Строка 643 - WordPress.Security.EscapeOutput.OutputNotEscaped - заменен __() на esc_html__()",
+      "ИСПРАВЛЕНО: Строка 109 - PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomain - убрана deprecated функция",
+      "ИСПРАВЛЕНО: Строка 423 - WordPress.DB.PreparedSQL.InterpolatedNotPrepared - добавлен $wpdb->prepare() с placeholders",
+      "ИСПРАВЛЕНО: Строка 596 - WordPress.DB.PreparedSQL.InterpolatedNotPrepared - исправлена SQL injection уязвимость",
+      "ИСПРАВЛЕНО: Строка 603 - WordPress.DB.PreparedSQL.InterpolatedNotPrepared - безопасные SQL запросы",
+      "ИСПРАВЛЕНО: Все прямые SQL запросы переведены на подготовленные statements",
+      "Убрана ручная загрузка текстового домена (WordPress делает это автоматически с версии 4.6)",
+      "Добавлено использование фигурных скобок {$table_name} для корректной интерполяции в SQL",
+      "Устранены все предупреждения о безопасности WordPress Plugin Checker"
+    ]
+  },
+  {
     "version": "2.0.1",
     "date": "20.11.2025",
     "added": [

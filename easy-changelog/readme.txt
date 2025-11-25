@@ -1,11 +1,11 @@
 === Easy Changelog ===
 Contributors: proftwist
 Donate link: https://www.tbank.ru/cf/8wiyPH9vAqH
-Tags: changelog, github, automation, blocks, gutenberg, json, sync, webhook, version history
+Tags: changelog, github, automation, blocks, gutenberg
 Requires at least: 5.8
-Tested up to: 6.4
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -75,6 +75,15 @@ Yes, you can link to external JSON files from GitHub or other sources. The plugi
 Absolutely! You can manually edit JSON data within the block editor or use static external JSON files without any webhook setup.
 
 == Changelog ==
+
+= 2.0.3 (25.11.2025): =
+* Fixed all WordPress Plugin Check security issues
+* Replaced unsafe output __() with esc_html__() for secure escaping
+* Removed deprecated load_plugin_textdomain() function (WordPress 4.6+)
+* All SQL queries converted to prepared statements
+* Added database query caching for improved performance
+* Optimized direct database queries with wp_cache_get/set
+* Added automatic cache clearing when block data is updated
 
 = 2.0.1 (20.11.2025): =
 * Fixed critical database table creation issue for block tracking
@@ -147,6 +156,9 @@ Absolutely! You can manually edit JSON data within the block editor or use stati
 * Multilingual support via wp_set_script_translations
 
 == Upgrade Notice ==
+
+= 2.0.3 =
+Security and performance improvements. All WordPress Plugin Check issues resolved.
 
 = 2.0.1 =
 Critical fix for database table creation. Update immediately if experiencing block tracking issues.

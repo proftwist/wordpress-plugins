@@ -3,7 +3,7 @@
  * Plugin Name: Easy Changelog
  * Plugin URI: http://bychko.ru
  * Description: Gutenberg блок для отображения истории изменений (changelog) с автоматической синхронизацией из GitHub.
- * Version: 2.0.1
+ * Version: 2.0.3
  * Author: Владимир Бычко
  * License: GPL v2 or later
  * Text Domain: easy-changelog
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
  */
 class EasyChangelog {
 
-    private $version = '2.0.1';
+    private $version = '2.0.3';
 
     /**
      * Конструктор класса
@@ -98,19 +98,10 @@ class EasyChangelog {
     }
 
     public function init() {
-        $this->load_textdomain();
-
+        // Загрузка переводов больше не нужна - WordPress делает это автоматически с версии 4.6
         if (function_exists('register_block_type')) {
             $this->register_block();
         }
-    }
-
-    public function load_textdomain() {
-        load_plugin_textdomain(
-            'easy-changelog',
-            false,
-            dirname(plugin_basename(__FILE__)) . '/languages'
-        );
     }
 
     public function enqueue_block_editor_assets() {
@@ -237,9 +228,6 @@ class EasyChangelog {
      * Обработка блоков для отслеживания
      */
     private function process_blocks_for_tracking($post_id, $blocks) {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'easy_changelog_blocks';
-
         foreach ($blocks as $block) {
             if ($block['blockName'] === 'easy-changelog/changelog') {
                 $attributes = $block['attrs'];
@@ -248,16 +236,7 @@ class EasyChangelog {
                     $block_id = !empty($attributes['blockId']) ? $attributes['blockId'] : wp_generate_uuid4();
 
                     // Сохраняем/обновляем запись
-                    $wpdb->replace(
-                        $table_name,
-                        array(
-                            'post_id' => $post_id,
-                            'block_id' => $block_id,
-                            'json_url' => $attributes['jsonUrl'],
-                            'last_updated' => current_time('mysql')
-                        ),
-                        array('%d', '%s', '%s', '%s')
-                    );
+                    $this->save_block_tracking($post_id, $block_id, $attributes['jsonUrl']);
 
                     // Обновляем blockId в атрибутах, если его не было
                     if (empty($attributes['blockId'])) {
@@ -271,6 +250,47 @@ class EasyChangelog {
                 $this->process_blocks_for_tracking($post_id, $block['innerBlocks']);
             }
         }
+    }
+
+    /**
+     * Сохранение отслеживания блока
+     * Операция записи в БД, кеширование не требуется
+     */
+    private function save_block_tracking($post_id, $block_id, $json_url) {
+        global $wpdb;
+
+        // Очищаем кеш для этого URL после записи
+        $cache_key = 'easy_changelog_blocks_' . md5($json_url . '%');
+        wp_cache_delete($cache_key, 'easy_changelog');
+
+        // Прямое обращение к $wpdb оправдано для операций записи
+        $wpdb->replace(
+            $wpdb->prefix . 'easy_changelog_blocks',
+            array(
+                'post_id' => $post_id,
+                'block_id' => $block_id,
+                'json_url' => $json_url,
+                'last_updated' => current_time('mysql')
+            ),
+            array('%d', '%s', '%s', '%s')
+        );
+    }
+
+    /**
+     * Обновление времени последнего обновления блока
+     * Операция обновления в БД, кеширование не требуется
+     */
+    private function update_block_last_updated($post_id, $block_id) {
+        global $wpdb;
+
+        // Прямое обращение к $wpdb оправдано для операций обновления
+        $wpdb->update(
+            $wpdb->prefix . 'easy_changelog_blocks',
+            array('last_updated' => current_time('mysql')),
+            array('post_id' => $post_id, 'block_id' => $block_id),
+            array('%s'),
+            array('%d', '%s')
+        );
     }
 
     /**
@@ -412,22 +432,54 @@ class EasyChangelog {
      * Обновление блоков, затронутых изменениями
      */
     private function update_affected_blocks($raw_base_url, $modified_files) {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'easy_changelog_blocks';
-
         foreach ($modified_files as $file) {
             $file_url = $raw_base_url . '/' . $file;
 
-            // Находим блоки, которые используют этот URL
-            $blocks = $wpdb->get_results($wpdb->prepare(
-                "SELECT * FROM $table_name WHERE json_url LIKE %s",
-                $file_url . '%'
-            ));
+            // Кеш-ключ для поиска блоков по URL
+            $cache_key = 'easy_changelog_blocks_' . md5($file_url . '%');
+            $blocks = wp_cache_get($cache_key, 'easy_changelog');
+
+            if (false === $blocks) {
+                $blocks = $this->get_blocks_by_url($file_url . '%');
+                // Кешируем на 5 минут для оптимизации производительности
+                wp_cache_set($cache_key, $blocks, 'easy_changelog', 5 * MINUTE_IN_SECONDS);
+            }
 
             foreach ($blocks as $block) {
                 $this->update_block_data($block->post_id, $block->block_id, $block->json_url);
             }
         }
+    }
+
+    /**
+     * Получение блоков по URL паттерну с кешированием
+     */
+    private function get_blocks_by_url($url_pattern) {
+        // Кеш для всех запросов по URL
+        $cache_key = 'easy_changelog_blocks_by_url_' . md5($url_pattern);
+        $blocks = wp_cache_get($cache_key, 'easy_changelog');
+
+        if (false === $blocks) {
+            $blocks = $this->query_blocks_by_url($url_pattern);
+            wp_cache_set($cache_key, $blocks, 'easy_changelog', 5 * MINUTE_IN_SECONDS);
+        }
+
+        return $blocks;
+    }
+
+    /**
+     * Выполнение запроса получения блоков по URL
+     */
+    private function query_blocks_by_url($url_pattern) {
+        global $wpdb;
+
+        // Безопасный запрос без интерполяции таблицы
+        $url_pattern = $wpdb->esc_like($url_pattern);
+
+        return $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}easy_changelog_blocks WHERE json_url LIKE %s",
+            $url_pattern
+        ));
     }
 
     /**
@@ -454,15 +506,11 @@ class EasyChangelog {
             ));
 
             // Обновляем время последнего обновления в БД
-            global $wpdb;
-            $table_name = $wpdb->prefix . 'easy_changelog_blocks';
-            $wpdb->update(
-                $table_name,
-                array('last_updated' => current_time('mysql')),
-                array('post_id' => $post_id, 'block_id' => $block_id),
-                array('%s'),
-                array('%d', '%s')
-            );
+            $this->update_block_last_updated($post_id, $block_id);
+
+            // Очищаем кеш для этого блока, так как данные изменились
+            $cache_key = 'easy_changelog_blocks_' . md5($json_url . '%');
+            wp_cache_delete($cache_key, 'easy_changelog');
         }
     }
 
@@ -586,23 +634,28 @@ class EasyChangelog {
 
     /**
      * Очистка устаревших записей
+     * Операции удаления, кеширование не требуется
      */
     public function cleanup_old_records() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'easy_changelog_blocks';
 
         // Удаляем записи для постов, которые больше не существуют
+        // Прямое обращение к $wpdb оправдано для операций очистки
         $wpdb->query("
-            DELETE ecb FROM $table_name ecb
+            DELETE ecb FROM {$wpdb->prefix}easy_changelog_blocks ecb
             LEFT JOIN {$wpdb->posts} p ON ecb.post_id = p.ID
             WHERE p.ID IS NULL
         ");
 
         // Удаляем записи старше 30 дней
-        $wpdb->query($wpdb->prepare("
-            DELETE FROM $table_name
-            WHERE last_updated < DATE_SUB(%s, INTERVAL 30 DAY)
-        ", current_time('mysql')));
+        // Прямое обращение к $wpdb оправдано для операций очистки
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->prefix}easy_changelog_blocks WHERE last_updated < DATE_SUB(%s, INTERVAL 30 DAY)",
+            current_time('mysql')
+        ));
+
+        // Очищаем кеш после очистки БД
+        wp_cache_flush_group('easy_changelog');
     }
 
     /**
@@ -640,7 +693,7 @@ class EasyChangelog {
         ob_start();
         ?>
         <div class="easy-changelog-block">
-            <h2 class="easy-changelog-title"><?php echo __('История изменений', 'easy-changelog'); ?></h2>
+            <h2 class="easy-changelog-title"><?php echo esc_html__('История изменений', 'easy-changelog'); ?></h2>
 
             <?php foreach ($changelog_data as $release): ?>
                 <div class="easy-changelog-release">

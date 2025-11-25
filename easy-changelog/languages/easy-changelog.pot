@@ -1,0 +1,151 @@
+# Copyright (C) 2025 Владимир Бычко
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Easy Changelog 2.0.3\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/easy-changelog\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-11-25T15:54:36+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: easy-changelog\n"
+
+#. Plugin Name of the plugin
+#: easy-changelog.php
+#: easy-changelog.php:112
+#: easy-changelog.php:737
+msgid "Easy Changelog"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: easy-changelog.php
+msgid "http://bychko.ru"
+msgstr ""
+
+#. Description of the plugin
+#: easy-changelog.php
+msgid "Gutenberg блок для отображения истории изменений (changelog) с автоматической синхронизацией из GitHub."
+msgstr ""
+
+#. Author of the plugin
+#: easy-changelog.php
+msgid "Владимир Бычко"
+msgstr ""
+
+#: easy-changelog.php:113
+msgid "Блок для отображения changelog с автоматической синхронизацией из GitHub"
+msgstr ""
+
+#: easy-changelog.php:114
+msgid "Редактор JSON"
+msgstr ""
+
+#: easy-changelog.php:115
+msgid "Предпросмотр"
+msgstr ""
+
+#: easy-changelog.php:116
+msgid "Внешний JSON"
+msgstr ""
+
+#: easy-changelog.php:117
+msgid "Данные Changelog (JSON)"
+msgstr ""
+
+#: easy-changelog.php:118
+msgid "URL внешнего JSON файла"
+msgstr ""
+
+#: easy-changelog.php:119
+msgid "Webhook URL для автоматического обновления"
+msgstr ""
+
+#: easy-changelog.php:120
+msgid "Введите данные в формате JSON. Каждый релиз должен содержать version, date, added и fixed."
+msgstr ""
+
+#: easy-changelog.php:121
+msgid "Укажите прямую ссылку на JSON файл в GitHub или другом хранилище"
+msgstr ""
+
+#: easy-changelog.php:122
+msgid "Добавьте этот URL как webhook в настройках вашего GitHub репозитория для автоматического обновления"
+msgstr ""
+
+#: easy-changelog.php:123
+msgid "Как получить ссылку на GitHub:"
+msgstr ""
+
+#: easy-changelog.php:124
+msgid "1. Перейдите в репозиторий на GitHub → 2. Выберите ветку → 3. Найдите файл → 4. Нажмите \"Raw\" → 5. Скопируйте URL из адресной строки"
+msgstr ""
+
+#: easy-changelog.php:125
+msgid "Для автоматического обновления: Settings → Webhooks → Add webhook → Payload URL → выберите \"Just the push event\""
+msgstr ""
+
+#: easy-changelog.php:126
+msgid "Пример: https://raw.githubusercontent.com/username/repo/main/changelog.json"
+msgstr ""
+
+#: easy-changelog.php:127
+msgid "Ошибка:"
+msgstr ""
+
+#: easy-changelog.php:128
+msgid "Некорректный JSON формат"
+msgstr ""
+
+#: easy-changelog.php:129
+msgid "Данные должны быть массивом"
+msgstr ""
+
+#: easy-changelog.php:130
+msgid "Невозможно отобразить предпросмотр из-за ошибок в JSON"
+msgstr ""
+
+#: easy-changelog.php:131
+#: easy-changelog.php:684
+msgid "История изменений"
+msgstr ""
+
+#: easy-changelog.php:132
+msgid "Ошибка загрузки внешнего JSON"
+msgstr ""
+
+#: easy-changelog.php:133
+#: easy-changelog.php:622
+msgid "Данные успешно загружены"
+msgstr ""
+
+#: easy-changelog.php:134
+msgid "Загрузить из URL"
+msgstr ""
+
+#: easy-changelog.php:135
+msgid "Автосинхронизация включена"
+msgstr ""
+
+#: easy-changelog.php:136
+msgid "Скопировать Webhook URL"
+msgstr ""
+
+#: easy-changelog.php:137
+msgid "Webhook URL скопирован в буфер обмена"
+msgstr ""
+
+#: easy-changelog.php:615
+msgid "Не удалось загрузить данные из указанного URL"
+msgstr ""
+
+#: easy-changelog.php:670
+msgid "Некорректный формат данных changelog"
+msgstr ""
+
+#: easy-changelog.php:677
+msgid "История изменений пока пуста"
+msgstr ""
