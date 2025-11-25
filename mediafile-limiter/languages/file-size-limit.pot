@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Ограничитель размера файлов package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Ограничитель размера файлов 1.0.0\n"
+"Project-Id-Version: Ограничитель размера файлов 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: Владимир Бычко\n"
 "Language-Team: Russian\n"
@@ -14,22 +14,28 @@ msgstr ""
 "Language: ru_RU\n"
 
 msgid "Ограничение размера файлов"
-msgstr "File Size Limit"
+msgstr ""
 
 msgid "Максимальный размер файла"
-msgstr "Maximum file size"
+msgstr ""
 
-msgid "Установите максимальный размер загружаемых файлов в байтах. Этот лимит будет иметь наивысший приоритет."
-msgstr "Set the maximum size of uploaded files in bytes. This limit will have the highest priority."
+msgid "Установите максимальный размер загружаемых файлов в мегабайтах. Этот лимит будет иметь наивысший приоритет."
+msgstr ""
 
-msgid "<strong>Рекомендация:</strong> 1048576 байт = 1 МБ"
-msgstr "<strong>Recommendation:</strong> 1048576 bytes = 1 MB"
+msgid "<strong>Примечание:</strong> Значение указывается в мегабайтах (МБ)."
+msgstr ""
 
 msgid "0 = без ограничения. Установленное здесь значение переопределит все другие лимиты."
-msgstr "0 = no limit. The value set here will override all other limits."
+msgstr ""
 
-msgid "Текущий лимит WordPress: %s байт (%s)"
-msgstr "Current WordPress limit: %s bytes (%s)"
+msgid "Текущий лимит WordPress: %s МБ (%s)"
+msgstr ""
 
 msgid "Размер файла не может быть отрицательным."
-msgstr "File size cannot be negative."
+msgstr ""
+
+msgid "МБ (мегабайт)"
+msgstr ""
+
+msgid "Размер файла не может превышать 1024 МБ."
+msgstr ""

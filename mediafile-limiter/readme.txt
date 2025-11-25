@@ -1,11 +1,11 @@
 === File Size Limit ===
 Contributors: proftwist
 Donate link: https://www.tbank.ru/cf/8wiyPH9vAqH
-Tags: file size, upload limit, media, files, restriction, limit, bytes, media files
+Tags: file size, upload limit, media, files, restriction, limit, megabytes, MB, media files
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,12 +13,12 @@ Adds an option to limit the size of uploaded files in WordPress Settings → Med
 
 == Description ==
 
-File Size Limit is a WordPress plugin that adds a powerful tool for controlling the size of uploaded files. It integrates into the standard media settings page and allows administrators to set maximum file size in bytes with the highest priority.
+File Size Limit is a WordPress plugin that adds a powerful tool for controlling the size of uploaded files. It integrates into the standard media settings page and allows administrators to set maximum file size in megabytes with the highest priority.
 
 == Features ==
 
 * Integration into Settings → Media page
-* Precise file size limit in bytes
+* Precise file size limit in megabytes (MB)
 * Highest priority over other system limits
 * Full localization support (Russian and English)
 * Safe validation and sanitization of input data
@@ -37,14 +37,14 @@ File Size Limit is a WordPress plugin that adds a powerful tool for controlling 
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Go to Settings → Media
 4. Find the "File Size Limit" section
-5. Set the desired maximum size in bytes or 0 to disable the limit
+5. Set the desired maximum size in megabytes or 0 to disable the limit
 6. Save changes
 
 == Frequently Asked Questions ==
 
 = How do I set a file size limit? =
 
-Go to Settings → Media and in the "File Size Limit" section enter the desired size in bytes. For example, 1048576 bytes = 1 MB.
+Go to Settings → Media and in the "File Size Limit" section enter the desired size in megabytes. For example, 2 MB, 5.5 MB, etc.
 
 = What does the value 0 mean? =
 
@@ -68,6 +68,15 @@ No, the plugin minimally uses resources and works only during file uploads.
 
 == Changelog ==
 
+= 1.1.0 (25.11.2025): =
+* Changed file size input from bytes to megabytes for better usability
+* Updated user interface to display MB units
+* Improved validation for megabyte values with step 0.1
+* Enhanced WordPress system limit display to show both MB and formatted size
+* Updated all translations to reflect megabyte-based interface
+* Added new validation messages for size limits
+* Improved backward compatibility with existing byte-based settings
+
 = 1.0.0 (25.11.2025): =
 * Added file size limit option in Settings → Media
 * Set maximum file size in bytes with highest priority
@@ -81,6 +90,9 @@ No, the plugin minimally uses resources and works only during file uploads.
 * Upload_size_limit filter with priority 999 for limit override
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Updated to use megabytes instead of bytes for better usability. All existing settings will be automatically converted from bytes to megabytes.
 
 = 1.0.0 =
 First release of File Size Limit plugin with full upload restriction functionality.
@@ -103,10 +115,11 @@ First release of File Size Limit plugin with full upload restriction functionali
 
 === Security Features ===
 * Direct access check via ABSPATH
-* Input data validation via absint()
+* Input data validation via floatval() and absint()
 * Output sanitization via esc_attr()
 * XSS protection in user interface
 * Standard WordPress security functions
+* Protection against extremely large values (max 1024 MB)
 
 === Settings API ===
 * WordPress Settings API integration
@@ -123,9 +136,10 @@ First release of File Size Limit plugin with full upload restriction functionali
 * `languages/file-size-limit-en_US.mo` - compiled English
 
 === Configuration Options ===
-* `dipsic_max_upload_size` - maximum file size in bytes
+* `dipsic_max_upload_size` - maximum file size in bytes (stored internally)
+* Input values in megabytes (converted to bytes internally)
 * 0 = no limit
-* Positive number = maximum size in bytes
+* Positive number = maximum size in megabytes (0.1 - 1024 MB)
 
 == Support ==
 
