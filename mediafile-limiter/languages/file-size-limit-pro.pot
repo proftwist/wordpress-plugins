@@ -1,0 +1,92 @@
+# Russian translation for Ограничитель размера файлов (PRO)
+# Copyright (C) 2025 Владимир Бычко
+msgid ""
+msgstr ""
+"Project-Id-Version: Ограничитель размера файлов (PRO) 2.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Владимир Бычко\n"
+"Language-Team: Russian\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-11-25 21:44+0000\n"
+"PO-Revision-Date: 2025-11-25 21:44+0000\n"
+"Language: ru_RU\n"
+
+msgid "Ограничение размера файлов (PRO)"
+msgstr ""
+
+msgid "Агрессивные настройки"
+msgstr ""
+
+msgid "Максимальный размер файла"
+msgstr ""
+
+msgid "Агрессивный режим"
+msgstr ""
+
+msgid "<strong>PRO версия:</strong> Установите максимальный размер загружаемых файлов в мегабайтах. Плагин попытается обойти системные ограничения."
+msgstr ""
+
+msgid "<strong>Внимание:</strong> Эти настройки могут не работать на некоторых хостингах. Используйте с осторожностью."
+msgstr ""
+
+msgid "0 = без ограничения. Максимум: 512 МБ"
+msgstr ""
+
+msgid " Включить агрессивный обход ограничений"
+msgstr ""
+
+msgid "Пытается принудительно изменить системные настройки PHP. Может не работать на ограниченных хостингах."
+msgstr ""
+
+msgid "МБ (мегабайт)"
+msgstr ""
+
+msgid "Размер файла не может быть отрицательным."
+msgstr ""
+
+msgid "Размер файла не может превышать %d МБ."
+msgstr ""
+
+msgid "Файл слишком большой. %s МБ > %s МБ (максимальный разрешенный размер)"
+msgstr ""
+
+msgid "Диагностика системных ограничений:"
+msgstr ""
+
+msgid "Ваш лимит"
+msgstr ""
+
+msgid "PHP upload_max_filesize"
+msgstr ""
+
+msgid "PHP post_max_size"
+msgstr ""
+
+msgid "PHP memory_limit"
+msgstr ""
+
+msgid "WordPress limit"
+msgstr ""
+
+msgid "Нужно увеличить!"
+msgstr ""
+
+msgid "Рекомендуется увеличить"
+msgstr ""
+
+msgid "не установлен"
+msgstr ""
+
+msgid "Текущий эффективный лимит:"
+msgstr ""
+
+msgid "File Size Limit PRO:"
+msgstr ""
+
+msgid "Вы установили лимит в %s МБ, но эффективный лимит составляет %s МБ. Включите \"Агрессивный режим\" или обратитесь к хостинг-провайдеру."
+msgstr ""
+
+msgid "Ваш лимит (%s МБ) превышает системный upload_max_filesize (%s МБ). Включите \"Агрессивный режим\"."
+msgstr ""
