@@ -1,4 +1,5 @@
 {
     "git.ignoreLimitWarning": true,
-    "editor.fontFamily": "'PT Mono', Menlo, Monaco, 'Courier New', monospace"
+    "editor.fontFamily": "'PT Mono', Menlo, Monaco, 'Courier New', monospace",
+    "commentTranslate.targetLanguage": "ru"
 }
