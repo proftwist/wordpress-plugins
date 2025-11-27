@@ -1,53 +1,71 @@
 const { registerBlockType } = wp.blocks;
 const {
-    RichText,
-    MediaUpload,
-    InspectorControls
+    RichText,         // Компонент для редактирования текста
+    MediaUpload,      // Компонент для загрузки медиафайлов
+    InspectorControls // Компонент для панели настроек блока
 } = wp.blockEditor;
 const {
-    PanelBody,
-    SelectControl,
-    TextControl,
-    Button
+    PanelBody,        // Контейнер для группировки настроек
+    SelectControl,    // Выпадающий список для выбора опций
+    TextControl,      // Текстовое поле для ввода
+    Button            // Кнопка для действий
 } = wp.components;
-const { __ } = wp.i18n;
+const { __ } = wp.i18n; // Функция для переводов
 
+/**
+ * Регистрация Gutenberg блока "Text with Side"
+ *
+ * Этот блок позволяет создавать текстовые блоки с изображениями,
+ * которые отображаются на полях основного контента страницы.
+ */
 registerBlockType( 'text-with-side/text-with-side', {
-    title: __( 'Text with Side', 'text-with-side' ),
-    description: __( 'Text block with side image that floats in margins on frontend', 'text-with-side' ),
-    category: 'common',
-    icon: 'align-left',
+    // Основные параметры блока
+    title: __( 'Text with Side', 'text-with-side' ),                                    // Название блока
+    description: __( 'Text block with side image that floats in margins on frontend', 'text-with-side' ), // Описание блока
+    category: 'common',                                                                 // Категория блока в редакторе
+    icon: 'align-left',                                                                  // Иконка блока
+
+    // Атрибуты блока - данные, которые сохраняются в базе данных
     attributes: {
-        content: {
+        content: {                          // Текстовое содержимое блока
             type: 'string',
             default: '',
         },
-        imageId: {
+        imageId: {                          // ID изображения в медиатеке WordPress
             type: 'number',
             default: 0,
         },
-        imageUrl: {
+        imageUrl: {                         // URL изображения
             type: 'string',
             default: '',
         },
-        imageAlt: {
+        imageAlt: {                         // Альтернативный текст изображения
             type: 'string',
             default: '',
         },
-        position: {
+        position: {                         // Позиция блока: слева или справа
             type: 'string',
             default: 'left',
         },
-        imageLink: {
+        imageLink: {                       // Тип ссылки на изображение
             type: 'string',
             default: 'none',
         },
-        width: {
+        width: {                           // Ширина изображения (например, "150px")
             type: 'string',
             default: '150px',
         },
     },
+
+    /**
+     * Функция редактирования блока (отображается в редакторе Gutenberg)
+     *
+     * @param {Object} attributes - Текущие атрибуты блока
+     * @param {Function} setAttributes - Функция для обновления атрибутов
+     * @returns {JSX.Element} - React компонент для редактора
+     */
     edit: ( { attributes, setAttributes } ) => {
+        // Извлекаем атрибуты из объекта для удобства использования
         const {
             content,
             imageUrl,
@@ -57,26 +75,38 @@ registerBlockType( 'text-with-side/text-with-side', {
             width
         } = attributes;
 
+        /**
+         * Обработчик выбора изображения из медиатеки
+         *
+         * @param {Object} media - Объект с данными выбранного изображения
+         */
         const onSelectImage = ( media ) => {
             setAttributes( {
-                imageId: media.id,
-                imageUrl: media.url,
-                imageAlt: media.alt,
+                imageId: media.id,      // Сохраняем ID изображения
+                imageUrl: media.url,    // Сохраняем URL изображения
+                imageAlt: media.alt,    // Сохраняем альтернативный текст
             } );
         };
 
+        /**
+         * Обработчик удаления изображения
+         * Сбрасывает все связанные с изображением атрибуты
+         */
         const onRemoveImage = () => {
             setAttributes( {
-                imageId: 0,
-                imageUrl: '',
-                imageAlt: '',
+                imageId: 0,             // Сбрасываем ID изображения
+                imageUrl: '',           // Очищаем URL
+                imageAlt: '',           // Очищаем альтернативный текст
             } );
         };
 
+        // Возвращаем JSX разметку для редактора
         return (
             <>
+                {/* Панель настроек блока (отображается в боковой панели редактора) */}
                 <InspectorControls>
                     <PanelBody title={ __( 'Block Settings', 'text-with-side' ) }>
+                        {/* Настройка позиции отображения блока на фронтенде */}
                         <SelectControl
                             label={ __( 'Display Position on Frontend', 'text-with-side' ) }
                             value={ position }
@@ -86,6 +116,8 @@ registerBlockType( 'text-with-side/text-with-side', {
                             ] }
                             onChange={ ( value ) => setAttributes( { position: value } ) }
                         />
+
+                        {/* Настройка типа ссылки на изображение */}
                         <SelectControl
                             label={ __( 'Image Link', 'text-with-side' ) }
                             value={ imageLink }
@@ -96,6 +128,8 @@ registerBlockType( 'text-with-side/text-with-side', {
                             ] }
                             onChange={ ( value ) => setAttributes( { imageLink: value } ) }
                         />
+
+                        {/* Настройка ширины изображения */}
                         <TextControl
                             label={ __( 'Image Width on Frontend', 'text-with-side' ) }
                             value={ width }
@@ -105,8 +139,10 @@ registerBlockType( 'text-with-side/text-with-side', {
                     </PanelBody>
                 </InspectorControls>
 
+                {/* Основной визуальный блок для редактора */}
                 <div className={ `text-with-side-block text-with-side-${ position }` } data-position={ position }>
                     <div className="text-with-side-inner">
+                        {/* Отображение изображения (если оно есть) */}
                         { imageUrl && (
                             <div className="text-with-side-image">
                                 <img
@@ -125,6 +161,7 @@ registerBlockType( 'text-with-side/text-with-side', {
                             </div>
                         )}
 
+                        {/* Кнопка добавления изображения (если изображения нет) */}
                         { ! imageUrl && (
                             <MediaUpload
                                 onSelect={ onSelectImage }
@@ -142,6 +179,7 @@ registerBlockType( 'text-with-side/text-with-side', {
                             />
                         )}
 
+                        {/* Редактор текстового содержимого */}
                         <div className="text-with-side-content">
                             <RichText
                                 tagName="div"
@@ -152,6 +190,8 @@ registerBlockType( 'text-with-side/text-with-side', {
                             />
                         </div>
                     </div>
+
+                    {/* Информационное уведомление для пользователя */}
                     <div className="text-with-side-editor-notice">
                         { __( 'On frontend this block will float in the ', 'text-with-side' ) }
                         <strong>{ position === 'left' ? __( 'left margin', 'text-with-side' ) : __( 'right margin', 'text-with-side' ) }</strong>
@@ -162,7 +202,15 @@ registerBlockType( 'text-with-side/text-with-side', {
             </>
         );
     },
+
+    /**
+     * Функция сохранения блока (генерирует HTML для фронтенда)
+     *
+     * @param {Object} attributes - Атрибуты блока для сохранения
+     * @returns {JSX.Element|null} - HTML разметка или null если блок пуст
+     */
     save: ( { attributes } ) => {
+        // Извлекаем атрибуты для удобства
         const {
             content,
             imageUrl,
@@ -172,12 +220,15 @@ registerBlockType( 'text-with-side/text-with-side', {
             width
         } = attributes;
 
+        // Если нет ни текста, ни изображения - не сохраняем блок
         if ( ! content && ! imageUrl ) {
             return null;
         }
 
+        // Подготавливаем изображение в зависимости от настроек ссылки
         let imageElement = null;
         if ( imageUrl ) {
+            // Базовое изображение
             imageElement = (
                 <img
                     src={ imageUrl }
@@ -186,19 +237,23 @@ registerBlockType( 'text-with-side/text-with-side', {
                 />
             );
 
+            // Оборачиваем в ссылку в зависимости от настроек
             if ( imageLink === 'media' && attributes.imageId ) {
+                // Ссылка на медиафайл
                 imageElement = (
                     <a href={ "#" } className="text-with-side-image-link">
                         { imageElement }
                     </a>
                 );
             } else if ( imageLink === 'attachment' && attributes.imageId ) {
+                // Ссылка на страницу вложения
                 imageElement = (
                     <a href={ "#" } className="text-with-side-image-link">
                         { imageElement }
                     </a>
                 );
             } else {
+                // Без ссылки
                 imageElement = (
                     <div className="text-with-side-image-link">
                         { imageElement }
@@ -207,6 +262,7 @@ registerBlockType( 'text-with-side/text-with-side', {
             }
         }
 
+        // Возвращаем финальную HTML разметку для фронтенда
         return (
             <div className={ `text-with-side-block text-with-side-${ position }` }>
                 <div className="text-with-side-inner">
