@@ -3,24 +3,19 @@ import {
 	RichText,
 	MediaUpload,
 	InspectorControls,
-	BlockControls,
-	AlignmentToolbar
+	useBlockProps
 } from '@wordpress/block-editor';
 import {
 	PanelBody,
 	SelectControl,
 	TextControl,
-	Button,
-	ToolbarGroup
+	Button
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
-// Импорт стилей
-import './editor.scss';
-
 registerBlockType( 'text-with-side/text-with-side', {
 	title: __( 'Text with Side', 'text-with-side' ),
-	description: __( 'Text block with optional side image', 'text-with-side' ),
+	description: __( 'Text block that displays in the margin with optional image', 'text-with-side' ),
 	category: 'common',
 	icon: 'align-left',
 	attributes: {
@@ -62,6 +57,11 @@ registerBlockType( 'text-with-side/text-with-side', {
 			imageLink,
 			width
 		} = attributes;
+
+		const blockProps = useBlockProps({
+			className: `text-with-side-block text-with-side-${position}`,
+			'data-position': position
+		});
 
 		const onSelectImage = ( media ) => {
 			setAttributes( {
@@ -111,48 +111,54 @@ registerBlockType( 'text-with-side/text-with-side', {
 					</PanelBody>
 				</InspectorControls>
 
-				<div className={ `text-with-side-block text-with-side-${ position }` }>
-					{ imageUrl && (
-						<div className="text-with-side-image">
-							<img
-								src={ imageUrl }
-								alt={ imageAlt }
-								style={ { width } }
-							/>
-							<Button
-								className="remove-image"
-								onClick={ onRemoveImage }
-								isSmall
-								isDestructive
-							>
-								{ __( 'Remove Image', 'text-with-side' ) }
-							</Button>
-						</div>
-					) }
-
-					{ ! imageUrl && (
-						<MediaUpload
-							onSelect={ onSelectImage }
-							type="image"
-							render={ ( { open } ) => (
+				<div { ...blockProps }>
+					<div className="text-with-side-inner">
+						{ imageUrl && (
+							<div className="text-with-side-image">
+								<img
+									src={ imageUrl }
+									alt={ imageAlt }
+									style={ { width } }
+								/>
 								<Button
-									className="add-image"
-									onClick={ open }
+									className="remove-image"
+									onClick={ onRemoveImage }
+									isSmall
+									isDestructive
 								>
-									{ __( 'Add Image', 'text-with-side' ) }
+									{ __( 'Remove Image', 'text-with-side' ) }
 								</Button>
-							) }
-						/>
-					) }
+							</div>
+						)}
 
-					<div className="text-with-side-content">
-						<RichText
-							tagName="div"
-							value={ content }
-							onChange={ ( value ) => setAttributes( { content: value } ) }
-							placeholder={ __( 'Enter your text here...', 'text-with-side' ) }
-							multiline="p"
-						/>
+						{ ! imageUrl && (
+							<MediaUpload
+								onSelect={ onSelectImage }
+								type="image"
+								render={ ( { open } ) => (
+									<Button
+										className="add-image"
+										onClick={ open }
+										isPrimary
+									>
+										{ __( 'Add Image', 'text-with-side' ) }
+									</Button>
+								) }
+							/>
+						)}
+
+						<div className="text-with-side-content">
+							<RichText
+								tagName="div"
+								value={ content }
+								onChange={ ( value ) => setAttributes( { content: value } ) }
+								placeholder={ __( 'Enter your text here...', 'text-with-side' ) }
+								multiline="p"
+							/>
+						</div>
+					</div>
+					<div className="text-with-side-editor-notice">
+						{ __( 'This block will appear in the margin on the frontend', 'text-with-side' ) }
 					</div>
 				</div>
 			</>
@@ -167,6 +173,11 @@ registerBlockType( 'text-with-side/text-with-side', {
 			imageLink,
 			width
 		} = attributes;
+
+		const blockProps = useBlockProps.save({
+			className: `text-with-side-block text-with-side-${position}`,
+			'data-position': position
+		});
 
 		if ( ! content && ! imageUrl ) {
 			return null;
@@ -184,31 +195,39 @@ registerBlockType( 'text-with-side/text-with-side', {
 
 			if ( imageLink === 'media' && attributes.imageId ) {
 				imageElement = (
-					<a href={ wp.media.attachment( attributes.imageId ).get( 'url' ) }>
+					<a href={ wp.media.attachment( attributes.imageId ).get( 'url' ) } className="text-with-side-image-link">
 						{ imageElement }
 					</a>
 				);
 			} else if ( imageLink === 'attachment' && attributes.imageId ) {
 				imageElement = (
-					<a href={ wp.url.postLink( attributes.imageId ) }>
+					<a href={ wp.url.postLink( attributes.imageId ) } className="text-with-side-image-link">
 						{ imageElement }
 					</a>
+				);
+			} else {
+				imageElement = (
+					<div className="text-with-side-image-link">
+						{ imageElement }
+					</div>
 				);
 			}
 		}
 
 		return (
-			<div className={ `text-with-side-block text-with-side-${ position }` }>
-				{ imageUrl && (
-					<div className="text-with-side-image">
-						{ imageElement }
-					</div>
-				) }
-				{ content && (
-					<div className="text-with-side-content">
-						<RichText.Content tagName="div" value={ content } />
-					</div>
-				) }
+			<div { ...blockProps }>
+				<div className="text-with-side-inner">
+					{ imageUrl && (
+						<div className="text-with-side-image">
+							{ imageElement }
+						</div>
+					) }
+					{ content && (
+						<div className="text-with-side-content">
+							<RichText.Content tagName="div" value={ content } />
+						</div>
+					) }
+				</div>
 			</div>
 		);
 	},

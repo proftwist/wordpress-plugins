@@ -19,6 +19,7 @@ class TextWithSidePlugin {
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+		add_action( 'wp_head', array( $this, 'add_inline_styles' ) );
 	}
 
 	public function load_textdomain() {
@@ -32,6 +33,29 @@ class TextWithSidePlugin {
 			array(),
 			'1.0.0'
 		);
+	}
+
+	public function add_inline_styles() {
+		// Рассчитываем ширину бокового блока на основе ширины контента
+		$content_width = isset( $GLOBALS['content_width'] ) ? $GLOBALS['content_width'] : 1200;
+		$side_width = min( 200, $content_width * 0.2 ); // 20% от ширины контента, но не более 200px
+		$gap = 40; // Отступ между основным контентом и боковым блоком
+
+		$css = "
+			.text-with-side-block {
+				--side-width: {$side_width}px;
+				--side-gap: {$gap}px;
+			}
+
+			@media (max-width: 768px) {
+				.text-with-side-block {
+					--side-width: 100%;
+					--side-gap: 20px;
+				}
+			}
+		";
+
+		wp_add_inline_style( 'text-with-side-frontend', $css );
 	}
 
 	public function init() {
@@ -92,51 +116,15 @@ class TextWithSidePlugin {
 		) );
 	}
 
-	public function render_block( $attributes ) {
-		$content = $attributes['content'];
-		$image_id = $attributes['imageId'];
-		$image_url = $attributes['imageUrl'];
-		$image_alt = $attributes['imageAlt'];
-		$position = $attributes['position'];
-		$image_link = $attributes['imageLink'];
-		$width = $attributes['width'];
+	public function render_block( $attributes, $content ) {
+		$wrapper_class = 'text-with-side-block text-with-side-' . esc_attr( $attributes['position'] );
 
-		if ( empty( $content ) && empty( $image_url ) ) {
-			return '';
-		}
-
-		$wrapper_class = 'text-with-side-outer text-with-side-position-' . esc_attr( $position );
-
-		$image_html = '';
-		if ( ! empty( $image_url ) ) {
-			$image = '<img src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $image_alt ) . '" style="width: ' . esc_attr( $width ) . ';" />';
-
-			if ( $image_link === 'media' && $image_id ) {
-				$media_url = wp_get_attachment_url( $image_id );
-				$image = '<a href="' . esc_url( $media_url ) . '" class="text-with-side-image-link">' . $image . '</a>';
-			} elseif ( $image_link === 'attachment' && $image_id ) {
-				$attachment_url = get_attachment_link( $image_id );
-				$image = '<a href="' . esc_url( $attachment_url ) . '" class="text-with-side-image-link">' . $image . '</a>';
-			} else {
-				$image = '<div class="text-with-side-image-link">' . $image . '</div>';
-			}
-
-			$image_html = '<div class="text-with-side-image">' . $image . '</div>';
-		}
-
-		$text_html = '';
-		if ( ! empty( $content ) ) {
-			$text_html = '<div class="text-with-side-content">' . wp_kses_post( $content ) . '</div>';
-		}
-
-		$output = '<div class="' . $wrapper_class . '">';
-		$output .= '<div class="text-with-side-inner">';
-		$output .= $image_html;
-		$output .= $text_html;
-		$output .= '</div>';
-		$output .= '</div>';
-
-		return $output;
+		return sprintf(
+			'<div class="%s" data-position="%s">%s</div>',
+			$wrapper_class,
+			esc_attr( $attributes['position'] ),
+			$content
+		);
 	}
 }
 
