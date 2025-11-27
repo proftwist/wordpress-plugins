@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Text with Side
- * Description: Гутенберговский блок для текста с боковым изображением
+ * Description: Гутенберговский блок для текста с боковым изображением, который отображается на полях
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
  * Version: 1.0.0
@@ -18,10 +18,20 @@ class TextWithSidePlugin {
 	public function __construct() {
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'init', array( $this, 'load_textdomain' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 	}
 
 	public function load_textdomain() {
 		load_plugin_textdomain( 'text-with-side', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+
+	public function enqueue_styles() {
+		wp_enqueue_style(
+			'text-with-side-frontend',
+			plugins_url( 'build/style.css', __FILE__ ),
+			array(),
+			'1.0.0'
+		);
 	}
 
 	public function init() {
@@ -45,17 +55,9 @@ class TextWithSidePlugin {
 			$asset_file['version']
 		);
 
-		wp_register_style(
-			'text-with-side-frontend',
-			plugins_url( 'build/style.css', __FILE__ ),
-			array(),
-			$asset_file['version']
-		);
-
 		register_block_type( 'text-with-side/text-with-side', array(
 			'editor_script' => 'text-with-side-editor',
 			'editor_style'  => 'text-with-side-editor',
-			'style'         => 'text-with-side-frontend',
 			'render_callback' => array( $this, 'render_block' ),
 			'attributes' => array(
 				'content' => array(
@@ -103,7 +105,7 @@ class TextWithSidePlugin {
 			return '';
 		}
 
-		$wrapper_class = 'text-with-side-block text-with-side-' . esc_attr( $position );
+		$wrapper_class = 'text-with-side-outer text-with-side-position-' . esc_attr( $position );
 
 		$image_html = '';
 		if ( ! empty( $image_url ) ) {
@@ -111,10 +113,12 @@ class TextWithSidePlugin {
 
 			if ( $image_link === 'media' && $image_id ) {
 				$media_url = wp_get_attachment_url( $image_id );
-				$image = '<a href="' . esc_url( $media_url ) . '">' . $image . '</a>';
+				$image = '<a href="' . esc_url( $media_url ) . '" class="text-with-side-image-link">' . $image . '</a>';
 			} elseif ( $image_link === 'attachment' && $image_id ) {
 				$attachment_url = get_attachment_link( $image_id );
-				$image = '<a href="' . esc_url( $attachment_url ) . '">' . $image . '</a>';
+				$image = '<a href="' . esc_url( $attachment_url ) . '" class="text-with-side-image-link">' . $image . '</a>';
+			} else {
+				$image = '<div class="text-with-side-image-link">' . $image . '</div>';
 			}
 
 			$image_html = '<div class="text-with-side-image">' . $image . '</div>';
@@ -126,8 +130,10 @@ class TextWithSidePlugin {
 		}
 
 		$output = '<div class="' . $wrapper_class . '">';
+		$output .= '<div class="text-with-side-inner">';
 		$output .= $image_html;
 		$output .= $text_html;
+		$output .= '</div>';
 		$output .= '</div>';
 
 		return $output;

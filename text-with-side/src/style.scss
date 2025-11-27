@@ -1,51 +1,119 @@
-.text-with-side-block {
+.text-with-side-outer {
+	position: relative;
+	width: 100%;
 	margin: 20px 0;
-	display: flex;
-	flex-direction: column;
-	gap: 15px;
 
-	&.text-with-side-left {
-		float: left;
-		margin-right: 20px;
-		clear: left;
-	}
-
-	&.text-with-side-right {
-		float: right;
-		margin-left: 20px;
-		clear: right;
-	}
-
-	.text-with-side-image {
-		text-align: center;
-
-		img {
-			height: auto;
-			display: block;
-			max-width: 100%;
+	&.text-with-side-position-left {
+		.text-with-side-inner {
+			position: absolute;
+			right: 100%;
+			top: 0;
+			width: 150px;
+			margin-right: 30px;
+			text-align: right;
 		}
 	}
 
-	.text-with-side-content {
-		font-size: 0.95rem;
+	&.text-with-side-position-right {
+		.text-with-side-inner {
+			position: absolute;
+			left: 100%;
+			top: 0;
+			width: 150px;
+			margin-left: 30px;
+			text-align: left;
+		}
+	}
+}
+
+.text-with-side-inner {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.text-with-side-image {
+	.text-with-side-image-link {
+		display: block;
+		text-decoration: none;
+
+		&:hover {
+			opacity: 0.9;
+		}
+	}
+
+	img {
+		height: auto;
+		display: block;
+		max-width: 100%;
+		margin: 0 auto;
+		border-radius: 4px;
+	}
+}
+
+.text-with-side-content {
+	font-size: 0.95rem;
+	color: #666;
+	line-height: 1.5;
+
+	p {
+		margin: 0 0 0.8em 0;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	a {
 		color: #666;
-		line-height: 1.6;
+		text-decoration: underline;
 
-		p {
-			margin: 0 0 1em 0;
+		&:hover {
+			color: #333;
+		}
+	}
+}
 
-			&:last-child {
-				margin-bottom: 0;
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+	.text-with-side-outer {
+		&.text-with-side-position-left,
+		&.text-with-side-position-right {
+			.text-with-side-inner {
+				position: static;
+				width: 100%;
+				margin: 0;
+				text-align: center;
+				flex-direction: row;
+				align-items: flex-start;
+				justify-content: center;
+				gap: 20px;
+			}
+
+			.text-with-side-image {
+				flex: 0 0 auto;
+			}
+
+			.text-with-side-content {
+				flex: 1;
+				text-align: left;
 			}
 		}
 	}
 }
 
-/* Очистка float */
-.entry-content::after,
-.post-content::after,
-.content::after {
-	content: "";
-	display: table;
-	clear: both;
+/* Дополнительные стили для лучшего отображения */
+.entry-content,
+.post-content,
+.wp-block-post-content {
+	position: relative;
+}
+
+.alignwide,
+.alignfull {
+	.text-with-side-outer {
+		max-width: var(--wp--style--global--wide-size, 1200px);
+		margin-left: auto;
+		margin-right: auto;
+	}
 }
