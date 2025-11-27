@@ -29,8 +29,8 @@ class TextWithSidePlugin {
 		// Register block on WordPress initialization
 		add_action( 'init', array( $this, 'init' ) );
 
-		// Load translation files for internationalization
-		add_action( 'init', array( $this, 'load_textdomain' ) );
+		// Load translation files for internationalization - using proper hook
+		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 
 		// Enqueue CSS styles for frontend (public site part)
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
@@ -79,9 +79,12 @@ class TextWithSidePlugin {
 			'2.0.0'                                                          // Version
 		);
 
-		// Set up translations for JavaScript
-		// This allows the block to display in Russian language in the editor
-		wp_set_script_translations( 'text-with-side-editor', 'text-with-side', plugin_dir_path( __FILE__ ) . 'languages' );
+		// Set up translations for JavaScript - ключевой шаг для локализации в Gutenberg
+		wp_set_script_translations(
+			'text-with-side-editor',      // handle скрипта
+			'text-with-side',             // text-domain
+			plugin_dir_path( __FILE__ ) . 'languages'
+		);
 
 		// Enqueue CSS styles for editor
 		wp_enqueue_style(
