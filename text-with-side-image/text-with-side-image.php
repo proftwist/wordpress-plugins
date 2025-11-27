@@ -3,7 +3,7 @@
  * Plugin Name: Text with Side Image
  * Plugin URI: https://bychko.ru
  * Description: Блок с текстом и опциональной картинкой на полях. Block with text and optional side image.
- * Version: 1.0.0
+ * Version: 1.2.0
  * Author: Владимир Бычко
  * Author URI: https://bychko.ru
  * Text Domain: tsi
