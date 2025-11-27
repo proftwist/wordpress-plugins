@@ -1,6 +1,6 @@
 import { registerBlockType } from '@wordpress/blocks';
-import { RichText, MediaUpload, MediaUploadCheck, InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { Button, PanelBody, SelectControl, RangeControl, Placeholder } from '@wordpress/components';
+import { RichText, MediaUpload, MediaUploadCheck, InspectorControls, useBlockProps, Placeholder } from '@wordpress/block-editor';
+import { Button, PanelBody, SelectControl, RangeControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { image as icon } from '@wordpress/icons';
 import './editor.scss';
@@ -10,9 +10,11 @@ import metadata from './block.json';
 
 registerBlockType(metadata.name, {
     edit: ({ attributes, setAttributes }) => {
-        const { content, imageUrl, imageAlt, imageId, imagePosition, imageWidth } = attributes;
+        const { imageUrl, imageAlt, imageId, imagePosition, imageWidth, caption } = attributes;
 
-        const blockProps = useBlockProps();
+        const blockProps = useBlockProps({
+            className: `tsi-margin-block tsi-position-${imagePosition}`
+        });
 
         const onSelectImage = (media) => {
             setAttributes({
@@ -26,104 +28,102 @@ registerBlockType(metadata.name, {
             setAttributes({
                 imageUrl: '',
                 imageAlt: '',
-                imageId: 0
+                imageId: 0,
+                caption: ''
             });
         };
 
         return (
             <>
                 <InspectorControls>
-                    <PanelBody title={__('Image Settings', 'tsi')} initialOpen={!!imageUrl}>
+                    <PanelBody title={__('Margin Content Settings', 'tsi')} initialOpen={true}>
                         <SelectControl
-                            label={__('Image Position', 'tsi')}
+                            label={__('Position in Margin', 'tsi')}
                             value={imagePosition}
                             options={[
-                                { label: __('Left side', 'tsi'), value: 'left' },
-                                { label: __('Right side', 'tsi'), value: 'right' }
+                                { label: __('Left margin', 'tsi'), value: 'left' },
+                                { label: __('Right margin', 'tsi'), value: 'right' }
                             ]}
                             onChange={(value) => setAttributes({ imagePosition: value })}
                         />
 
                         {imageUrl && (
                             <RangeControl
-                                label={__('Image Width', 'tsi')}
+                                label={__('Content Width', 'tsi')}
                                 value={imageWidth}
                                 onChange={(value) => setAttributes({ imageWidth: value })}
                                 min={80}
                                 max={300}
                                 step={10}
-                                help={__('Width in pixels', 'tsi')}
+                                help={__('Width of margin content in pixels', 'tsi')}
                             />
                         )}
                     </PanelBody>
                 </InspectorControls>
 
                 <div {...blockProps}>
-                    <div className={`tsi-block tsi-image-${imagePosition}`}>
+                    <div className="tsi-margin-content" style={{ width: `${imageWidth}px` }}>
                         {imageUrl ? (
-                            <div className="tsi-image" style={{ width: `${imageWidth}px` }}>
-                                <div className="tsi-image-preview">
+                            <>
+                                <div className="tsi-margin-image">
                                     <img src={imageUrl} alt={imageAlt} />
-                                    <div className="tsi-image-actions">
-                                        <MediaUpload
-                                            onSelect={onSelectImage}
-                                            allowedTypes={['image']}
-                                            value={imageId}
-                                            render={({ open }) => (
-                                                <Button
-                                                    onClick={open}
-                                                    variant="secondary"
-                                                    size="small"
-                                                >
-                                                    {__('Replace', 'tsi')}
-                                                </Button>
-                                            )}
-                                        />
-                                        <Button
-                                            onClick={onRemoveImage}
-                                            variant="secondary"
-                                            size="small"
-                                            isDestructive
-                                        >
-                                            {__('Remove', 'tsi')}
-                                        </Button>
-                                    </div>
                                 </div>
-                            </div>
-                        ) : (
-                            <MediaUploadCheck>
-                                <MediaUpload
-                                    onSelect={onSelectImage}
-                                    allowedTypes={['image']}
-                                    render={({ open }) => (
-                                        <div className="tsi-image-upload">
-                                            <Placeholder
-                                                icon={icon}
-                                                label={__('Side Image', 'tsi')}
-                                                instructions={__('Add an optional image that appears beside the text', 'tsi')}
+                                <div className="tsi-margin-caption">
+                                    <RichText
+                                        tagName="div"
+                                        value={caption}
+                                        onChange={(value) => setAttributes({ caption: value })}
+                                        placeholder={__('Enter caption text for the margin...', 'tsi')}
+                                        allowedFormats={['core/bold', 'core/italic', 'core/link']}
+                                    />
+                                </div>
+                                <div className="tsi-margin-actions">
+                                    <MediaUpload
+                                        onSelect={onSelectImage}
+                                        allowedTypes={['image']}
+                                        value={imageId}
+                                        render={({ open }) => (
+                                            <Button
+                                                onClick={open}
+                                                variant="secondary"
+                                                size="small"
                                             >
-                                                <Button
-                                                    variant="primary"
-                                                    onClick={open}
-                                                >
-                                                    {__('Select Image', 'tsi')}
-                                                </Button>
-                                            </Placeholder>
-                                        </div>
-                                    )}
-                                />
-                            </MediaUploadCheck>
+                                                {__('Replace Image', 'tsi')}
+                                            </Button>
+                                        )}
+                                    />
+                                    <Button
+                                        onClick={onRemoveImage}
+                                        variant="secondary"
+                                        size="small"
+                                        isDestructive
+                                    >
+                                        {__('Remove All', 'tsi')}
+                                    </Button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="tsi-margin-placeholder">
+                                <Placeholder
+                                    icon={icon}
+                                    label={__('Margin Content', 'tsi')}
+                                    instructions={__('Add image and caption that will appear in the page margin', 'tsi')}
+                                >
+                                    <MediaUpload
+                                        onSelect={onSelectImage}
+                                        allowedTypes={['image']}
+                                        render={({ open }) => (
+                                            <Button
+                                                variant="primary"
+                                                onClick={open}
+                                            >
+                                                {__('Select Image', 'tsi')}
+                                            </Button>
+                                        )}
+                                    />
+                                </Placeholder>
+                            </div>
                         )}
-
-                        <div className="tsi-content-wrapper">
-                            <RichText
-                                tagName="div"
-                                className="tsi-content"
-                                value={content}
-                                onChange={(value) => setAttributes({ content: value })}
-                                placeholder={__('Enter your text here... You can add formatting, links, and more.', 'tsi')}
-                            />
-                        </div>
                     </div>
                 </div>
             </>
@@ -131,25 +131,28 @@ registerBlockType(metadata.name, {
     },
 
     save: ({ attributes }) => {
-        const { content, imageUrl, imageAlt, imagePosition, imageWidth } = attributes;
-        const blockProps = useBlockProps.save();
+        const { imageUrl, imageAlt, imagePosition, imageWidth, caption } = attributes;
+        const blockProps = useBlockProps.save({
+            className: `tsi-margin-block tsi-position-${imagePosition}`
+        });
 
         return (
             <div {...blockProps}>
-                <div className={`tsi-block tsi-image-${imagePosition}`}>
-                    {imageUrl && (
-                        <div className="tsi-image" style={{ width: `${imageWidth}px` }}>
+                {imageUrl && (
+                    <div className="tsi-margin-content" style={{ width: `${imageWidth}px` }}>
+                        <div className="tsi-margin-image">
                             <img src={imageUrl} alt={imageAlt} />
                         </div>
-                    )}
-                    <div className="tsi-content-wrapper">
-                        <RichText.Content
-                            tagName="div"
-                            className="tsi-content"
-                            value={content}
-                        />
+                        {caption && (
+                            <div className="tsi-margin-caption">
+                                <RichText.Content
+                                    tagName="div"
+                                    value={caption}
+                                />
+                            </div>
+                        )}
                     </div>
-                </div>
+                )}
             </div>
         );
     }

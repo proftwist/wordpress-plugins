@@ -2,16 +2,11 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 2,
   "name": "tsi/text-with-side-image",
-  "title": "Text with Side Image",
+  "title": "Margin Content",
   "category": "design",
-  "description": "Блок с текстом и опциональной картинкой на полях",
+  "description": "Блок с контентом для полей страницы (изображение и подпись)",
   "textdomain": "tsi",
   "attributes": {
-    "content": {
-      "type": "string",
-      "source": "html",
-      "selector": ".tsi-content"
-    },
     "imageUrl": {
       "type": "string",
       "default": ""
@@ -31,6 +26,12 @@
     "imageWidth": {
       "type": "number",
       "default": 150
+    },
+    "caption": {
+      "type": "string",
+      "source": "html",
+      "selector": ".tsi-margin-caption",
+      "default": ""
     }
   },
   "editorScript": "file:./index.js",

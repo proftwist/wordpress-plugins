@@ -17,9 +17,8 @@ class TextWithSideImage {
 
     public function __construct() {
         add_action( 'init', array( $this, 'register_block' ) );
-        add_action( 'wp_enqueue_scripts', array( $this, 'frontend_assets' ) );
+        add_action( 'enqueue_block_assets', array( $this, 'block_assets' ) );
         add_action( 'init', array( $this, 'load_textdomain' ) );
-        add_action( 'enqueue_block_editor_assets', array( $this, 'editor_assets' ) );
     }
 
     public function load_textdomain() {
@@ -34,22 +33,26 @@ class TextWithSideImage {
         register_block_type( __DIR__ . '/build' );
     }
 
-    public function editor_assets() {
-        wp_enqueue_style(
-            'tsi-editor-style',
-            plugin_dir_url( __FILE__ ) . 'build/index.css',
-            array(),
-            '1.0.0'
-        );
-    }
+    public function block_assets() {
+        // Фронтенд стили
+        if ( ! is_admin() ) {
+            wp_enqueue_style(
+                'tsi-frontend-style',
+                plugin_dir_url( __FILE__ ) . 'build/style-index.css',
+                array(),
+                '1.0.0'
+            );
+        }
 
-    public function frontend_assets() {
-        wp_enqueue_style(
-            'tsi-frontend-style',
-            plugin_dir_url( __FILE__ ) . 'build/style-index.css',
-            array(),
-            '1.0.0'
-        );
+        // Стили редактора
+        if ( is_admin() ) {
+            wp_enqueue_style(
+                'tsi-editor-style',
+                plugin_dir_url( __FILE__ ) . 'build/index.css',
+                array(),
+                '1.0.0'
+            );
+        }
     }
 }
 
