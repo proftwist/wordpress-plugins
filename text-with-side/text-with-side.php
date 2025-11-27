@@ -43,6 +43,9 @@ class TextWithSidePlugin {
 			'1.1.0'
 		);
 
+		// Подключаем переводы для JavaScript
+		wp_set_script_translations( 'text-with-side-editor', 'text-with-side', plugin_dir_path( __FILE__ ) . 'languages' );
+
 		wp_enqueue_style(
 			'text-with-side-editor',
 			plugins_url( 'assets/editor.css', __FILE__ ),
