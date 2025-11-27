@@ -4,7 +4,7 @@
  * Description: Гутенберговский блок для текста с боковым изображением, который отображается на полях
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
- * Version: 1.0.0
+ * Version: 1.0.3
  * Text Domain: text-with-side
  * Domain Path: /languages
  */
@@ -18,66 +18,51 @@ class TextWithSidePlugin {
 	public function __construct() {
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'init', array( $this, 'load_textdomain' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
-		add_action( 'wp_head', array( $this, 'add_inline_styles' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
 	}
 
 	public function load_textdomain() {
 		load_plugin_textdomain( 'text-with-side', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 
-	public function enqueue_styles() {
+	public function enqueue_frontend_assets() {
 		wp_enqueue_style(
 			'text-with-side-frontend',
-			plugins_url( 'build/style.css', __FILE__ ),
+			plugins_url( 'assets/frontend.css', __FILE__ ),
 			array(),
-			'1.0.0'
+			'1.0.3'
+		);
+
+		wp_enqueue_script(
+			'text-with-side-frontend',
+			plugins_url( 'assets/frontend.js', __FILE__ ),
+			array(),
+			'1.0.3',
+			true
 		);
 	}
 
-	public function add_inline_styles() {
-		// Рассчитываем ширину бокового блока на основе ширины контента
-		$content_width = isset( $GLOBALS['content_width'] ) ? $GLOBALS['content_width'] : 1200;
-		$side_width = min( 200, $content_width * 0.2 ); // 20% от ширины контента, но не более 200px
-		$gap = 40; // Отступ между основным контентом и боковым блоком
+	public function enqueue_editor_assets() {
+		wp_enqueue_script(
+			'text-with-side-editor',
+			plugins_url( 'build/index.js', __FILE__ ),
+			array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n' ),
+			'1.0.3'
+		);
 
-		$css = "
-			.text-with-side-block {
-				--side-width: {$side_width}px;
-				--side-gap: {$gap}px;
-			}
-
-			@media (max-width: 768px) {
-				.text-with-side-block {
-					--side-width: 100%;
-					--side-gap: 20px;
-				}
-			}
-		";
-
-		wp_add_inline_style( 'text-with-side-frontend', $css );
+		wp_enqueue_style(
+			'text-with-side-editor',
+			plugins_url( 'assets/editor.css', __FILE__ ),
+			array(),
+			'1.0.3'
+		);
 	}
 
 	public function init() {
 		if ( ! function_exists( 'register_block_type' ) ) {
 			return;
 		}
-
-		$asset_file = include( plugin_dir_path( __FILE__ ) . 'build/index.asset.php' );
-
-		wp_register_script(
-			'text-with-side-editor',
-			plugins_url( 'build/index.js', __FILE__ ),
-			$asset_file['dependencies'],
-			$asset_file['version']
-		);
-
-		wp_register_style(
-			'text-with-side-editor',
-			plugins_url( 'build/index.css', __FILE__ ),
-			array(),
-			$asset_file['version']
-		);
 
 		register_block_type( 'text-with-side/text-with-side', array(
 			'editor_script' => 'text-with-side-editor',
@@ -112,19 +97,60 @@ class TextWithSidePlugin {
 					'type' => 'string',
 					'default' => '150px',
 				),
+				'blockId' => array(
+					'type' => 'string',
+					'default' => '',
+				),
 			),
 		) );
 	}
 
 	public function render_block( $attributes, $content ) {
-		$wrapper_class = 'text-with-side-block text-with-side-' . esc_attr( $attributes['position'] );
+		$content_text = $attributes['content'];
+		$image_id = $attributes['imageId'];
+		$image_url = $attributes['imageUrl'];
+		$image_alt = $attributes['imageAlt'];
+		$position = $attributes['position'];
+		$image_link = $attributes['imageLink'];
+		$width = $attributes['width'];
+		$block_id = $attributes['blockId'] ?: 'side-' . uniqid();
 
-		return sprintf(
-			'<div class="%s" data-position="%s">%s</div>',
-			$wrapper_class,
-			esc_attr( $attributes['position'] ),
-			$content
-		);
+		if ( empty( $content_text ) && empty( $image_url ) ) {
+			return '';
+		}
+
+		$wrapper_class = 'text-with-side-block text-with-side-' . esc_attr( $position );
+
+		$image_html = '';
+		if ( ! empty( $image_url ) ) {
+			$image = '<img src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $image_alt ) . '" style="width: ' . esc_attr( $width ) . ';" />';
+
+			if ( $image_link === 'media' && $image_id ) {
+				$media_url = wp_get_attachment_url( $image_id );
+				$image = '<a href="' . esc_url( $media_url ) . '" class="text-with-side-image-link">' . $image . '</a>';
+			} elseif ( $image_link === 'attachment' && $image_id ) {
+				$attachment_url = get_attachment_link( $image_id );
+				$image = '<a href="' . esc_url( $attachment_url ) . '" class="text-with-side-image-link">' . $image . '</a>';
+			} else {
+				$image = '<div class="text-with-side-image-link">' . $image . '</div>';
+			}
+
+			$image_html = '<div class="text-with-side-image">' . $image . '</div>';
+		}
+
+		$text_html = '';
+		if ( ! empty( $content_text ) ) {
+			$text_html = '<div class="text-with-side-content">' . wp_kses_post( $content_text ) . '</div>';
+		}
+
+		$output = '<div class="' . $wrapper_class . '" data-block-id="' . esc_attr( $block_id ) . '">';
+		$output .= '<div class="text-with-side-inner">';
+		$output .= $image_html;
+		$output .= $text_html;
+		$output .= '</div>';
+		$output .= '</div>';
+
+		return $output;
 	}
 }
 

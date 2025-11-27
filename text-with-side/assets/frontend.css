@@ -1,0 +1,123 @@
+/* Основные стили для боковых блоков */
+.text-with-side-block {
+    position: absolute;
+    width: 200px;
+    z-index: 100;
+}
+
+/* Блоки слева */
+.text-with-side-block.text-with-side-left {
+    left: -220px; /* Ширина блока + отступ */
+}
+
+/* Блоки справа */
+.text-with-side-block.text-with-side-right {
+    right: -220px; /* Ширина блока + отступ */
+}
+
+.text-with-side-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.text-with-side-image {
+    text-align: center;
+}
+
+.text-with-side-image-link {
+    display: block;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+.text-with-side-image-link:hover {
+    opacity: 0.8;
+}
+
+.text-with-side-image img {
+    height: auto;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 4px;
+}
+
+.text-with-side-content {
+    font-size: 0.95rem !important;
+    color: #666 !important;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.text-with-side-content p {
+    margin: 0 0 0.8em 0 !important;
+    font-size: 0.95rem !important;
+    color: #666 !important;
+    line-height: 1.5 !important;
+}
+
+.text-with-side-content p:last-child {
+    margin-bottom: 0 !important;
+}
+
+.text-with-side-content a {
+    color: #666;
+    text-decoration: underline;
+}
+
+.text-with-side-content a:hover {
+    color: #333;
+}
+
+/* Контейнеры контента должны иметь относительное позиционирование */
+.entry-content,
+.post-content,
+.wp-block-post-content {
+    position: relative;
+}
+
+/* Каждый блок внутри контента тоже должен быть относительным */
+.entry-content > *,
+.post-content > *,
+.wp-block-post-content > * {
+    position: relative;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .text-with-side-block {
+        position: relative !important;
+        width: 100% !important;
+        margin: 20px 0 !important;
+        left: auto !important;
+        right: auto !important;
+    }
+
+    .text-with-side-inner {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .text-with-side-image {
+        flex: 0 0 120px;
+    }
+
+    .text-with-side-content {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .text-with-side-block .text-with-side-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .text-with-side-image {
+        flex: 0 0 auto;
+    }
+}

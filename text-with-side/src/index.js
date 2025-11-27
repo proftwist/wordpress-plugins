@@ -1,17 +1,17 @@
-import { registerBlockType } from '@wordpress/blocks';
-import {
+const { registerBlockType } = wp.blocks;
+const {
 	RichText,
 	MediaUpload,
 	InspectorControls,
 	useBlockProps
-} from '@wordpress/block-editor';
-import {
+} = wp.blockEditor;
+const {
 	PanelBody,
 	SelectControl,
 	TextControl,
 	Button
-} from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+} = wp.components;
+const { __ } = wp.i18n;
 
 registerBlockType( 'text-with-side/text-with-side', {
 	title: __( 'Text with Side', 'text-with-side' ),
@@ -165,70 +165,6 @@ registerBlockType( 'text-with-side/text-with-side', {
 		);
 	},
 	save: ( { attributes } ) => {
-		const {
-			content,
-			imageUrl,
-			imageAlt,
-			position,
-			imageLink,
-			width
-		} = attributes;
-
-		const blockProps = useBlockProps.save({
-			className: `text-with-side-block text-with-side-${position}`,
-			'data-position': position
-		});
-
-		if ( ! content && ! imageUrl ) {
-			return null;
-		}
-
-		let imageElement = null;
-		if ( imageUrl ) {
-			imageElement = (
-				<img
-					src={ imageUrl }
-					alt={ imageAlt }
-					style={ { width } }
-				/>
-			);
-
-			if ( imageLink === 'media' && attributes.imageId ) {
-				imageElement = (
-					<a href={ wp.media.attachment( attributes.imageId ).get( 'url' ) } className="text-with-side-image-link">
-						{ imageElement }
-					</a>
-				);
-			} else if ( imageLink === 'attachment' && attributes.imageId ) {
-				imageElement = (
-					<a href={ wp.url.postLink( attributes.imageId ) } className="text-with-side-image-link">
-						{ imageElement }
-					</a>
-				);
-			} else {
-				imageElement = (
-					<div className="text-with-side-image-link">
-						{ imageElement }
-					</div>
-				);
-			}
-		}
-
-		return (
-			<div { ...blockProps }>
-				<div className="text-with-side-inner">
-					{ imageUrl && (
-						<div className="text-with-side-image">
-							{ imageElement }
-						</div>
-					) }
-					{ content && (
-						<div className="text-with-side-content">
-							<RichText.Content tagName="div" value={ content } />
-						</div>
-					) }
-				</div>
-			</div>
-		);
+		return null; // Используем render_callback из PHP
 	},
 } );
