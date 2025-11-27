@@ -1,0 +1,73 @@
+# English translation for Text with Side
+# Copyright (C) 2024 Vladimir Bychko
+# This file is distributed under the same license as the Text with Side plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Text with Side 2.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-27 17:36+0300\n"
+"PO-Revision-Date: 2025-11-27 17:36+0300\n"
+"Last-Translator: Vladimir Bychko <info@bychko.ru>\n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Text with Side"
+msgstr "Text with Side"
+
+msgid "Text block with side image that floats in margins on frontend"
+msgstr "Text block with side image that floats in margins on frontend"
+
+msgid "Block Settings"
+msgstr "Block Settings"
+
+msgid "Display Position on Frontend"
+msgstr "Display Position on Frontend"
+
+msgid "Left"
+msgstr "Left"
+
+msgid "Right"
+msgstr "Right"
+
+msgid "Image Link"
+msgstr "Image Link"
+
+msgid "None"
+msgstr "None"
+
+msgid "To Media File"
+msgstr "To Media File"
+
+msgid "To Attachment Page"
+msgstr "To Attachment Page"
+
+msgid "Image Width on Frontend"
+msgstr "Image Width on Frontend"
+
+msgid "Default: 150px"
+msgstr "Default: 150px"
+
+msgid "Add Image"
+msgstr "Add Image"
+
+msgid "Remove Image"
+msgstr "Remove Image"
+
+msgid "Enter your text here..."
+msgstr "Enter your text here..."
+
+msgid "On frontend this block will float in the "
+msgstr "On frontend this block will float in the "
+
+msgid "left margin"
+msgstr "left margin"
+
+msgid "right margin"
+msgstr "right margin"
+
+msgid " with width: "
+msgstr " with width: "

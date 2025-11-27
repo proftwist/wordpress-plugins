@@ -1,0 +1,164 @@
+.text-with-side-block {
+	width: var(--side-width, 200px);
+	margin-bottom: 20px;
+
+	// Блоки слева
+	&.text-with-side-left {
+		float: left;
+		margin-left: calc(-1 * (var(--side-width, 200px) + var(--side-gap, 40px)));
+		margin-right: var(--side-gap, 40px);
+		clear: left;
+	}
+
+	// Блоки справа
+	&.text-with-side-right {
+		float: right;
+		margin-right: calc(-1 * (var(--side-width, 200px) + var(--side-gap, 40px)));
+		margin-left: var(--side-gap, 40px);
+		clear: right;
+	}
+}
+
+.text-with-side-inner {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	width: 100%;
+}
+
+.text-with-side-image {
+	text-align: center;
+
+	.text-with-side-image-link {
+		display: block;
+		text-decoration: none;
+		transition: opacity 0.3s ease;
+
+		&:hover {
+			opacity: 0.8;
+		}
+	}
+
+	img {
+		height: auto;
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		border-radius: 4px;
+	}
+}
+
+.text-with-side-content {
+	font-size: 0.95rem;
+	color: #666;
+	line-height: 1.5;
+	text-align: left;
+
+	p {
+		margin: 0 0 0.8em 0;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	a {
+		color: #666;
+		text-decoration: underline;
+
+		&:hover {
+			color: #333;
+		}
+	}
+
+	strong, b {
+		font-weight: 600;
+	}
+
+	em, i {
+		font-style: italic;
+	}
+}
+
+/* Контейнер основного контента должен иметь отступы для боковых блоков */
+.entry-content,
+.post-content,
+.wp-block-post-content,
+.main-content {
+	overflow: visible !important;
+
+	// Создаём пространство для боковых блоков
+	.text-with-side-left:first-child {
+		& ~ * {
+			clear: both;
+		}
+	}
+
+	.text-with-side-right:first-child {
+		& ~ * {
+			clear: both;
+		}
+	}
+}
+
+/* Очистка float после контента */
+.entry-content::after,
+.post-content::after,
+.wp-block-post-content::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 1024px) {
+	.text-with-side-block {
+		--side-width: 150px;
+		--side-gap: 30px;
+	}
+}
+
+@media (max-width: 768px) {
+	.text-with-side-block {
+		width: 100% !important;
+		float: none !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+		margin-bottom: 30px;
+
+		.text-with-side-inner {
+			flex-direction: row;
+			align-items: flex-start;
+			gap: 20px;
+		}
+
+		.text-with-side-image {
+			flex: 0 0 120px;
+		}
+
+		.text-with-side-content {
+			flex: 1;
+		}
+	}
+}
+
+@media (max-width: 480px) {
+	.text-with-side-block {
+		.text-with-side-inner {
+			flex-direction: column;
+			text-align: center;
+			gap: 15px;
+		}
+
+		.text-with-side-image {
+			flex: 0 0 auto;
+		}
+	}
+}
+
+/* Поддержка для разных тем */
+.alignwide .text-with-side-block,
+.alignfull .text-with-side-block {
+	--side-width: min(200px, 15vw);
+	--side-gap: min(40px, 3vw);
+}

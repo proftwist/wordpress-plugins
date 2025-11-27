@@ -1,0 +1,90 @@
+# Copyright (C) 2024 Vladimir Bychko
+# This file is distributed under the same license as the Text with Side plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Text with Side 2.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-27 17:36+0300\n"
+"PO-Revision-Date: 2025-11-27 17:36+0300\n"
+"Last-Translator: Vladimir Bychko <info@bychko.ru>\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/index.js
+msgid "Text with Side"
+msgstr ""
+
+#: src/index.js
+msgid "Text block with side image that floats in margins on frontend"
+msgstr ""
+
+#: src/index.js
+msgid "Block Settings"
+msgstr ""
+
+#: src/index.js
+msgid "Display Position on Frontend"
+msgstr ""
+
+#: src/index.js
+msgid "Left"
+msgstr ""
+
+#: src/index.js
+msgid "Right"
+msgstr ""
+
+#: src/index.js
+msgid "Image Link"
+msgstr ""
+
+#: src/index.js
+msgid "None"
+msgstr ""
+
+#: src/index.js
+msgid "To Media File"
+msgstr ""
+
+#: src/index.js
+msgid "To Attachment Page"
+msgstr ""
+
+#: src/index.js
+msgid "Image Width on Frontend"
+msgstr ""
+
+#: src/index.js
+msgid "Default: 150px"
+msgstr ""
+
+#: src/index.js
+msgid "Add Image"
+msgstr ""
+
+#: src/index.js
+msgid "Remove Image"
+msgstr ""
+
+#: src/index.js
+msgid "Enter your text here..."
+msgstr ""
+
+#: src/index.js
+msgid "On frontend this block will float in the "
+msgstr ""
+
+#: src/index.js
+msgid "left margin"
+msgstr ""
+
+#: src/index.js
+msgid "right margin"
+msgstr ""
+
+#: src/index.js
+msgid " with width: "
+msgstr ""

@@ -1,0 +1,19 @@
+{
+	"name": "text-with-side",
+	"version": "1.0.0",
+	"description": "Гутенберговский блок для текста с боковым изображением, который отображается на полях",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update"
+	},
+	"author": "Владимир Бычко",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^26.0.0"
+	}
+}
