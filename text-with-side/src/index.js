@@ -14,7 +14,7 @@ const { __ } = wp.i18n;
 
 registerBlockType( 'text-with-side/text-with-side', {
     title: __( 'Text with Side', 'text-with-side' ),
-    description: __( 'Text block with side image that floats in margins', 'text-with-side' ),
+    description: __( 'Text block with side image that floats in margins on frontend', 'text-with-side' ),
     category: 'common',
     icon: 'align-left',
     attributes: {
@@ -78,7 +78,7 @@ registerBlockType( 'text-with-side/text-with-side', {
                 <InspectorControls>
                     <PanelBody title={ __( 'Block Settings', 'text-with-side' ) }>
                         <SelectControl
-                            label={ __( 'Display Position', 'text-with-side' ) }
+                            label={ __( 'Display Position on Frontend', 'text-with-side' ) }
                             value={ position }
                             options={ [
                                 { label: __( 'Left', 'text-with-side' ), value: 'left' },
@@ -97,7 +97,7 @@ registerBlockType( 'text-with-side/text-with-side', {
                             onChange={ ( value ) => setAttributes( { imageLink: value } ) }
                         />
                         <TextControl
-                            label={ __( 'Image Width', 'text-with-side' ) }
+                            label={ __( 'Image Width on Frontend', 'text-with-side' ) }
                             value={ width }
                             onChange={ ( value ) => setAttributes( { width: value } ) }
                             help={ __( 'Default: 150px', 'text-with-side' ) }
@@ -105,14 +105,14 @@ registerBlockType( 'text-with-side/text-with-side', {
                     </PanelBody>
                 </InspectorControls>
 
-                <div className={ `text-with-side-block text-with-side-${ position }` }>
+                <div className={ `text-with-side-block text-with-side-${ position }` } data-position={ position }>
                     <div className="text-with-side-inner">
                         { imageUrl && (
                             <div className="text-with-side-image">
                                 <img
                                     src={ imageUrl }
                                     alt={ imageAlt }
-                                    style={ { width } }
+                                    style={ { width: '100%', maxWidth: '300px' } }
                                 />
                                 <Button
                                     className="remove-image"
@@ -134,6 +134,7 @@ registerBlockType( 'text-with-side/text-with-side', {
                                         className="add-image"
                                         onClick={ open }
                                         isPrimary
+                                        style={ { width: '100%', maxWidth: '300px', margin: '0 auto', display: 'block' } }
                                     >
                                         { __( 'Add Image', 'text-with-side' ) }
                                     </Button>
@@ -152,7 +153,10 @@ registerBlockType( 'text-with-side/text-with-side', {
                         </div>
                     </div>
                     <div className="text-with-side-editor-notice">
-                        { __( 'This block will float in the margin on frontend', 'text-with-side' ) }
+                        { __( 'On frontend this block will float in the ', 'text-with-side' ) }
+                        <strong>{ position === 'left' ? __( 'left margin', 'text-with-side' ) : __( 'right margin', 'text-with-side' ) }</strong>
+                        { __( ' with width: ', 'text-with-side' ) }
+                        <strong>{ width }</strong>
                     </div>
                 </div>
             </>
