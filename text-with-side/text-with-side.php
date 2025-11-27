@@ -4,7 +4,7 @@
  * Description: Гутенберговский блок для текста с боковым изображением, который отображается на полях
  * Author: Владимир Бычко
  * Author URI: http://bychko.ru
- * Version: 1.0.3
+ * Version: 1.1.0
  * Text Domain: text-with-side
  * Domain Path: /languages
  */
@@ -31,15 +31,7 @@ class TextWithSidePlugin {
 			'text-with-side-frontend',
 			plugins_url( 'assets/frontend.css', __FILE__ ),
 			array(),
-			'1.0.3'
-		);
-
-		wp_enqueue_script(
-			'text-with-side-frontend',
-			plugins_url( 'assets/frontend.js', __FILE__ ),
-			array(),
-			'1.0.3',
-			true
+			'1.1.0'
 		);
 	}
 
@@ -48,14 +40,14 @@ class TextWithSidePlugin {
 			'text-with-side-editor',
 			plugins_url( 'build/index.js', __FILE__ ),
 			array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n' ),
-			'1.0.3'
+			'1.1.0'
 		);
 
 		wp_enqueue_style(
 			'text-with-side-editor',
 			plugins_url( 'assets/editor.css', __FILE__ ),
 			array(),
-			'1.0.3'
+			'1.1.0'
 		);
 	}
 
@@ -97,10 +89,6 @@ class TextWithSidePlugin {
 					'type' => 'string',
 					'default' => '150px',
 				),
-				'blockId' => array(
-					'type' => 'string',
-					'default' => '',
-				),
 			),
 		) );
 	}
@@ -113,7 +101,6 @@ class TextWithSidePlugin {
 		$position = $attributes['position'];
 		$image_link = $attributes['imageLink'];
 		$width = $attributes['width'];
-		$block_id = $attributes['blockId'] ?: 'side-' . uniqid();
 
 		if ( empty( $content_text ) && empty( $image_url ) ) {
 			return '';
@@ -143,7 +130,7 @@ class TextWithSidePlugin {
 			$text_html = '<div class="text-with-side-content">' . wp_kses_post( $content_text ) . '</div>';
 		}
 
-		$output = '<div class="' . $wrapper_class . '" data-block-id="' . esc_attr( $block_id ) . '">';
+		$output = '<div class="' . $wrapper_class . '">';
 		$output .= '<div class="text-with-side-inner">';
 		$output .= $image_html;
 		$output .= $text_html;

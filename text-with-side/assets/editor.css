@@ -1,45 +1,32 @@
-/* Стили для редактора Гутенберга */
+/* Стили для редактора - имитация фронтенда */
 .text-with-side-block {
     border: 2px dashed #ccc;
-    padding: 20px;
+    padding: 15px;
     margin: 20px 0;
     background: #f9f9f9;
-    position: relative;
-    max-width: 250px;
-}
-
-.text-with-side-block::before {
-    content: attr(data-position) ' (Side Block)';
-    position: absolute;
-    top: -12px;
-    left: 10px;
-    background: #007cba;
-    color: white;
-    padding: 2px 8px;
-    font-size: 11px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    font-weight: bold;
+    width: 200px;
 }
 
 .text-with-side-block.text-with-side-left {
     border-left: 4px solid #007cba;
     float: left;
-    margin-right: 30px;
+    margin-left: -100px;
+    margin-right: 20px;
     clear: left;
 }
 
 .text-with-side-block.text-with-side-right {
     border-right: 4px solid #007cba;
     float: right;
-    margin-left: 30px;
+    margin-right: -100px;
+    margin-left: 20px;
     clear: right;
 }
 
 .text-with-side-inner {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     width: 100%;
 }
 
@@ -69,36 +56,16 @@
 }
 
 .text-with-side-content .block-editor-rich-text__editable {
-    min-height: 80px;
+    min-height: 60px;
     font-size: 0.95rem !important;
     color: #666 !important;
     line-height: 1.5 !important;
-}
-
-.text-with-side-content p {
-    margin: 0 0 0.8em 0 !important;
-    font-size: 0.95rem !important;
-    color: #666 !important;
-    line-height: 1.5 !important;
-}
-
-.text-with-side-content p:last-child {
-    margin-bottom: 0 !important;
 }
 
 .text-with-side-editor-notice {
     font-size: 11px;
     color: #666;
     font-style: italic;
-    margin-top: 10px;
+    margin-top: 8px;
     text-align: center;
-    background: #fff;
-    padding: 5px;
-    border-radius: 3px;
-    border: 1px solid #ddd;
-}
-
-/* Редактор должен позволять боковые блоки */
-.block-editor-block-list__layout {
-    overflow: visible !important;
 }

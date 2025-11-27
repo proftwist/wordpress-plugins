@@ -1,18 +1,23 @@
-/* Основные стили для боковых блоков */
+/* Боковые блоки */
 .text-with-side-block {
-    position: absolute;
     width: 200px;
-    z-index: 100;
+    margin-bottom: 20px;
 }
 
 /* Блоки слева */
 .text-with-side-block.text-with-side-left {
-    left: -220px; /* Ширина блока + отступ */
+    float: left;
+    margin-left: -220px;
+    margin-right: 20px;
+    clear: left;
 }
 
 /* Блоки справа */
 .text-with-side-block.text-with-side-right {
-    right: -220px; /* Ширина блока + отступ */
+    float: right;
+    margin-right: -220px;
+    margin-left: 20px;
+    clear: right;
 }
 
 .text-with-side-inner {
@@ -71,28 +76,22 @@
     color: #333;
 }
 
-/* Контейнеры контента должны иметь относительное позиционирование */
-.entry-content,
-.post-content,
-.wp-block-post-content {
-    position: relative;
+/* Очистка float для контента */
+.entry-content::after,
+.post-content::after,
+.wp-block-post-content::after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
-/* Каждый блок внутри контента тоже должен быть относительным */
-.entry-content > *,
-.post-content > *,
-.wp-block-post-content > * {
-    position: relative;
-}
-
-/* Адаптивность для мобильных устройств */
+/* Адаптивность для мобильных */
 @media (max-width: 768px) {
     .text-with-side-block {
-        position: relative !important;
         width: 100% !important;
-        margin: 20px 0 !important;
-        left: auto !important;
-        right: auto !important;
+        float: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
 
     .text-with-side-inner {
