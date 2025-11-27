@@ -1,0 +1,25 @@
+{
+    "domain": "tsi",
+    "locale_data": {
+        "tsi": {
+            "": {
+                "domain": "tsi",
+                "plural_forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);",
+                "lang": "ru_RU"
+            },
+            "Side image": ["Боковое изображение"],
+            "Image Settings": ["Настройки изображения"],
+            "Image Position": ["Положение изображения"],
+            "Left side": ["Слева"],
+            "Right side": ["Справа"],
+            "Image Width": ["Ширина изображения"],
+            "Width in pixels": ["Ширина в пикселях"],
+            "Replace": ["Заменить"],
+            "Remove": ["Удалить"],
+            "Side Image": ["Боковое изображение"],
+            "Add an optional image that appears beside the text": ["Добавьте необязательное изображение, которое будет отображаться рядом с текстом"],
+            "Select Image": ["Выбрать изображение"],
+            "Enter your text here... You can add formatting, links, and more.": ["Введите ваш текст здесь... Можно добавлять форматирование, ссылки и многое другое."]
+        }
+    }
+}

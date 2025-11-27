@@ -1,29 +1,35 @@
 .wp-block-tsi-text-with-side-image {
     margin: 20px 0;
-    position: relative;
 }
 
 .tsi-block {
+    display: block;
     position: relative;
-    z-index: 1;
 
     &.tsi-image-left {
-        margin-left: 200px;
+        margin-left: 170px;
+
+        .tsi-image {
+            position: absolute;
+            left: -170px;
+            top: 0;
+            width: 150px;
+        }
     }
 
     &.tsi-image-right {
-        margin-right: 200px;
+        margin-right: 170px;
+
+        .tsi-image {
+            position: absolute;
+            right: -170px;
+            top: 0;
+            width: 150px;
+        }
     }
 
     .tsi-image {
-        position: absolute;
-        top: 0;
-        width: 150px;
-        z-index: 2;
-
         .tsi-image-preview {
-            position: relative;
-
             img {
                 width: 100%;
                 height: auto;
@@ -41,31 +47,23 @@
         }
     }
 
-    &.tsi-image-left .tsi-image {
-        left: -180px;
-    }
-
-    &.tsi-image-right .tsi-image {
-        right: -180px;
-    }
-
     .tsi-image-upload {
         position: absolute;
         top: 0;
         width: 150px;
 
+        &.tsi-image-left-upload {
+            left: -170px;
+        }
+
+        &.tsi-image-right-upload {
+            right: -170px;
+        }
+
         .components-placeholder {
             min-height: 100px;
             padding: 10px;
         }
-    }
-
-    &.tsi-image-left .tsi-image-upload {
-        left: -180px;
-    }
-
-    &.tsi-image-right .tsi-image-upload {
-        right: -180px;
     }
 
     .tsi-content-wrapper {

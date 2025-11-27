@@ -1,41 +1,40 @@
 .wp-block-tsi-text-with-side-image {
     margin: 30px 0;
-    position: relative;
 }
 
 .tsi-block {
+    display: block;
     position: relative;
-    z-index: 1;
 
     &.tsi-image-left {
-        margin-left: 180px;
+        margin-left: 170px;
+
+        .tsi-image {
+            position: absolute;
+            left: -170px;
+            top: 0;
+            width: 150px;
+        }
     }
 
     &.tsi-image-right {
-        margin-right: 180px;
+        margin-right: 170px;
+
+        .tsi-image {
+            position: absolute;
+            right: -170px;
+            top: 0;
+            width: 150px;
+        }
     }
 
     .tsi-image {
-        position: absolute;
-        top: 0;
-        z-index: 2;
-
         img {
             width: 100%;
             height: auto;
             display: block;
             border-radius: 4px;
         }
-    }
-
-    &.tsi-image-left .tsi-image {
-        left: -180px;
-        width: 150px;
-    }
-
-    &.tsi-image-right .tsi-image {
-        right: -180px;
-        width: 150px;
     }
 
     .tsi-content-wrapper {
@@ -69,8 +68,8 @@
         &.tsi-image-left .tsi-image,
         &.tsi-image-right .tsi-image {
             position: relative;
-            left: auto;
-            right: auto;
+            left: auto !important;
+            right: auto !important;
             width: 100%;
             max-width: 250px;
             margin: 0 auto 20px;
