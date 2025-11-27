@@ -1,0 +1,38 @@
+.text-with-side-block {
+	margin: 20px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+
+	&.text-with-side-left {
+		float: left;
+		margin-right: 20px;
+		clear: left;
+	}
+
+	&.text-with-side-right {
+		float: right;
+		margin-left: 20px;
+		clear: right;
+	}
+
+	.text-with-side-image {
+		text-align: center;
+
+		img {
+			height: auto;
+			display: block;
+		}
+
+		.add-image,
+		.remove-image {
+			margin-top: 10px;
+			display: block;
+		}
+	}
+
+	.text-with-side-content {
+		font-size: 0.95rem;
+		color: #666;
+	}
+}

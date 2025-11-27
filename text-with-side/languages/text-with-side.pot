@@ -1,0 +1,57 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Text with Side\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 12:00+0300\n"
+"PO-Revision-Date: 2024-01-01 12:00+0300\n"
+"Last-Translator: Vladimir Bychko <info@bychko.ru>\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Text with Side"
+msgstr ""
+
+msgid "Text block with optional side image"
+msgstr ""
+
+msgid "Block Settings"
+msgstr ""
+
+msgid "Display Position"
+msgstr ""
+
+msgid "Left"
+msgstr ""
+
+msgid "Right"
+msgstr ""
+
+msgid "Image Link"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "To Media File"
+msgstr ""
+
+msgid "To Attachment Page"
+msgstr ""
+
+msgid "Image Width"
+msgstr ""
+
+msgid "Default: 150px"
+msgstr ""
+
+msgid "Add Image"
+msgstr ""
+
+msgid "Remove Image"
+msgstr ""
+
+msgid "Enter your text here..."
+msgstr ""

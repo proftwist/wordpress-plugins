@@ -1,0 +1,57 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Text with Side\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 12:00+0300\n"
+"PO-Revision-Date: 2024-01-01 12:00+0300\n"
+"Last-Translator: Vladimir Bychko <info@bychko.ru>\n"
+"Language-Team: \n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Text with Side"
+msgstr "Текст сбоку"
+
+msgid "Text block with optional side image"
+msgstr "Блок текста с опциональным боковым изображением"
+
+msgid "Block Settings"
+msgstr "Настройки блока"
+
+msgid "Display Position"
+msgstr "Отображение блока"
+
+msgid "Left"
+msgstr "Слева"
+
+msgid "Right"
+msgstr "Справа"
+
+msgid "Image Link"
+msgstr "Ссылка на изображение"
+
+msgid "None"
+msgstr "Нет"
+
+msgid "To Media File"
+msgstr "На медиафайл"
+
+msgid "To Attachment Page"
+msgstr "На страницу вложения"
+
+msgid "Image Width"
+msgstr "Ширина блока"
+
+msgid "Default: 150px"
+msgstr "По-умолчанию: 150px"
+
+msgid "Add Image"
+msgstr "Добавить изображение"
+
+msgid "Remove Image"
+msgstr "Удалить изображение"
+
+msgid "Enter your text here..."
+msgstr "Введите ваш текст здесь..."
