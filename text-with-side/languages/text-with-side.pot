@@ -1,90 +1,94 @@
-# Copyright (C) 2024 Vladimir Bychko
-# This file is distributed under the same license as the Text with Side plugin.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Text with Side 2.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-27 17:36+0300\n"
-"PO-Revision-Date: 2025-11-27 17:36+0300\n"
-"Last-Translator: Vladimir Bychko <info@bychko.ru>\n"
-"Language-Team: \n"
+"POT-Creation-Date: 2025-11-27 23:11:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/index.js
+#: src/index.js:23
 msgid "Text with Side"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:24
 msgid "Text block with side image that floats in margins on frontend"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:108
 msgid "Block Settings"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:111
 msgid "Display Position on Frontend"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:114
 msgid "Left"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:115
 msgid "Right"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:122
 msgid "Image Link"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:125
 msgid "None"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:126
 msgid "To Media File"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:127
 msgid "To Attachment Page"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:134
 msgid "Image Width on Frontend"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:137
 msgid "Default: 150px"
 msgstr ""
 
-#: src/index.js
-msgid "Add Image"
-msgstr ""
-
-#: src/index.js
+#: src/index.js:159
 msgid "Remove Image"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:176
+msgid "Add Image"
+msgstr ""
+
+#: src/index.js:188
 msgid "Enter your text here..."
 msgstr ""
 
-#: src/index.js
+#: src/index.js:196
 msgid "On frontend this block will float in the "
 msgstr ""
 
-#: src/index.js
+#: src/index.js:197
 msgid "left margin"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:197
 msgid "right margin"
 msgstr ""
 
-#: src/index.js
+#: src/index.js:198
 msgid " with width: "
 msgstr ""

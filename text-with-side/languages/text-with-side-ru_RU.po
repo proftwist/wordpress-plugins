@@ -1,12 +1,14 @@
-# Russian translation for Text with Side
-# Copyright (C) 2024 Vladimir Bychko
-# This file is distributed under the same license as the Text with Side plugin.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Vladimir Bychko <info@bychko.ru>, 2025.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Text with Side 2.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-27 17:36+0300\n"
-"PO-Revision-Date: 2025-11-27 17:36+0300\n"
+"POT-Creation-Date: 2025-11-27 23:11:00+0000\n"
+"PO-Revision-Date: 2025-11-27 23:11:00+0000\n"
 "Last-Translator: Vladimir Bychko <info@bychko.ru>\n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -15,59 +17,78 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
+#: src/index.js:23
 msgid "Text with Side"
-msgstr "Текст сбоку"
+msgstr "Текст с краю"
 
+#: src/index.js:24
 msgid "Text block with side image that floats in margins on frontend"
-msgstr "Блок текста с изображением, который отображается на полях на фронтенде"
+msgstr "Текстовый блок с изображением с краю, который отображается в полях на фронтенде"
 
+#: src/index.js:108
 msgid "Block Settings"
 msgstr "Настройки блока"
 
+#: src/index.js:111
 msgid "Display Position on Frontend"
-msgstr "Отображение блока на фронтенде"
+msgstr "Позиция отображения на фронтенде"
 
+#: src/index.js:114
 msgid "Left"
 msgstr "Слева"
 
+#: src/index.js:115
 msgid "Right"
 msgstr "Справа"
 
+#: src/index.js:122
 msgid "Image Link"
 msgstr "Ссылка на изображение"
 
+#: src/index.js:125
 msgid "None"
-msgstr "Нет"
+msgstr "Без ссылки"
 
+#: src/index.js:126
 msgid "To Media File"
 msgstr "На медиафайл"
 
+#: src/index.js:127
 msgid "To Attachment Page"
 msgstr "На страницу вложения"
 
+#: src/index.js:134
 msgid "Image Width on Frontend"
 msgstr "Ширина изображения на фронтенде"
 
+#: src/index.js:137
 msgid "Default: 150px"
 msgstr "По умолчанию: 150px"
 
-msgid "Add Image"
-msgstr "Добавить изображение"
-
+#: src/index.js:159
 msgid "Remove Image"
 msgstr "Удалить изображение"
 
+#: src/index.js:176
+msgid "Add Image"
+msgstr "Добавить изображение"
+
+#: src/index.js:188
 msgid "Enter your text here..."
 msgstr "Введите ваш текст здесь..."
 
+#: src/index.js:196
 msgid "On frontend this block will float in the "
-msgstr "На фронтенде этот блок будет отображаться в "
+msgstr "На фронтенде этот блок будет плавать в "
 
+#: src/index.js:197
 msgid "left margin"
 msgstr "левом поле"
 
+#: src/index.js:197
 msgid "right margin"
 msgstr "правом поле"
 
+#: src/index.js:198
 msgid " with width: "
 msgstr " с шириной: "
