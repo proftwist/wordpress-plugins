@@ -1,0 +1,79 @@
+.wp-block-tsi-text-with-side-image {
+    margin: 30px 0;
+    position: relative;
+}
+
+.tsi-block {
+    position: relative;
+    z-index: 1;
+
+    &.tsi-image-left {
+        margin-left: 180px;
+    }
+
+    &.tsi-image-right {
+        margin-right: 180px;
+    }
+
+    .tsi-image {
+        position: absolute;
+        top: 0;
+        z-index: 2;
+
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+        }
+    }
+
+    &.tsi-image-left .tsi-image {
+        left: -180px;
+        width: 150px;
+    }
+
+    &.tsi-image-right .tsi-image {
+        right: -180px;
+        width: 150px;
+    }
+
+    .tsi-content-wrapper {
+        .tsi-content {
+            line-height: 1.7;
+
+            p:first-child {
+                margin-top: 0;
+            }
+
+            p:last-child {
+                margin-bottom: 0;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                margin-top: 0;
+            }
+        }
+    }
+}
+
+// Адаптивность
+@media (max-width: 1024px) {
+    .tsi-block {
+        &.tsi-image-left,
+        &.tsi-image-right {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        &.tsi-image-left .tsi-image,
+        &.tsi-image-right .tsi-image {
+            position: relative;
+            left: auto;
+            right: auto;
+            width: 100%;
+            max-width: 250px;
+            margin: 0 auto 20px;
+        }
+    }
+}
