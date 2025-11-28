@@ -1,24 +1,29 @@
+/* Основной контейнер блока с текстом и изображением */
 .text-with-side-block {
 	margin: 20px 0;
 	display: flex;
 	flex-direction: column;
 	gap: 15px;
 
+	/* Блок с изображением слева */
 	&.text-with-side-left {
 		float: left;
 		margin-right: 20px;
 		clear: left;
 	}
 
+	/* Блок с изображением справа */
 	&.text-with-side-right {
 		float: right;
 		margin-left: 20px;
 		clear: right;
 	}
 
+	/* Контейнер изображения */
 	.text-with-side-image {
 		text-align: center;
 
+		/* Стили для изображения */
 		img {
 			height: auto;
 			display: block;
@@ -26,14 +31,17 @@
 		}
 	}
 
+	/* Контейнер текстового содержимого */
 	.text-with-side-content {
 		font-size: 0.95rem;
 		color: #666;
 		line-height: 1.6;
 
+		/* Стили для абзацев */
 		p {
 			margin: 0 0 1em 0;
 
+			/* Убираем нижний отступ у последнего абзаца */
 			&:last-child {
 				margin-bottom: 0;
 			}
@@ -41,7 +49,7 @@
 	}
 }
 
-/* Очистка float */
+/* Очистка float для корректного отображения контента */
 .entry-content::after,
 .post-content::after,
 .content::after {
