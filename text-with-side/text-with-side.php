@@ -1,15 +1,15 @@
 <?php
 /**
  * Plugin Name: Text with Side
- * Description: Гутенберговский блок для текста с боковым изображением, который отображается на полях
- * Author: Владимир Бычко
+ * Description: Gutenberg block for text with side image that floats in margins
+ * Author: Vladimir Bychko
  * Author URI: http://bychko.ru
  * Version: 2.0.0
  * Text Domain: text-with-side
  * Domain Path: /languages
  */
 
-// Защита от прямого доступа - проверяем, что скрипт запущен из WordPress
+// Проверка безопасности - убедимся, что скрипт выполняется из WordPress
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -26,21 +26,21 @@ class TextWithSidePlugin {
 	 * Конструктор класса - инициализирует хуки WordPress
 	 */
 	public function __construct() {
-		// Регистрируем блок при инициализации WordPress
+		// Регистрация блока при инициализации WordPress
 		add_action( 'init', array( $this, 'init' ) );
 
-		// Загружаем файлы переводов для интернационализации
-		add_action( 'init', array( $this, 'load_textdomain' ) );
+		// Загрузка файлов перевода для мультиязычной поддержки - используем правильный хук
+		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 
-		// Подключаем CSS стили для фронтенда (публичной части сайта)
+		// Подключение CSS стилей для фронтенда (публичной части сайта)
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 
-		// Подключаем JavaScript и CSS для редактора Gutenberg
+		// Подключение JavaScript и CSS для редактора Gutenberg
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
 	}
 
 	/**
-	 * Загрузка файлов переводов для поддержки многоязычности
+	 * Загрузка файлов перевода для мультиязычной поддержки
 	 *
 	 * Эта функция позволяет плагину автоматически подхватывать
 	 * переводы в зависимости от языка WordPress.
@@ -52,7 +52,7 @@ class TextWithSidePlugin {
 	/**
 	 * Подключение CSS стилей для фронтенда
 	 *
-	 * Эти стили применяются только на публичной части сайта,
+	 * Эти стили применяются только в публичной части сайта,
 	 * когда пользователь просматривает страницу.
 	 */
 	public function enqueue_frontend_assets() {
@@ -60,18 +60,18 @@ class TextWithSidePlugin {
 			'text-with-side-frontend',              // Уникальный идентификатор стиля
 			plugins_url( 'assets/frontend.css', __FILE__ ), // Путь к файлу стилей
 			array(),                                // Зависимости (пустой массив)
-			'2.0.0'                                 // Версия стилей
+			'2.0.0'                                 // Версия стиля
 		);
 	}
 
 	/**
 	 * Подключение JavaScript и CSS для редактора Gutenberg
 	 *
-	 * Эти ресурсы загружаются только в админ-панели,
+	 * Эти ресурсы загружаются только в админке,
 	 * когда пользователь редактирует контент.
 	 */
 	public function enqueue_editor_assets() {
-		// Подключаем JavaScript для функциональности блока
+		// Подключение JavaScript для функциональности блока
 		wp_enqueue_script(
 			'text-with-side-editor',                                         // Идентификатор скрипта
 			plugins_url( 'build/index.js', __FILE__ ),                      // Путь к скрипту
@@ -79,11 +79,14 @@ class TextWithSidePlugin {
 			'2.0.0'                                                          // Версия
 		);
 
-		// Подключаем переводы для JavaScript
-		// Это позволяет блоку отображаться на русском языке в редакторе
-		wp_set_script_translations( 'text-with-side-editor', 'text-with-side', plugin_dir_path( __FILE__ ) . 'languages' );
+		// Настройка переводов для JavaScript - ключевой шаг для локализации в Gutenberg
+		wp_set_script_translations(
+			'text-with-side-editor',      // handle скрипта
+			'text-with-side',             // text-domain
+			plugin_dir_path( __FILE__ ) . 'languages'
+		);
 
-		// Подключаем CSS стили для редактора
+		// Подключение CSS стилей для редактора
 		wp_enqueue_style(
 			'text-with-side-editor',                  // Идентификатор стиля
 			plugins_url( 'assets/editor.css', __FILE__ ), // Путь к стилям редактора
@@ -96,7 +99,7 @@ class TextWithSidePlugin {
 	 * Инициализация Gutenberg блока
 	 *
 	 * Регистрирует новый тип блока и его настройки.
-	 * Выполняется только если функция register_block_type доступна.
+	 * Выполняется только если доступна функция register_block_type.
 	 */
 	public function init() {
 		// Проверяем, что WordPress поддерживает блоки (Gutenberg)
@@ -108,9 +111,9 @@ class TextWithSidePlugin {
 		register_block_type( 'text-with-side/text-with-side', array(
 			'editor_script' => 'text-with-side-editor',      // JavaScript для редактора
 			'editor_style'  => 'text-with-side-editor',      // CSS для редактора
-			'render_callback' => array( $this, 'render_block' ), // Функция рендеринга блока
+			'render_callback' => array( $this, 'render_block' ), // Функция отображения блока
 
-			// Атрибуты блока - данные, которые сохраняются в базе данных
+			// Атрибуты блока - данные, сохраняемые в базе данных
 			'attributes' => array(
 				'content' => array(                         // Текстовое содержимое блока
 					'type' => 'string',
@@ -145,13 +148,13 @@ class TextWithSidePlugin {
 	}
 
 	/**
-	 * Функция рендеринга блока для фронтенда
+	 * Функция отображения блока для фронтенда
 	 *
 	 * Получает атрибуты блока и генерирует HTML для отображения
-	 * на публичной части сайта.
+	 * в публичной части сайта.
 	 *
 	 * @param array $attributes Атрибуты блока из базы данных
-	 * @param string $content Содержимое блока (не используется в данном блоке)
+	 * @param string $content Содержимое блока (не используется в этом блоке)
 	 * @return string HTML код блока
 	 */
 	public function render_block( $attributes, $content ) {
@@ -169,7 +172,7 @@ class TextWithSidePlugin {
 			return '';
 		}
 
-		// Генерируем CSS классы для блока на основе позиции
+		// Генерируем CSS классы для блока в зависимости от позиции
 		$wrapper_class = 'text-with-side-block text-with-side-' . esc_attr( $position );
 
 		// Подготавливаем HTML для изображения
@@ -180,7 +183,7 @@ class TextWithSidePlugin {
 
 			// Оборачиваем изображение в ссылку в зависимости от настроек
 			if ( $image_link === 'media' && $image_id ) {
-				// Ссылка на медиафайл (полноразмерное изображение)
+				// Ссылка на медиафайл (изображение в полном размере)
 				$media_url = wp_get_attachment_url( $image_id );
 				$image = '<a href="' . esc_url( $media_url ) . '" class="text-with-side-image-link">' . $image . '</a>';
 			} elseif ( $image_link === 'attachment' && $image_id ) {
@@ -192,7 +195,7 @@ class TextWithSidePlugin {
 				$image = '<div class="text-with-side-image-link">' . $image . '</div>';
 			}
 
-			// Формируем контейнер для изображения
+			// Создаем контейнер для изображения
 			$image_html = '<div class="text-with-side-image">' . $image . '</div>';
 		}
 
