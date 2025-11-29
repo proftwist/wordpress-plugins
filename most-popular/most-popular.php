@@ -84,7 +84,7 @@ function most_popular_render_block( $attributes ) {
 
 	// Исправленный запрос с использованием LIKE для поиска по началу периода
 	$period_pattern = $year_for_sql . '%';
-	
+
 	$query = $wpdb->prepare(
 		"SELECT p.ID, p.post_title, COALESCE(SUM(v.count), 0) AS view_count
 		 FROM {$wpdb->posts} p
@@ -120,7 +120,7 @@ function most_popular_render_block( $attributes ) {
 				<thead>
 					<tr>
 						<th><strong><?php esc_html_e( 'Пост', 'most-popular' ); ?></strong></th>
-						<th><strong><?php esc_html_e( 'Количество просмотров', 'most-popular' ); ?></strong></th>
+						<th><strong><?php esc_html_e( 'Просмотры', 'most-popular' ); ?></strong></th>
 					</tr>
 				</thead>
 				<tbody>

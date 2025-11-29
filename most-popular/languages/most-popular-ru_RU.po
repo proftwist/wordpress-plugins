@@ -35,8 +35,8 @@ msgid "Пост"
 msgstr "Пост"
 
 #: most-popular.php:122
-msgid "Количество просмотров"
-msgstr "Количество просмотров"
+msgid "Просмотры"
+msgstr "Просмотры"
 
 #: most-popular.php:134
 msgid "За выбранный год посты не найдены."

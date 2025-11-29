@@ -35,7 +35,7 @@ msgid "Пост"
 msgstr "Post"
 
 #: most-popular.php:122
-msgid "Количество просмотров"
+msgid "Просмотры"
 msgstr "Views"
 
 #: most-popular.php:134
