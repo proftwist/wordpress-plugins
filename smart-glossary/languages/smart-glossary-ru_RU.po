@@ -1,0 +1,64 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Smart Glossary 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-10-01 12:00+0000\n"
+"PO-Revision-Date: 2023-10-01 12:00+0000\n"
+"Last-Translator: Vladimir Bychko <vladimir@bychko.ru>\n"
+"Language-Team: Russian\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+
+msgid "Smart Glossary"
+msgstr "Умный глоссарий"
+
+msgid "Smart Glossary Settings"
+msgstr "Настройки Умного глоссария"
+
+msgid "General Settings"
+msgstr "Общие настройки"
+
+msgid "Enable Plugin"
+msgstr "Включить плагин"
+
+msgid "Save Settings"
+msgstr "Сохранить настройки"
+
+msgid "Add New Term"
+msgstr "Добавить новый термин"
+
+msgid "Term"
+msgstr "Термин"
+
+msgid "Definition"
+msgstr "Определение"
+
+msgid "Add Term"
+msgstr "Добавить"
+
+msgid "Existing Terms"
+msgstr "Существующие термины"
+
+msgid "Actions"
+msgstr "Действия"
+
+msgid "Delete"
+msgstr "Удалить"
+
+msgid "Are you sure?"
+msgstr "Вы уверены?"
+
+msgid "Settings saved."
+msgstr "Настройки сохранены."
+
+msgid "Term added."
+msgstr "Термин добавлен."
+
+msgid "Term deleted."
+msgstr "Термин удален."
+
+msgid "No terms found."
+msgstr "Термины не найдены."
