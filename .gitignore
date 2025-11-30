@@ -2,4 +2,5 @@
 *.zip
 sol.md
 .vscode
+.roo
 node_modules
