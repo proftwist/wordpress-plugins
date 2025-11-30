@@ -179,9 +179,9 @@
             if (this.selectedYear === 'last12') {
                 // Последние 12 месяцев от текущего
                 for (let i = 11; i >= 0; i--) {
-                    const monthDate = new Date(now);
-                    monthDate.setMonth(now.getMonth() - i);
-                    monthDate.setDate(1);
+                    const year = now.getFullYear();
+                    const month = now.getMonth() - i;
+                    const monthDate = new Date(year, month, 1);
                     monthsToShow.push(monthDate);
                 }
             } else {
@@ -272,7 +272,8 @@
            const month = monthDate.getMonth();
 
            // Устанавливаем дату на первый день месяца для правильного расчета
-           monthDate.setDate(1);
+           const monthStartDate = new Date(monthDate.getTime());
+           monthStartDate.setDate(1);
 
            // Get first day of month and what day of week it falls on
            const firstDay = new Date(year, month, 1);

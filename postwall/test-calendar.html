@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест календаря Post Wall</title>
+    <style>
+        .months { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .month { border: 1px solid #ccc; padding: 10px; }
+        .month-name { font-weight: bold; margin-bottom: 5px; }
+        .debug-info { margin: 20px 0; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Тест исправления бага с месяцами в календаре Post Wall</h1>
+
+    <div class="debug-info" id="debug">
+        <h3>Отладочная информация:</h3>
+        <div id="debug-output"></div>
+    </div>
+
+    <div class="months" id="calendar"></div>
+
+    <script>
+        // Симулируем исправленную логику из frontend.js
+        class PostWallTest {
+            constructor() {
+                this.selectedYear = 'last12';
+                this.generateCalendar();
+            }
+
+            generateCalendar() {
+                const debugOutput = document.getElementById('debug-output');
+                const monthsContainer = document.getElementById('calendar');
+                const now = new Date();
+
+                let monthsToShow = [];
+
+                // Определяем диапазон месяцев для отображения
+                if (this.selectedYear === 'last12') {
+                    // Последние 12 месяцев от текущего
+                    for (let i = 11; i >= 0; i--) {
+                        const monthDate = new Date(now.getTime());
+                        monthDate.setMonth(now.getMonth() - i);
+                        monthDate.setDate(1);
+                        monthsToShow.push(monthDate);
+                    }
+                } else {
+                    // Все месяцы выбранного года
+                    const year = parseInt(this.selectedYear);
+                    for (let month = 0; month < 12; month++) {
+                        const monthDate = new Date(year, month, 1);
+                        monthsToShow.push(monthDate);
+                    }
+                }
+
+                // Отладочная информация
+                let debugText = '<h4>Список месяцев:</h4><ul>';
+                const monthNames = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн',
+                                   'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+
+                const uniqueMonths = new Set();
+                const monthList = [];
+
+                monthsToShow.forEach((monthDate, index) => {
+                    const monthName = monthNames[monthDate.getMonth()];
+                    const year = monthDate.getFullYear();
+                    const key = `${year}-${monthDate.getMonth()}`;
+
+                    debugText += `<li>${index + 1}. ${monthName} ${year} (месяц: ${monthDate.getMonth()})</li>`;
+
+                    if (uniqueMonths.has(key)) {
+                        debugText += `<li style="color: red;">⚠️ ДУБЛЬ: ${monthName} ${year} уже встречался!</li>`;
+                    }
+                    uniqueMonths.add(key);
+                    monthList.push(`${monthName} ${year}`);
+                });
+
+                debugText += '</ul>';
+                debugText += `<p><strong>Общее количество месяцев: ${monthsToShow.length}</strong></p>`;
+                debugText += `<p><strong>Уникальных месяцев: ${uniqueMonths.size}</strong></p>`;
+
+                // Проверяем дубли
+                if (monthList.length !== uniqueMonths.size) {
+                    debugText += '<p style="color: red;"><strong>❌ НАЙДЕНЫ ДУБЛИ МЕСЯЦЕВ!</strong></p>';
+                } else {
+                    debugText += '<p style="color: green;"><strong>✅ Дубли не найдены</strong></p>';
+                }
+
+                debugOutput.innerHTML = debugText;
+
+                // Создаем месяцы
+                monthsToShow.forEach(monthDate => {
+                    const monthDiv = this.createMonth(monthDate);
+                    monthsContainer.appendChild(monthDiv);
+                });
+            }
+
+            createMonth(monthDate) {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month';
+
+                const year = monthDate.getFullYear();
+                const month = monthDate.getMonth();
+
+                // Устанавливаем дату на первый день месяца для правильного расчета
+                const monthStartDate = new Date(monthDate.getTime());
+                monthStartDate.setDate(1);
+
+                const monthNames = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн',
+                                   'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+
+                const monthName = monthNames[month];
+
+                const monthLabel = document.createElement('div');
+                monthLabel.className = 'month-name';
+                monthLabel.textContent = `${monthName} ${year}`;
+
+                monthDiv.appendChild(monthLabel);
+
+                return monthDiv;
+            }
+        }
+
+        // Инициализация теста
+        new PostWallTest();
+    </script>
+</body>
+</html>

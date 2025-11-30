@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Post Wall
  * Description: Displays post wall charts as Gutenberg blocks or shortcodes
- * Version: 2.2.0
+ * Version: 2.2.1
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: postwall
@@ -17,7 +17,7 @@ defined('ABSPATH') || exit;
 // Определение констант для удобства работы с путями
 define('POSTWALL_PLUGIN_PATH', plugin_dir_path(__FILE__)); // Абсолютный путь к папке плагина
 define('POSTWALL_PLUGIN_URL', plugin_dir_url(__FILE__));   // URL к папке плагина
-define('POSTWALL_PLUGIN_VERSION', '2.2.0');                // Версия плагина
+define('POSTWALL_PLUGIN_VERSION', '2.2.1');                // Версия плагина
 
 // Подключение вспомогательных файлов
 require_once POSTWALL_PLUGIN_PATH . 'includes/class-assets-manager.php';       // Менеджер ресурсов
