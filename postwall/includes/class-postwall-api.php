@@ -264,11 +264,14 @@ if (!class_exists('PostWall_API')) {
             // Инициализируем все дни за период
             $current_date = clone $start_date;
             while ($current_date <= $end_date) {
-                $stats[$current_date->format('Y-m-d')] = 0;
+                $stats[$current_date->format('Y-m-d')] = array(
+                    'count' => 0,
+                    'titles' => array()
+                );
                 $current_date->modify('+1 day');
             }
 
-            // Подсчитываем посты по дням
+            // Подсчитываем посты по дням и собираем заголовки
             foreach ($posts as $post) {
                 if (isset($post['date'])) {
                     $post_date = new DateTime($post['date']);
@@ -277,7 +280,19 @@ if (!class_exists('PostWall_API')) {
                     // Проверяем, что дата в диапазоне
                     if ($post_date >= $start_date && $post_date <= $end_date) {
                         if (isset($stats[$post_date_str])) {
-                            $stats[$post_date_str]++;
+                            $stats[$post_date_str]['count']++;
+
+                            // Получаем заголовок поста
+                            $post_title = '';
+                            if (isset($post['title']['rendered'])) {
+                                $post_title = $post['title']['rendered'];
+                            } elseif (isset($post['title']) && is_string($post['title'])) {
+                                $post_title = $post['title'];
+                            }
+
+                            if (!empty($post_title)) {
+                                $stats[$post_date_str]['titles'][] = sanitize_text_field($post_title);
+                            }
                         }
                     }
                 }

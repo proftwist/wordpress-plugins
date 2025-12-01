@@ -312,17 +312,31 @@
                    dayCell.setAttribute('data-date', localDate.toISOString().split('T')[0]);
                }
 
-               // Add tooltip with post count
-               // Используем локальную дату для получения количества постов
+               // Add tooltip with post count and titles
+               // Используем локальную дату для получения данных о постах
                const localDate = new Date(cellDate.getTime() - (cellDate.getTimezoneOffset() * 60000));
-               const postCount = this.postData ?
-                   (this.postData[localDate.toISOString().split('T')[0]] || 0) : 0;
+               const dateKey = localDate.toISOString().split('T')[0];
+               const postData = this.postData ? (this.postData[dateKey] || null) : null;
+
+               // Получаем количество и заголовки постов
+               let postCount = 0;
+               let postTitles = [];
+               if (postData) {
+                   // Новая структура: {count: X, titles: [...]}
+                   if (typeof postData === 'object' && postData !== null && 'count' in postData) {
+                       postCount = postData.count || 0;
+                       postTitles = postData.titles || [];
+                   } else {
+                       // Старая структура для обратной совместимости: просто число
+                       postCount = typeof postData === 'number' ? postData : 0;
+                   }
+               }
 
                // Форматируем дату согласно настройкам WordPress
                const formattedDate = this.formatDateAccordingToWordPress(cellDate);
 
                // Создаем локализованный текст для тултипа
-               const tooltipText = this.formatTooltip(formattedDate, postCount);
+               const tooltipText = this.formatTooltip(formattedDate, postCount, postTitles);
                dayCell.title = tooltipText;
 
                monthGrid.appendChild(dayCell);
@@ -347,15 +361,31 @@
        }
 
         /**
-         * Форматировать текст подсказки с правильной локализацией
+         * Форматировать текст подсказки с правильной локализацией и заголовками постов
          * @param {string} date Отформатированная дата
          * @param {number} postCount Количество постов
+         * @param {Array} postTitles Массив заголовков постов
          * @return {string} Локализованный текст подсказки
          */
-        formatTooltip(date, postCount) {
+        formatTooltip(date, postCount, postTitles = []) {
             // Получаем переведенное слово "posts" в правильной форме
             const postsText = this.getPostsText(postCount);
-            return `${date}: ${postCount} ${postsText}`;
+
+            // Базовый текст с датой и количеством
+            let tooltipText = `${date}: ${postCount} ${postsText}`;
+
+            // Добавляем заголовки постов
+            if (postTitles && postTitles.length > 0) {
+                // Если пост один - в одну строчку
+                if (postTitles.length === 1) {
+                    tooltipText += ` - ${postTitles[0]}`;
+                } else {
+                    // Если постов несколько - друг над другом
+                    tooltipText += '\n' + postTitles.join('\n');
+                }
+            }
+
+            return tooltipText;
         }
 
         /**
@@ -467,7 +497,17 @@
                 // Используем локальную дату для ключа данных
                 const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
                 const dateKey = localDate.toISOString().split('T')[0]; // Формат YYYY-MM-DD
-                const postCount = this.postData[dateKey] || 0;
+                const postData = this.postData[dateKey];
+
+                // Получаем количество постов (поддержка новой и старой структуры)
+                let postCount = 0;
+                if (postData) {
+                    if (typeof postData === 'object' && postData !== null && 'count' in postData) {
+                        postCount = postData.count || 0;
+                    } else if (typeof postData === 'number') {
+                        postCount = postData;
+                    }
+                }
 
                 // Определяем уровень активности на основе количества постов
                 if (postCount === 0) return 0; // Нет постов
