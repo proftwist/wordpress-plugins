@@ -33,6 +33,13 @@ class SG_Admin {
         $terms = $wpdb->get_results( "SELECT * FROM $table_name ORDER BY term ASC" );
         $is_enabled = get_option( 'sg_enabled', '1' );
 
+        // Получаем данные для редактирования, если есть
+        $edit_term = null;
+        $edit_id = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : 0;
+        if ( $edit_id > 0 ) {
+            $edit_term = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $edit_id ) );
+        }
+
         ?>
         <div class="wrap">
             <h1><?php _e( 'Smart Glossary Settings', 'smart-glossary' ); ?></h1>
@@ -55,21 +62,29 @@ class SG_Admin {
             <hr>
 
             <!-- Форма добавления/редактирования -->
-            <h2><?php _e( 'Add New Term', 'smart-glossary' ); ?></h2>
+            <h2><?php echo $edit_term ? __( 'Edit Term', 'smart-glossary' ) : __( 'Add New Term', 'smart-glossary' ); ?></h2>
             <form method="post" action="" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; margin-bottom: 20px;">
                 <?php wp_nonce_field( 'sg_save_term', 'sg_term_nonce' ); ?>
+                <?php if ( $edit_term ) : ?>
+                    <input type="hidden" name="term_id" value="<?php echo esc_attr( $edit_term->id ); ?>">
+                <?php endif; ?>
                 <table class="form-table">
                     <tr>
                         <th scope="row"><label for="term"><?php _e( 'Term', 'smart-glossary' ); ?></label></th>
-                        <td><input type="text" name="term" id="term" class="regular-text" required></td>
+                        <td><input type="text" name="term" id="term" class="regular-text" value="<?php echo $edit_term ? esc_attr( $edit_term->term ) : ''; ?>" required></td>
                     </tr>
                     <tr>
                         <th scope="row"><label for="definition"><?php _e( 'Definition', 'smart-glossary' ); ?></label></th>
-                        <td><textarea name="definition" id="definition" rows="3" class="large-text" required></textarea></td>
+                        <td><textarea name="definition" id="definition" rows="3" class="large-text" required><?php echo $edit_term ? esc_textarea( $edit_term->definition ) : ''; ?></textarea></td>
                     </tr>
                 </table>
                 <p class="submit">
-                    <input type="submit" name="add_term" class="button button-primary" value="<?php _e( 'Add Term', 'smart-glossary' ); ?>">
+                    <?php if ( $edit_term ) : ?>
+                        <input type="submit" name="update_term" class="button button-primary" value="<?php _e( 'Update Term', 'smart-glossary' ); ?>">
+                        <a href="<?php echo admin_url( 'options-general.php?page=smart-glossary' ); ?>" class="button"><?php _e( 'Cancel', 'smart-glossary' ); ?></a>
+                    <?php else : ?>
+                        <input type="submit" name="add_term" class="button button-primary" value="<?php _e( 'Add Term', 'smart-glossary' ); ?>">
+                    <?php endif; ?>
                 </p>
             </form>
 
@@ -90,6 +105,9 @@ class SG_Admin {
                                 <td><strong><?php echo esc_html( $term->term ); ?></strong></td>
                                 <td><?php echo esc_html( $term->definition ); ?></td>
                                 <td>
+                                    <a href="<?php echo admin_url( 'options-general.php?page=smart-glossary&edit=' . $term->id ); ?>" class="button button-small">
+                                        <?php _e( 'Edit', 'smart-glossary' ); ?>
+                                    </a>
                                     <form method="post" action="" style="display:inline;">
                                         <?php wp_nonce_field( 'sg_delete_term', 'sg_delete_nonce' ); ?>
                                         <input type="hidden" name="term_id" value="<?php echo $term->id; ?>">
@@ -132,6 +150,24 @@ class SG_Admin {
                     array( '%s', '%s' )
                 );
                 echo '<div class="notice notice-success is-dismissible"><p>' . __( 'Term added.', 'smart-glossary' ) . '</p></div>';
+            }
+        }
+
+        // Обновление термина
+        if ( isset( $_POST['update_term'] ) && check_admin_referer( 'sg_save_term', 'sg_term_nonce' ) ) {
+            $id = intval( $_POST['term_id'] );
+            $term = sanitize_text_field( $_POST['term'] );
+            $def  = sanitize_textarea_field( $_POST['definition'] );
+
+            if ( ! empty( $term ) && ! empty( $def ) && $id > 0 ) {
+                $wpdb->update(
+                    $table_name,
+                    array( 'term' => $term, 'definition' => $def ),
+                    array( 'id' => $id ),
+                    array( '%s', '%s' ),
+                    array( '%d' )
+                );
+                echo '<div class="notice notice-success is-dismissible"><p>' . __( 'Term updated.', 'smart-glossary' ) . '</p></div>';
             }
         }
 

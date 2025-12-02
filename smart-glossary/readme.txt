@@ -5,7 +5,7 @@ Tags: glossary, autolink, terms, definitions, abbr
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,7 @@ Smart Glossary Autolinker is a WordPress plugin that automatically finds predefi
 * Visual highlighting with dotted underline and background color
 * Tooltip definitions on hover
 * Easy management interface in WordPress Settings
+* Edit existing terms and definitions
 * Full localization support (Russian and English)
 * Enable/disable plugin functionality
 * Sort terms by length to avoid partial matches
@@ -59,6 +60,12 @@ No, term matching is case-insensitive. "WordPress" will match "wordpress", "WORD
 
 == Changelog ==
 
+= 1.1.0 (2024): =
+* Added ability to edit terms and definitions in admin panel
+* Edit button in terms list
+* Edit form with pre-filled data
+* Updated localization with new strings for editing
+
 = 1.0.0 (01.10.2023): =
 * Initial release
 * Automatic term detection and linking
@@ -70,6 +77,9 @@ No, term matching is case-insensitive. "WordPress" will match "wordpress", "WORD
 * Smart term matching that avoids HTML tags and links
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Added ability to edit existing terms and definitions directly from the admin panel.
 
 = 1.0.0 =
 Initial release of Smart Glossary Autolinker.

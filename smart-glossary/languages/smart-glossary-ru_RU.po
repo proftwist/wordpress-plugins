@@ -62,3 +62,18 @@ msgstr "Термин удален."
 
 msgid "No terms found."
 msgstr "Термины не найдены."
+
+msgid "Edit Term"
+msgstr "Редактировать термин"
+
+msgid "Edit"
+msgstr "Редактировать"
+
+msgid "Update Term"
+msgstr "Обновить термин"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Term updated."
+msgstr "Термин обновлен."

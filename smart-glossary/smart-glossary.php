@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Smart Glossary Autolinker
  * Description: Автоматически находит термины в тексте и оборачивает их в тег abbr с определением.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Vladimir Bychko
  * Author URI: http://bychko.ru
  * Text Domain: smart-glossary
