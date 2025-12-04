@@ -54,11 +54,16 @@ class SPD_Test_Runner {
         // Восстанавливаем все плагины
         $this->restore_plugins();
 
+        // Проверяем, активен ли плагин сейчас
+        $active_plugins = get_option('active_plugins', array());
+        $is_active = in_array($plugin, $active_plugins);
+
         // Добавляем результат
         $this->test_results[] = array(
             'plugin' => $plugin,
             'name' => $this->get_plugin_name($plugin),
-            'load_time' => $load_time
+            'load_time' => $load_time,
+            'is_active' => $is_active
         );
     }
 

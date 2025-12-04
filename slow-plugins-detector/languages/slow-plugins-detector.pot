@@ -104,3 +104,43 @@ msgstr ""
 #: includes/class-results-table.php:57
 msgid "Fast"
 msgstr ""
+
+#: includes/class-results-table.php:26
+msgid "Actions"
+msgstr ""
+
+#: includes/class-results-table.php:89
+msgid "Deactivate"
+msgstr ""
+
+#: includes/class-results-table.php:89
+msgid "Activate"
+msgstr ""
+
+#: slow-plugins-detector.php:100
+msgid "Deactivating..."
+msgstr ""
+
+#: slow-plugins-detector.php:101
+msgid "Activating..."
+msgstr ""
+
+#: slow-plugins-detector.php:178
+msgid "Plugin deactivated"
+msgstr ""
+
+#: slow-plugins-detector.php:193
+msgid "Plugin activated"
+msgstr ""
+
+#: slow-plugins-detector.php:168
+msgid "Invalid parameters"
+msgstr ""
+
+#: slow-plugins-detector.php:173
+msgid "Plugin not found"
+msgstr ""
+
+#: slow-plugins-detector.php:199
+msgid "Action failed"
+msgstr ""

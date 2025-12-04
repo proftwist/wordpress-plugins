@@ -97,3 +97,43 @@ msgstr "Умеренный"
 #: includes/class-results-table.php:57
 msgid "Fast"
 msgstr "Быстрый"
+
+#: includes/class-results-table.php:26
+msgid "Actions"
+msgstr "Действия"
+
+#: includes/class-results-table.php:89
+msgid "Deactivate"
+msgstr "Деактивировать"
+
+#: includes/class-results-table.php:89
+msgid "Activate"
+msgstr "Активировать"
+
+#: slow-plugins-detector.php:100
+msgid "Deactivating..."
+msgstr "Деактивация..."
+
+#: slow-plugins-detector.php:101
+msgid "Activating..."
+msgstr "Активация..."
+
+#: slow-plugins-detector.php:178
+msgid "Plugin deactivated"
+msgstr "Плагин деактивирован"
+
+#: slow-plugins-detector.php:193
+msgid "Plugin activated"
+msgstr "Плагин активирован"
+
+#: slow-plugins-detector.php:168
+msgid "Invalid parameters"
+msgstr "Неверные параметры"
+
+#: slow-plugins-detector.php:173
+msgid "Plugin not found"
+msgstr "Плагин не найден"
+
+#: slow-plugins-detector.php:199
+msgid "Action failed"
+msgstr "Действие не выполнено"

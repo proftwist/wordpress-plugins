@@ -47,27 +47,94 @@
          * Отображение результатов в таблице
          */
         function displayResults(results) {
+            // Получаем список активных плагинов через AJAX
             var tableHtml = '<table class="spd-table wp-list-table widefat fixed striped">' +
                 '<thead>' +
                     '<tr>' +
                         '<th>Plugin Name</th>' +
                         '<th>Load Time</th>' +
                         '<th>Status</th>' +
+                        '<th>Actions</th>' +
                     '</tr>' +
                 '</thead>' +
                 '<tbody>';
 
             $.each(results, function(index, result) {
                 var statusBadge = getStatusBadge(result.load_time);
-                tableHtml += '<tr>' +
+                // Проверяем, активен ли плагин (получаем из результатов теста)
+                var isActive = result.is_active !== undefined ? result.is_active : true;
+                var actionButton = getActionButton(result.plugin, isActive);
+
+                tableHtml += '<tr data-plugin="' + escapeHtml(result.plugin) + '">' +
                     '<td><strong>' + escapeHtml(result.name) + '</strong><br><small>' + escapeHtml(result.plugin) + '</small></td>' +
                     '<td>' + result.load_time.toFixed(2) + ' ms</td>' +
                     '<td>' + statusBadge + '</td>' +
+                    '<td>' + actionButton + '</td>' +
                 '</tr>';
             });
 
             tableHtml += '</tbody></table>';
             $('#spd-results-content').html(tableHtml);
+
+            // Привязываем обработчики событий к кнопкам
+            bindToggleButtons();
+        }
+
+        /**
+         * Генерация кнопки действия
+         */
+        function getActionButton(pluginFile, isActive) {
+            var buttonText = isActive ? spd_ajax.deactivate_text : spd_ajax.activate_text;
+            var actionType = isActive ? 'deactivate' : 'activate';
+            return '<button class="button spd-toggle-plugin" data-plugin="' + escapeHtml(pluginFile) + '" data-action="' + actionType + '" type="button">' + escapeHtml(buttonText) + '</button>';
+        }
+
+        /**
+         * Привязка обработчиков событий к кнопкам переключения
+         */
+        function bindToggleButtons() {
+            $('.spd-toggle-plugin').off('click').on('click', function() {
+                var $button = $(this);
+                var pluginFile = $button.data('plugin');
+                var actionType = $button.data('action');
+                var originalText = $button.text();
+
+                // Блокируем кнопку и меняем текст
+                $button.prop('disabled', true);
+                $button.text(actionType === 'deactivate' ? spd_ajax.deactivating_text : spd_ajax.activating_text);
+
+                // AJAX запрос
+                $.ajax({
+                    url: spd_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'spd_toggle_plugin',
+                        nonce: spd_ajax.toggle_nonce,
+                        plugin: pluginFile,
+                        action_type: actionType
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Обновляем состояние кнопки
+                            var newActionType = response.data.is_active ? 'deactivate' : 'activate';
+                            var newButtonText = response.data.is_active ? spd_ajax.deactivate_text : spd_ajax.activate_text;
+
+                            $button.data('action', newActionType);
+                            $button.text(newButtonText);
+                            $button.prop('disabled', false);
+                        } else {
+                            alert('Error: ' + (response.data.message || 'Unknown error'));
+                            $button.text(originalText);
+                            $button.prop('disabled', false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('AJAX Error: ' + error);
+                        $button.text(originalText);
+                        $button.prop('disabled', false);
+                    }
+                });
+            });
         }
 
         /**

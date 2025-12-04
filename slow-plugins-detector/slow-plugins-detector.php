@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Slow Plugins Detector
  * Description: Detects and analyzes slow loading plugins on the frontend
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Владимир Бычко
  * Author URI: https://bychko.ru
  * Text Domain: slow-plugins-detector
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 // Константы плагина
 define('SPD_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('SPD_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('SPD_VERSION', '1.0.0');
+define('SPD_VERSION', '1.1.0');
 
 /**
  * Основной класс плагина
@@ -96,8 +96,13 @@ class Slow_Plugins_Detector {
         wp_localize_script('spd-admin-js', 'spd_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('spd_run_test'),
+            'toggle_nonce' => wp_create_nonce('spd_toggle_plugin'),
             'testing_text' => __('Testing...', 'slow-plugins-detector'),
-            'complete_text' => __('Test Complete!', 'slow-plugins-detector')
+            'complete_text' => __('Test Complete!', 'slow-plugins-detector'),
+            'deactivate_text' => __('Deactivate', 'slow-plugins-detector'),
+            'activate_text' => __('Activate', 'slow-plugins-detector'),
+            'deactivating_text' => __('Deactivating...', 'slow-plugins-detector'),
+            'activating_text' => __('Activating...', 'slow-plugins-detector')
         ));
 
         // Базовые стили
@@ -110,6 +115,8 @@ class Slow_Plugins_Detector {
             .spd-button { margin: 10px 0; }
             .spd-warning { color: #d63638; font-weight: 600; }
             .spd-good { color: #00a32a; }
+            .spd-toggle-plugin { min-width: 100px; }
+            .spd-toggle-plugin:disabled { opacity: 0.6; cursor: not-allowed; }
         ');
     }
 }
@@ -122,6 +129,7 @@ add_action('plugins_loaded', 'slow_plugins_detector_init');
 
 // Регистрация AJAX обработчиков
 add_action('wp_ajax_spd_run_performance_test', 'spd_handle_ajax_test');
+add_action('wp_ajax_spd_toggle_plugin', 'spd_handle_toggle_plugin');
 
 /**
  * Обработчик AJAX запроса для запуска теста
@@ -139,4 +147,65 @@ function spd_handle_ajax_test() {
     $results = $test_runner->run_frontend_test();
 
     wp_send_json_success($results);
+}
+
+/**
+ * Обработчик AJAX запроса для деактивации/активации плагина
+ */
+function spd_handle_toggle_plugin() {
+    // Проверка nonce для безопасности
+    check_ajax_referer('spd_toggle_plugin', 'nonce');
+
+    // Проверка прав пользователя
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => __('Insufficient permissions', 'slow-plugins-detector')));
+    }
+
+    // Получаем данные из запроса
+    $plugin_file = isset($_POST['plugin']) ? sanitize_text_field($_POST['plugin']) : '';
+    $action_type = isset($_POST['action_type']) ? sanitize_text_field($_POST['action_type']) : '';
+
+    if (empty($plugin_file) || empty($action_type)) {
+        wp_send_json_error(array('message' => __('Invalid parameters', 'slow-plugins-detector')));
+    }
+
+    // Проверяем, что плагин существует
+    if (!file_exists(WP_PLUGIN_DIR . '/' . $plugin_file)) {
+        wp_send_json_error(array('message' => __('Plugin not found', 'slow-plugins-detector')));
+    }
+
+    $active_plugins = get_option('active_plugins', array());
+    $is_active = in_array($plugin_file, $active_plugins);
+
+    if ($action_type === 'deactivate' && $is_active) {
+        // Деактивируем плагин
+        $key = array_search($plugin_file, $active_plugins);
+        if ($key !== false) {
+            unset($active_plugins[$key]);
+            $active_plugins = array_values($active_plugins); // Переиндексируем массив
+            update_option('active_plugins', $active_plugins);
+
+            // Очищаем кеш
+            wp_cache_flush();
+
+            wp_send_json_success(array(
+                'message' => __('Plugin deactivated', 'slow-plugins-detector'),
+                'is_active' => false
+            ));
+        }
+    } elseif ($action_type === 'activate' && !$is_active) {
+        // Активируем плагин
+        $active_plugins[] = $plugin_file;
+        update_option('active_plugins', $active_plugins);
+
+        // Очищаем кеш
+        wp_cache_flush();
+
+        wp_send_json_success(array(
+            'message' => __('Plugin activated', 'slow-plugins-detector'),
+            'is_active' => true
+        ));
+    }
+
+    wp_send_json_error(array('message' => __('Action failed', 'slow-plugins-detector')));
 }
