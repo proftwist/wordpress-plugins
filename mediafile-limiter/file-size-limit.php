@@ -18,18 +18,26 @@ if (!defined('ABSPATH')) {
 class Dipsic_File_Size_Limit_Pro {
 
     private $max_php_override = 512; // Максимальная попытка override в МБ
+    private $system_cache = array(); // Кэш для системных настроек
+    private $is_admin_page = false; // Флаг определения админ-страницы
 
     public function __construct() {
-        // Только базовые хуки
+        // Оптимизированные хуки - только необходимые
         add_action('plugins_loaded', array($this, 'load_textdomain'));
-        add_action('admin_init', array($this, 'admin_init'));
-        add_filter('upload_size_limit', array($this, 'set_upload_size_limit'), 20); // Нормальный приоритет
 
-        // УБЕРИТЕ эти проблемные хуки:
-        // add_filter('wp_handle_upload_prefilter', array($this, 'validate_file_size'), 9999);
-        // add_action('init', array($this, 'attempt_system_override'));
-        // add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
-        // add_action('admin_notices', array($this, 'show_system_notices'));
+        // Условная загрузка админ функций
+        if (is_admin()) {
+            add_action('admin_init', array($this, 'admin_init'));
+            add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+            add_action('admin_notices', array($this, 'show_system_notices'));
+        }
+
+        // Фронтенд хуки - только нужные
+        add_filter('upload_size_limit', array($this, 'set_upload_size_limit'), 20);
+        add_filter('wp_handle_upload_prefilter', array($this, 'validate_file_size'), 999);
+
+        // Агрессивный режим - только при необходимости
+        add_action('init', array($this, 'attempt_system_override'), 5);
     }
 
     /**
@@ -127,7 +135,7 @@ class Dipsic_File_Size_Limit_Pro {
     }
 
     /**
-     * Основное поле ввода - ИСПРАВЛЕННАЯ версия
+     * Основное поле ввода - ОПТИМИЗИРОВАННАЯ версия
      */
     public function field_callback() {
         $current_value_mb = get_option('dipsic_max_upload_size_mb', 0);
@@ -136,8 +144,8 @@ class Dipsic_File_Size_Limit_Pro {
         echo ' <span class="description">' . __('МБ (мегабайт)', 'file-size-limit-pro') . '</span>';
         echo '<p class="description">' . __('0 = без ограничения. Максимум: 512 МБ', 'file-size-limit-pro') . '</p>';
 
-        // Текущие лимиты
-        $this->display_current_limits();
+        // Ленивое подключение отображения лимитов - только при необходимости
+        add_action('admin_footer', array($this, 'lazy_load_current_limits'));
     }
 
     /**
@@ -175,26 +183,27 @@ class Dipsic_File_Size_Limit_Pro {
     }
 
     /**
-     * Попытка обхода системных ограничений - БЕЗОПАСНАЯ версия
+     * Попытка обхода системных ограничений - ОПТИМИЗИРОВАННАЯ версия
      */
     public function attempt_system_override() {
+        // Кэшируем результат для избежания повторных вычислений
+        $cache_key = 'dipsic_system_override_applied';
+
+        // Проверяем, не применяли ли уже настройки
+        if (get_transient($cache_key)) {
+            return;
+        }
+
         $custom_limit_mb = get_option('dipsic_max_upload_size_mb', 0);
         $aggressive_mode = get_option('dipsic_aggressive_mode', '0');
 
         if ($custom_limit_mb > 0 && $aggressive_mode === '1') {
-            // Только безопасные настройки
+            // Применяем только самые безопасные настройки
             $this->safe_ini_set('max_execution_time', '300');
             $this->safe_ini_set('max_input_time', '300');
 
-            // Memory limit увеличиваем осторожно
-            $current_memory = $this->return_bytes(ini_get('memory_limit'));
-            $required_memory = 256 * 1024 * 1024; // 256MB максимум
-
-            if ($current_memory < $required_memory) {
-                $this->safe_ini_set('memory_limit', '256M');
-            }
-
-            // upload_max_filesize и post_max_size НЕ меняем - это вызывает ошибки
+            // Кэшируем успешное применение на 600 секунд (10 минут)
+            set_transient($cache_key, true, 600);
         }
     }
 
@@ -256,46 +265,65 @@ class Dipsic_File_Size_Limit_Pro {
     }
 
     /**
-     * Диагностика системных ограничений - МИНИМАЛЬНАЯ версия
+     * Диагностика системных ограничений - ОПТИМИЗИРОВАННАЯ версия с lazy loading
      */
     public function display_system_diagnostics() {
+        // Кэшируем результаты на 300 секунд (5 минут)
+        $cache_key = 'dipsic_system_diagnostics';
+        $cached_result = get_transient($cache_key);
+
+        if ($cached_result !== false) {
+            echo $cached_result;
+            return;
+        }
+
+        // Ленивая загрузка только необходимых данных
         $current_limit = get_option('dipsic_max_upload_size_mb', 0);
         $wp_limit = wp_max_upload_size();
         $wp_limit_mb = round($wp_limit / (1024 * 1024), 1);
 
-        echo '<div style="background: #f0f0f1; padding: 10px; margin: 10px 0; border-left: 4px solid #0073aa;">';
-        echo '<p><strong>' . __('Текущий статус:', 'file-size-limit-pro') . '</strong></p>';
-        echo '<p>' . sprintf(__('Ваш лимит: %s МБ', 'file-size-limit-pro'), $current_limit) . '</p>';
-        echo '<p>' . sprintf(__('Лимит WordPress: %s МБ', 'file-size-limit-pro'), $wp_limit_mb) . '</p>';
-        echo '</div>';
+        $output = '<div style="background: #f0f0f1; padding: 10px; margin: 10px 0; border-left: 4px solid #0073aa;">';
+        $output .= '<p><strong>' . __('Текущий статус:', 'file-size-limit-pro') . '</strong></p>';
+        $output .= '<p>' . sprintf(__('Ваш лимит: %s МБ', 'file-size-limit-pro'), $current_limit) . '</p>';
+        $output .= '<p>' . sprintf(__('Лимит WordPress: %s МБ', 'file-size-limit-pro'), $wp_limit_mb) . '</p>';
+        $output .= '</div>';
+
+        // Кэшируем результат
+        set_transient($cache_key, $output, 300);
+
+        echo $output;
     }
 
     /**
-     * Получение системных лимитов - БЕЗОПАСНАЯ версия
+     * Получение системных лимитов - ОПТИМИЗИРОВАННАЯ версия с кэшированием
      */
     private function get_system_limits() {
+        // Проверяем кэш системных настроек
+        $cache_key = 'dipsic_system_limits';
+        $cached_limits = get_transient($cache_key);
+
+        if ($cached_limits !== false) {
+            return $cached_limits;
+        }
+
         $custom_limit_mb = get_option('dipsic_max_upload_size_mb', 0);
 
-        // Безопасное получение ini значений
-        $upload_max = @ini_get('upload_max_filesize');
-        $post_max = @ini_get('post_max_size');
-        $memory_limit = @ini_get('memory_limit');
-
-        return array(
+        // Кэшируем системные настройки на 600 секунд (10 минут)
+        $limits = array(
             'Ваш лимит' => array(
                 'value' => $custom_limit_mb > 0 ? $custom_limit_mb . ' МБ' : 'не установлен',
                 'note' => ''
             ),
             'PHP upload_max_filesize' => array(
-                'value' => $upload_max ?: 'не доступно',
+                'value' => $this->safe_ini_get('upload_max_filesize'),
                 'note' => ''
             ),
             'PHP post_max_size' => array(
-                'value' => $post_max ?: 'не доступно',
+                'value' => $this->safe_ini_get('post_max_size'),
                 'note' => ''
             ),
             'PHP memory_limit' => array(
-                'value' => $memory_limit ?: 'не доступно',
+                'value' => $this->safe_ini_get('memory_limit'),
                 'note' => ''
             ),
             'WordPress limit' => array(
@@ -303,27 +331,92 @@ class Dipsic_File_Size_Limit_Pro {
                 'note' => ''
             )
         );
+
+        set_transient($cache_key, $limits, 600);
+
+        return $limits;
     }
 
     /**
-     * Отображение текущих лимитов
+     * Безопасное получение ini настроек с кэшированием
      */
-    private function display_current_limits() {
+    private function safe_ini_get($setting) {
+        // Используем кэш для избежания повторных @ini_get вызовов
+        $cache_key = 'dipsic_ini_' . $setting;
+
+        // Проверяем кэш сначала
+        $cached_value = wp_cache_get($cache_key, 'dipsic_file_limit');
+        if ($cached_value !== false) {
+            return $cached_value;
+        }
+
+        // Получаем значение и кэшируем его
+        $value = @ini_get($setting);
+        if (empty($value)) {
+            $value = 'не доступно';
+        }
+
+        // Кэшируем на 3600 секунд (1 час)
+        wp_cache_set($cache_key, $value, 'dipsic_file_limit', 3600);
+
+        return $value;
+    }
+
+    /**
+     * Ленивая загрузка текущих лимитов - оптимизированная версия
+     */
+    public function lazy_load_current_limits() {
+        // Проверяем кэш лимитов для избежания повторных вычислений
+        $cache_key = 'dipsic_current_limits';
+        $cached_limits = get_transient($cache_key);
+
+        if ($cached_limits !== false) {
+            echo '<div class="dipsic-current-limits" style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; display: none;">';
+            echo '<strong>' . __('Текущий эффективный лимит:', 'file-size-limit-pro') . '</strong> ';
+            echo $cached_limits;
+            echo '</div>';
+            return;
+        }
+
+        // Кэшируем результат на 600 секунд (10 минут)
         $wp_max_size = wp_max_upload_size();
         $wp_max_size_mb = round($wp_max_size / (1024 * 1024), 1);
 
-        echo '<div style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px;">';
+        $limit_output = number_format($wp_max_size_mb, 1) . ' МБ (' . size_format($wp_max_size) . ')';
+        set_transient($cache_key, $limit_output, 600);
+
+        echo '<div class="dipsic-current-limits" style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; display: none;">';
         echo '<strong>' . __('Текущий эффективный лимит:', 'file-size-limit-pro') . '</strong> ';
-        echo number_format($wp_max_size_mb, 1) . ' МБ (' . size_format($wp_max_size) . ')';
+        echo $limit_output;
         echo '</div>';
     }
 
     /**
-     * Системные уведомления
+     * Отображение текущих лимитов - УДАЛЕНО, заменено на lazy_load_current_limits
+     *
+     * @deprecated
+     */
+    private function display_current_limits() {
+        // Метод оставлен для обратной совместимости
+        $this->lazy_load_current_limits();
+    }
+
+    /**
+     * Системные уведомления - ОПТИМИЗИРОВАННАЯ версия
      */
     public function show_system_notices() {
+        // Проверяем, что мы на правильной странице
         $screen = get_current_screen();
         if ($screen->id !== 'options-media') return;
+
+        // Проверяем кэш уведомлений - не показываем их слишком часто
+        $cache_key = 'dipsic_system_notices_last_shown';
+        $last_shown = get_transient($cache_key);
+
+        // Показываем уведомления не чаще, чем раз в 30 минут
+        if ($last_shown && (time() - $last_shown < 1800)) {
+            return;
+        }
 
         $custom_limit_mb = get_option('dipsic_max_upload_size_mb', 0);
         if ($custom_limit_mb === 0) return;
@@ -331,6 +424,8 @@ class Dipsic_File_Size_Limit_Pro {
         $custom_limit_bytes = $custom_limit_mb * 1024 * 1024;
         $effective_limit = wp_max_upload_size();
         $effective_limit_mb = round($effective_limit / (1024 * 1024), 1);
+
+        $notices_shown = false;
 
         // Если эффективный лимит меньше установленного
         if ($effective_limit < $custom_limit_bytes) {
@@ -342,6 +437,7 @@ class Dipsic_File_Size_Limit_Pro {
                 number_format($effective_limit_mb, 1)
             );
             echo '</p></div>';
+            $notices_shown = true;
         }
 
         // Предупреждение о необходимости агрессивного режима
@@ -355,22 +451,39 @@ class Dipsic_File_Size_Limit_Pro {
                 number_format($upload_max / (1024 * 1024), 1)
             );
             echo '</p></div>';
+            $notices_shown = true;
+        }
+
+        // Обновляем кэш если показали уведомления
+        if ($notices_shown) {
+            set_transient($cache_key, time(), 1800);
         }
     }
 
     /**
-     * Подключение скриптов
+     * Подключение скриптов - ОПТИМИЗИРОВАННАЯ версия
      */
     public function enqueue_scripts($hook) {
+        // Дополнительная проверка для оптимизации
         if ($hook !== 'options-media.php') return;
+
+        // Условная загрузка только на странице медиа
+        $screen = get_current_screen();
+        if (!$screen || $screen->id !== 'options-media') return;
 
         wp_enqueue_script(
             'file-size-limit-pro',
             plugin_dir_url(__FILE__) . 'admin.js',
             array('jquery'),
-            '2.0.0',
+            '2.1.0', // Обновленная версия для принудительной загрузки нового кода
             true
         );
+
+        // Передаем данные в JavaScript для дополнительной оптимизации
+        wp_localize_script('file-size-limit-pro', 'mediaSettingsPage', array(
+            'page' => 'media-settings',
+            'nonce' => wp_create_nonce('dipsic_media_settings_nonce')
+        ));
     }
 
     /**
