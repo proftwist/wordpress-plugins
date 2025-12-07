@@ -23,6 +23,9 @@
         // Кеш миниатюр
         thumbnailCache: {},
 
+        // Кеш информации об изображениях
+        imageCache: {},
+
         // Элемент всплывающего слоя
         tooltip: null,
 
@@ -152,8 +155,8 @@
                 return false;
             }
 
-            // Проверяем, ведет ли ссылка на пост или страницу (не на архивы)
-            if (!this.isPostOrPageLink(href)) {
+            // Проверяем, ведет ли ссылка на пост, страницу или изображение
+            if (!this.isPostOrPageLink(href) && !this.isImageLink(href)) {
                 return false;
             }
 
@@ -161,6 +164,26 @@
             $link.attr('title', '');
 
             return true;
+        },
+
+        /**
+         * Проверка, является ли ссылка ссылкой на изображение
+         */
+        isImageLink: function(href) {
+            if (!href) return false;
+
+            // Расширения изображений
+            var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+            var hrefLower = href.toLowerCase();
+
+            // Проверяем расширение файла
+            for (var i = 0; i < imageExtensions.length; i++) {
+                if (hrefLower.indexOf(imageExtensions[i]) !== -1) {
+                    return true;
+                }
+            }
+
+            return false;
         },
 
         /**
@@ -237,6 +260,12 @@
             var $link = $(link);
             var href = $link.attr('href');
 
+            // Проверяем, является ли ссылка ссылкой на изображение
+            if (this.isImageLink(href)) {
+                this.showImageTooltip(href, e);
+                return;
+            }
+
             // Извлекаем ID поста из URL
             var postId = this.extractPostId(href);
 
@@ -292,6 +321,123 @@
                     console.error('Excerpt AJAX error for post ID', postId, ':', status, error);
                 }
             });
+        },
+
+        /**
+         * Показ тултипа для изображения
+         */
+        showImageTooltip: function(imageUrl, e) {
+            var self = this;
+
+            // Проверяем кеш информации об изображении
+            if (this.imageCache[imageUrl]) {
+                this.displayImageTooltip(this.imageCache[imageUrl], e);
+                return;
+            }
+
+            // Получаем информацию об изображении через AJAX
+            $.ajax({
+                url: megalinksAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'megalinks_get_image_info',
+                    image_url: imageUrl,
+                    nonce: megalinksAjax.nonce_image_info
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        // Кешируем информацию об изображении
+                        self.imageCache[imageUrl] = response.data;
+                        self.displayImageTooltip(response.data, e);
+                    } else {
+                        console.warn('Failed to get image info for URL:', imageUrl);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Image info AJAX error for URL', imageUrl, ':', status, error);
+                }
+            });
+        },
+
+        /**
+         * Отображение тултипа с изображением
+         */
+        displayImageTooltip: function(imageInfo, e) {
+            var windowWidth = $(window).width();
+            var windowHeight = $(window).height();
+            var scrollTop = $(window).scrollTop();
+            var tooltipWidth = 400; // Максимальная ширина из CSS
+
+            // Создаем HTML для тултипа с изображением
+            var html = '<div class="megalinks-image-preview">';
+            html += '<div class="image-info">';
+            html += '<strong>Размеры:</strong> ' + imageInfo.width + '×' + imageInfo.height + 'px<br>';
+            if (imageInfo.size) {
+                var sizeKB = Math.round(imageInfo.size / 1024);
+                html += '<strong>Размер файла:</strong> ' + sizeKB + ' KB<br>';
+            }
+            html += '<strong>Тип:</strong> ' + imageInfo.type;
+            html += '</div>';
+            html += '<div class="image-preview-container">';
+            html += '<img src="' + imageInfo.original_url + '" alt="Image preview" loading="lazy" class="preview-image">';
+            html += '</div>';
+            html += '</div>';
+
+            // Создаем временный tooltip для точного измерения высоты
+            var tempTooltip = this.tooltip.clone().css({
+                visibility: 'hidden',
+                position: 'absolute',
+                top: '-9999px',
+                left: '-9999px',
+                width: tooltipWidth + 'px'
+            }).appendTo('body');
+
+            tempTooltip.html(html);
+            var tooltipHeight = tempTooltip.outerHeight();
+            tempTooltip.remove();
+
+            // Позиционирование
+            var linkRect = e.target.getBoundingClientRect();
+            var spaceAbove = linkRect.top - 20;
+            var spaceBelow = windowHeight - linkRect.bottom - 20;
+
+            var positionAbove = spaceAbove >= tooltipHeight;
+            var positionBelow = !positionAbove && spaceBelow >= tooltipHeight;
+
+            if (!positionAbove && !positionBelow) {
+                positionAbove = spaceAbove >= spaceBelow;
+                positionBelow = !positionAbove;
+            }
+
+            var top, arrowClass;
+
+            if (positionAbove) {
+                top = linkRect.top - tooltipHeight - 12 + scrollTop;
+                arrowClass = 'top-arrow';
+            } else {
+                top = linkRect.bottom + 12 + scrollTop;
+                arrowClass = 'bottom-arrow';
+            }
+
+            // Центрируем по горизонтали
+            var left = e.clientX - (tooltipWidth / 2);
+
+            if (left < 10) {
+                left = 10;
+            } else if (left + tooltipWidth > windowWidth - 10) {
+                left = windowWidth - tooltipWidth - 10;
+            }
+
+            // Показываем тултип
+            this.tooltip
+                .html(html)
+                .css({
+                    left: left + 'px',
+                    top: top + 'px',
+                    width: tooltipWidth + 'px'
+                })
+                .removeClass('top-arrow bottom-arrow')
+                .addClass(arrowClass + ' visible');
         },
 
         /**
@@ -494,7 +640,7 @@
          */
         hideTooltip: function() {
             this.tooltip.removeClass('visible');
-            // Не очищаем содержимое, чтобы при повторном показе не было прыганий
+            // Не очищаем содержимое, чтобы при повторном показе не было прыжаний
         }
     };
 

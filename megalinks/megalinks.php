@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Megalinks
  * Description: Добавляет всплывающие подсказки с цитатами для внутренних ссылок на посты и страницы
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: Владимир Бычко
  * Author URL: https://bychko.ru
  * Text Domain: megalinks
@@ -46,6 +46,8 @@ class Megalinks {
         add_action('wp_ajax_nopriv_megalinks_get_post_id_by_url', array($this, 'ajax_get_post_id_by_url'));
         add_action('wp_ajax_megalinks_get_thumbnail', array($this, 'ajax_get_thumbnail'));
         add_action('wp_ajax_nopriv_megalinks_get_thumbnail', array($this, 'ajax_get_thumbnail'));
+        add_action('wp_ajax_megalinks_get_image_info', array($this, 'ajax_get_image_info'));
+        add_action('wp_ajax_nopriv_megalinks_get_image_info', array($this, 'ajax_get_image_info'));
     }
 
     /**
@@ -84,7 +86,8 @@ class Megalinks {
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce_excerpt' => wp_create_nonce('megalinks_get_excerpt'),
             'nonce_post_id' => wp_create_nonce('megalinks_get_post_id_by_url'),
-            'nonce_thumbnail' => wp_create_nonce('megalinks_get_thumbnail')
+            'nonce_thumbnail' => wp_create_nonce('megalinks_get_thumbnail'),
+            'nonce_image_info' => wp_create_nonce('megalinks_get_image_info')
         ));
     }
 
@@ -431,6 +434,117 @@ class Megalinks {
             }
         }
         wp_send_json_success(array('thumbnail_url' => $thumbnail_url));
+    }
+
+    /**
+     * AJAX обработчик для получения информации об изображении
+     */
+    public function ajax_get_image_info() {
+        // Проверяем nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'megalinks_get_image_info')) {
+            wp_send_json_error('Security check failed');
+        }
+
+        // Получаем и валидируем URL изображения
+        $image_url = esc_url_raw($_POST['image_url']);
+        if (empty($image_url)) {
+            wp_send_json_error('Invalid image URL');
+        }
+
+        // Проверяем, что URL ведет на изображение
+        $allowed_extensions = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg');
+        $path_info = pathinfo($image_url);
+        $extension = strtolower($path_info['extension']);
+
+        if (!in_array($extension, $allowed_extensions)) {
+            wp_send_json_error('URL does not point to a valid image');
+        }
+
+        // Получаем размеры изображения
+        $image_info = $this->get_image_info($image_url);
+        if (!$image_info) {
+            wp_send_json_error('Failed to get image information');
+        }
+
+        wp_send_json_success($image_info);
+    }
+
+    /**
+     * Получение информации об изображении
+     */
+    private function get_image_info($image_url) {
+        // Проверяем, является ли изображение локальным (загруженным в WordPress)
+        $upload_dir = wp_upload_dir();
+        $image_path = null;
+
+        // Если изображение находится в папке uploads, преобразуем URL в путь
+        if (strpos($image_url, $upload_dir['baseurl']) === 0) {
+            $relative_path = str_replace($upload_dir['baseurl'], '', $image_url);
+            $image_path = $upload_dir['basedir'] . $relative_path;
+        } else {
+            // Для внешних изображений используем временный файл
+            $image_path = $this->download_temporary_image($image_url);
+        }
+
+        if (!$image_path || !file_exists($image_path)) {
+            return false;
+        }
+
+        // Получаем размеры изображения
+        $image_data = getimagesize($image_path);
+        if (!$image_data) {
+            return false;
+        }
+
+        $info = array(
+            'width' => $image_data[0],
+            'height' => $image_data[1],
+            'type' => $image_data['mime'],
+            'original_url' => $image_url,
+            'size' => filesize($image_path)
+        );
+
+        // Удаляем временный файл если это внешнее изображение
+        if (strpos($image_url, $upload_dir['baseurl']) !== 0) {
+            unlink($image_path);
+        }
+
+        return $info;
+    }
+
+    /**
+     * Скачивание внешнего изображения во временный файл
+     */
+    private function download_temporary_image($image_url) {
+        $response = wp_remote_get($image_url, array(
+            'timeout' => 10,
+            'headers' => array(
+                'User-Agent' => 'WordPress/Megalinks Plugin'
+            )
+        ));
+
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            return false;
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        if (empty($body)) {
+            return false;
+        }
+
+        // Создаем временный файл
+        $temp_file = wp_tempnam();
+        if (!$temp_file) {
+            return false;
+        }
+
+        // Записываем содержимое во временный файл
+        if (file_put_contents($temp_file, $body) === false) {
+            unlink($temp_file);
+            return false;
+        }
+
+        return $temp_file;
     }
 }
 

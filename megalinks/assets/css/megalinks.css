@@ -115,6 +115,41 @@
     }
 }
 
+/* Стили для тултипа изображений */
+.megalinks-image-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.image-info {
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.image-preview-container {
+    width: 100%;
+    max-height: 200px;
+    overflow: hidden;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #fff;
+}
+
+.preview-image {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    border-radius: 3px;
+}
+
 /* Поддержка темной темы */
 @media (prefers-color-scheme: dark) {
     .megalinks-tooltip {
@@ -133,5 +168,20 @@
 
     .megalinks-tooltip.bottom-arrow::after {
         border-top-color: #2a2a2a;
+    }
+
+    .image-info {
+        background: rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #e0e0e0;
+    }
+
+    .image-preview-container {
+        background: #1a1a1a;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .preview-image {
+        border-color: #333;
     }
 }
