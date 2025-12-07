@@ -368,7 +368,11 @@
             var scrollTop = $(window).scrollTop();
             var tooltipWidth = 400; // Максимальная ширина из CSS
 
-            // Создаем HTML для тултипа с изображением
+            // Ищем саму ссылку, а не вложенный элемент, как в displayTooltip
+            var $link = $(e.target).closest('a');
+            var linkElement = $link.length ? $link.get(0) : e.target;
+
+            // Создаем финальный HTML для тултипа с изображением
             var html = '<div class="megalinks-image-preview">';
             html += '<div class="image-info">';
             html += '<strong>Размеры:</strong> ' + imageInfo.width + '×' + imageInfo.height + 'px<br>';
@@ -383,6 +387,21 @@
             html += '</div>';
             html += '</div>';
 
+            // Для корректного позиционирования при первом показе
+            // считаем высоту не по ещё не загруженному <img>, а по заглушке
+            var measureHtml = '<div class="megalinks-image-preview">';
+            measureHtml += '<div class="image-info">';
+            measureHtml += '<strong>Размеры:</strong> ' + imageInfo.width + '×' + imageInfo.height + 'px<br>';
+            if (imageInfo.size) {
+                var sizeKBMeasure = Math.round(imageInfo.size / 1024);
+                measureHtml += '<strong>Размер файла:</strong> ' + sizeKBMeasure + ' KB<br>';
+            }
+            measureHtml += '<strong>Тип:</strong> ' + imageInfo.type;
+            measureHtml += '</div>';
+            // Фиксированная высота превью (200px) — не зависит от загрузки изображения
+            measureHtml += '<div class="image-preview-container"><div style="width:100%;height:200px;"></div></div>';
+            measureHtml += '</div>';
+
             // Создаем временный tooltip для точного измерения высоты
             var tempTooltip = this.tooltip.clone().css({
                 visibility: 'hidden',
@@ -392,12 +411,12 @@
                 width: tooltipWidth + 'px'
             }).appendTo('body');
 
-            tempTooltip.html(html);
+            tempTooltip.html(measureHtml);
             var tooltipHeight = tempTooltip.outerHeight();
             tempTooltip.remove();
 
-            // Позиционирование
-            var linkRect = e.target.getBoundingClientRect();
+            // Позиционирование (как у превью постов: относительно самой ссылки)
+            var linkRect = linkElement.getBoundingClientRect();
             var spaceAbove = linkRect.top - 20;
             var spaceBelow = windowHeight - linkRect.bottom - 20;
 
